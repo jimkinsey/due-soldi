@@ -2,4 +2,4 @@
 
 Due Soldi
 ---
-TBA
+A work-in-progress personal blog engine for my own use.
