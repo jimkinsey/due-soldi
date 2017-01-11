@@ -9,7 +9,7 @@ class PingPongTests extends AsyncFunSpec {
   describe("/ping") {
 
     it("returns 'pong'") {
-      get("/ping") { _.getResponseBody shouldBe "pong" }
+      get("/ping") { _.body shouldBe "pong" }
     }
 
   }
@@ -17,7 +17,7 @@ class PingPongTests extends AsyncFunSpec {
   describe("/pong") {
 
     it("returns 'ping'") {
-      get("/pong") { _.getResponseBody shouldBe "ping" }
+      get("/pong") { _.body shouldBe "ping" }
     }
 
   }
