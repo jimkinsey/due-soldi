@@ -1,22 +1,15 @@
 package duesoldi
 
-import duesoldi.httpclient.HttpClient
-import duesoldi.testapp.TestApp
 import org.scalatest.AsyncFunSpec
 import org.scalatest.Matchers._
 
 class PingPongTests extends AsyncFunSpec {
+  import duesoldi.testapp.TestAppRequest.get
 
   describe("/ping") {
 
     it("returns 'pong'") {
-      for {
-        server <- TestApp.start
-        res    <- HttpClient.get("/ping", server)
-        _      <- TestApp stop server
-      } yield {
-        res.getResponseBody shouldBe "pong"
-      }
+      get("/ping") { _.getResponseBody shouldBe "pong" }
     }
 
   }
@@ -24,13 +17,7 @@ class PingPongTests extends AsyncFunSpec {
   describe("/pong") {
 
     it("returns 'ping'") {
-      for {
-        server <- TestApp.start
-        res    <- HttpClient.get("/pong", server)
-        _      <- TestApp stop server
-      } yield {
-        res.getResponseBody shouldBe "ping"
-      }
+      get("/pong") { _.getResponseBody shouldBe "ping" }
     }
 
   }
