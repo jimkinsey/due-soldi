@@ -6,8 +6,6 @@ import akka.http.scaladsl.marshalling.ToResponseMarshallable._
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 
-import scala.io.StdIn
-
 trait Routing {
   val routes =
     path("ping") {
@@ -29,15 +27,6 @@ object App extends Routing {
 
     val (host, port) = "localhost" -> Option(System.getenv("PORT")).map(_.toInt).getOrElse(8080)
 
-    val bindingFuture = Http().bindAndHandle(routes, host, port)
-
-    // The following makes it easier to work with SBT, adapted from the official Akka docs
-    bindingFuture.map { server =>
-      println(s"Server online at http://${server.localAddress.getHostName}:${server.localAddress.getPort}/\nPress RETURN to stop...")
-    }
-    StdIn.readLine()
-    bindingFuture
-      .flatMap(_.unbind())
-      .onComplete(_ => system.terminate())
+    Http().bindAndHandle(routes, host, port)
   }
 }
