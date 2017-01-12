@@ -27,13 +27,14 @@ object App extends Routing {
     implicit val materializer = ActorMaterializer()
     implicit val executionContext = system.dispatcher
 
-    val (host, port) = "localhost" -> Option(System.getenv("PORT")).map(_.toInt).getOrElse(8080)
+    val host = Option(System.getenv("HOST")).getOrElse("0.0.0.0")
+    val port = Option(System.getenv("PORT")).map(_.toInt).getOrElse(8080)
 
     println(s"Binding to $host:$port")
     Http().bindAndHandle(routes, host, port) onComplete {
       case Success(binding) => println(s"Bound to ${binding.localAddress.getHostName}:${binding.localAddress.getPort}")
       case Failure(ex)      =>
-        System.err.println(s"Failed to bind server")
+        System.err.println(s"Failed to bind server: ${ex.getMessage}")
         ex.printStackTrace(System.err)
     }
   }
