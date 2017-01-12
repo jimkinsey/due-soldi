@@ -27,7 +27,7 @@ object App extends Routing {
     implicit val materializer = ActorMaterializer()
     implicit val executionContext = system.dispatcher
 
-    val (host, port) = "localhost" -> 9003
+    val (host, port) = "localhost" -> Option(System.getenv("PORT")).map(_.toInt).getOrElse(8080)
 
     val bindingFuture = Http().bindAndHandle(routes, host, port)
 
