@@ -6,6 +6,8 @@ import akka.http.scaladsl.marshalling.ToResponseMarshallable._
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 
+import scala.util.{Failure, Success}
+
 trait Routing {
   val routes =
     path("ping") {
@@ -27,6 +29,12 @@ object App extends Routing {
 
     val (host, port) = "localhost" -> Option(System.getenv("PORT")).map(_.toInt).getOrElse(8080)
 
-    Http().bindAndHandle(routes, host, port)
+    println(s"Binding to $host:$port")
+    Http().bindAndHandle(routes, host, port) onComplete {
+      case Success(binding) => println(s"Bound to ${binding.localAddress.getHostName}:${binding.localAddress.getPort}")
+      case Failure(ex)      =>
+        System.err.println(s"Failed to bind server")
+        ex.printStackTrace(System.err)
+    }
   }
 }
