@@ -1,12 +1,17 @@
 package duesoldi
 
+import java.io.{File, FileNotFoundException}
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.ToResponseMarshallable._
+import akka.http.scaladsl.model.HttpResponse
+import akka.http.scaladsl.model.StatusCodes.{InternalServerError, NotFound}
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 
-import scala.util.{Failure, Success}
+import scala.io.Source
+import scala.util.{Failure, Success, Try}
 
 trait Routing {
   val routes =
@@ -17,6 +22,16 @@ trait Routing {
     } ~ path("pong") {
       get {
         complete { "ping" }
+      }
+    } ~ pathPrefix("blog" / Remaining) { name =>
+      complete {
+        Try(Source.fromFile(new File(s"/tmp/blog/$name.md")).mkString) match {
+          case Success(content)                          => content
+          case Failure(exception: FileNotFoundException) => HttpResponse(NotFound)
+          case Failure(exception)                        =>
+            println(exception)
+            HttpResponse(InternalServerError)
+        }
       }
     }
 }
