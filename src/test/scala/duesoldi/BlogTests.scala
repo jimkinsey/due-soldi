@@ -23,6 +23,12 @@ class BlogTests extends AsyncFunSpec with BlogStorage {
       }
     }
 
+    it("has content-type text/html") {
+      withBlogEntries("year-in-review" -> "tedious blah") {
+        get("/blog/year-in-review") { _.headers("Content-Type") should contain("text/html; charset=UTF-8") }
+      }
+    }
+
   }
 
 }

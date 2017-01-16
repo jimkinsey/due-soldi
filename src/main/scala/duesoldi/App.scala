@@ -5,8 +5,10 @@ import java.io.{File, FileNotFoundException}
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.ToResponseMarshallable._
-import akka.http.scaladsl.model.HttpResponse
-import akka.http.scaladsl.model.StatusCodes.{InternalServerError, NotFound}
+import akka.http.scaladsl.model.HttpCharsets.`UTF-8`
+import akka.http.scaladsl.model.MediaTypes.`text/html`
+import akka.http.scaladsl.model.StatusCodes.{InternalServerError, NotFound, OK}
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 
@@ -26,9 +28,11 @@ trait Routing {
     } ~ pathPrefix("blog" / Remaining) { name =>
       complete {
         Try(Source.fromFile(new File(s"/tmp/blog/$name.md")).mkString) match {
-          case Success(content)                          => content
-          case Failure(exception: FileNotFoundException) => HttpResponse(NotFound)
-          case Failure(exception)                        =>
+          case Success(content) =>
+            HttpResponse(OK, entity = HttpEntity(ContentType(`text/html`, `UTF-8`), content))
+          case Failure(exception: FileNotFoundException) =>
+            HttpResponse(NotFound)
+          case Failure(exception) =>
             println(exception)
             HttpResponse(InternalServerError)
         }
