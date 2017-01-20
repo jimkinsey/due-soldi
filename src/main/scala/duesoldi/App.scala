@@ -1,7 +1,5 @@
 package duesoldi
 
-import java.io.{File, FileNotFoundException}
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.ToResponseMarshallable._
@@ -11,33 +9,44 @@ import akka.http.scaladsl.model.StatusCodes.{InternalServerError, NotFound, OK}
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
+import duesoldi.markdown.MarkdownParser
+import duesoldi.rendering.Renderer
+import duesoldi.storage.{BlogStore, MarkdownSource}
 
-import scala.io.Source
-import scala.util.{Failure, Success, Try}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 trait Routing {
-  val routes =
+
+  def routes(implicit executionContext: ExecutionContext) = {
+    val store = new BlogStore(new MarkdownSource, new MarkdownParser)
+    val renderer = new Renderer
+
     path("ping") {
       get {
-        complete { "pong" }
+        complete {
+          "pong"
+        }
       }
     } ~ path("pong") {
       get {
-        complete { "ping" }
+        complete {
+          "ping"
+        }
       }
     } ~ pathPrefix("blog" / Remaining) { name =>
       complete {
-        Try(Source.fromFile(new File(s"/tmp/blog/$name.md")).mkString) match {
-          case Success(content) =>
-            HttpResponse(OK, entity = HttpEntity(ContentType(`text/html`, `UTF-8`), content))
-          case Failure(exception: FileNotFoundException) =>
-            HttpResponse(NotFound)
-          case Failure(exception) =>
-            println(exception)
-            HttpResponse(InternalServerError)
+        store.entry(name).flatMap {
+          case Left(f) => Future successful Left(f)
+          case Right(entry) => renderer.render(entry)
+        } map {
+          case Left(BlogStore.NotFound) => HttpResponse(NotFound)
+          case Left(failure) => HttpResponse(InternalServerError)
+          case Right(html) => HttpResponse(OK, entity = HttpEntity(ContentType(`text/html`, `UTF-8`), html))
         }
       }
     }
+  }
 }
 
 object App extends Routing {

@@ -1,5 +1,6 @@
 package duesoldi
 
+import duesoldi.pages.BlogEntryPage
 import duesoldi.storage.BlogStorage
 import org.scalatest.AsyncFunSpec
 
@@ -15,20 +16,41 @@ class BlogTests extends AsyncFunSpec with BlogStorage {
 
   }
 
+  describe("getting an invalid blog entry") {
+
+    it("responds with a 500") {
+      withBlogEntries("no-title" -> "boom") {
+        get("/blog/no-title") { _ .status shouldBe 500 }
+      }
+    }
+
+  }
+
   describe("a blog entry page") {
 
     it("responds with a 200") {
-      withBlogEntries("first-post" -> "Hello, World!") {
+      withBlogEntries("first-post" -> "# Hello, World!") {
         get("/blog/first-post") { _.status shouldBe 200 }
       }
     }
 
     it("has content-type text/html") {
-      withBlogEntries("year-in-review" -> "tedious blah") {
+      withBlogEntries("year-in-review" -> "# tedious blah") {
         get("/blog/year-in-review") { _.headers("Content-Type") should contain("text/html; charset=UTF-8") }
+      }
+    }
+
+    it("has the title of the Markdown document in the h1 and title elements") {
+      withBlogEntries("titled" -> "# A title!") {
+        get("/blog/titled") { response =>
+          val page = new BlogEntryPage(response.body)
+          page.title shouldBe "A title!"
+          page.h1.text shouldBe "A title!"
+        }
       }
     }
 
   }
 
 }
+
