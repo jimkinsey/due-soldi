@@ -27,7 +27,7 @@ class BlogStore(source: MarkdownSource, parser: MarkdownParser)(implicit ec: Exe
     EitherT[Future, NotFound.type, String](source.document(name).map(opt => opt.toRight({ NotFound })))
 
   private def blogEntry(document: MarkdownDocument): EitherT[Future, BlogStore.Failure, BlogEntry] = {
-    EitherT.fromOption[Future](title(document) map { BlogEntry }, { InvalidContent })
+    EitherT.fromOption[Future](title(document) map { title => BlogEntry(title, document) }, { InvalidContent })
   }
 
   private def title(markdown: MarkdownDocument): Option[String] = markdown.nodes.collectFirst {

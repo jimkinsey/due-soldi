@@ -1,6 +1,7 @@
 package duesoldi.storage
 
-import duesoldi.markdown.MarkdownParser
+import duesoldi.markdown.MarkdownDocument.Heading
+import duesoldi.markdown.{MarkdownDocument, MarkdownParser}
 import duesoldi.storage.BlogStore.InvalidContent
 import org.scalatest.{AsyncWordSpec, EitherValues}
 import org.scalatest.Matchers._
@@ -25,6 +26,14 @@ class BlogStoreTests extends AsyncWordSpec with EitherValues {
       }
       val store = new BlogStore(source, new MarkdownParser)
       store.entry("exists") map { _.right.value.title shouldBe "A document!" }
+    }
+
+    "return a blog entry with the parsed document as the content" in {
+      val source = new MarkdownSource {
+        override def document(id: String) = Future successful Some("# A document!")
+      }
+      val store = new BlogStore(source, new MarkdownParser)
+      store.entry("exists") map { _.right.value.content shouldBe MarkdownDocument(Seq(Heading("A document!", 1))) }
     }
 
     "returns an invalid content failure if the markdown does not have a title" in {

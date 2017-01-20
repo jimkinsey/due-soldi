@@ -1,3 +1,5 @@
 package duesoldi.model
 
-case class BlogEntry(title: String)
+import duesoldi.markdown.MarkdownDocument
+
+case class BlogEntry(title: String, content: MarkdownDocument)
