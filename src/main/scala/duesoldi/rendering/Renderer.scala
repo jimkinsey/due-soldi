@@ -7,17 +7,16 @@ import duesoldi.model.BlogEntry
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.{Elem, NodeSeq, XML}
 
-// TODO leave the h1 out of the content? or ditch the explicit h1?
-// TODO article tag
 class Renderer {
   def render(entry: BlogEntry)(implicit ec: ExecutionContext): Future[Either[Renderer.Failure, String]] = {
     Future successful Right(html(
       <html>
         <head><title>{entry.title}</title></head>
         <body>
-          <h1>{entry.title}</h1>
           <div id="content">
-            {html(entry.content.nodes)}
+            <article>
+              {html(entry.content.nodes)}
+            </article>
           </div>
         </body>
       </html>

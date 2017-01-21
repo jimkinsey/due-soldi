@@ -4,6 +4,8 @@ import duesoldi.markdown.MarkdownDocument._
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 
+// TODO handle all MD tags
+// TODO check whether strong, emphasis, etc. can have child tags
 class MarkdownParserTests extends WordSpec {
 
   "A markdown parser" must {
