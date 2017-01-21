@@ -23,7 +23,7 @@ class Renderer {
     ))
   }
 
-  private def html(xml: Elem): String = s"<!DOCTYPE html>n${xml.mkString}\n"
+  private def html(xml: Elem): String = s"<!DOCTYPE html>\n${xml.mkString}\n"
 
   private def html(nodes: Seq[MarkdownDocument.Node]): NodeSeq = {
     nodes collect {

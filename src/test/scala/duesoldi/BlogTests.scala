@@ -19,7 +19,7 @@ class BlogTests extends AsyncFunSpec with BlogStorage {
   describe("getting an invalid blog entry") {
 
     it("responds with a 500") {
-      withBlogEntries("no-title" -> "boom") {
+      withBlogEntries("no-title" -> "boom") { implicit config =>
         get("/blog/no-title") { _ .status shouldBe 500 }
       }
     }
@@ -29,19 +29,19 @@ class BlogTests extends AsyncFunSpec with BlogStorage {
   describe("a blog entry page") {
 
     it("responds with a 200") {
-      withBlogEntries("first-post" -> "# Hello, World!") {
+      withBlogEntries("first-post" -> "# Hello, World!") { implicit config =>
         get("/blog/first-post") { _.status shouldBe 200 }
       }
     }
 
     it("has content-type text/html") {
-      withBlogEntries("year-in-review" -> "# tedious blah") {
+      withBlogEntries("year-in-review" -> "# tedious blah") { implicit config =>
         get("/blog/year-in-review") { _.headers("Content-Type") should contain("text/html; charset=UTF-8") }
       }
     }
 
     it("has the title of the Markdown document in the h1 and title elements") {
-      withBlogEntries("titled" -> "# A title!") {
+      withBlogEntries("titled" -> "# A title!") { implicit config =>
         get("/blog/titled") { response =>
           val page = new BlogEntryPage(response.body)
           page.title shouldBe "A title!"
@@ -57,7 +57,7 @@ class BlogTests extends AsyncFunSpec with BlogStorage {
           |This is an __amazing__ page of _content_.
           |
           |Don't knock it.
-        """.stripMargin) {
+        """.stripMargin) { implicit config =>
         get("/blog/has-content") { response =>
           val page = new BlogEntryPage(response.body)
           page.h1.text shouldBe "Content Galore!"

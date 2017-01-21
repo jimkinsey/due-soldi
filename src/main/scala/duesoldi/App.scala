@@ -11,15 +11,15 @@ import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import duesoldi.markdown.MarkdownParser
 import duesoldi.rendering.Renderer
-import duesoldi.storage.{BlogStore, MarkdownSource}
+import duesoldi.storage.{BlogStore, FilesystemMarkdownSource}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 trait Routing {
 
-  def routes(implicit executionContext: ExecutionContext) = {
-    val store = new BlogStore(new MarkdownSource, new MarkdownParser)
+  def routes(implicit executionContext: ExecutionContext, blogSourceConfig: FilesystemMarkdownSource.Config) = {
+    val store = new BlogStore(new FilesystemMarkdownSource, new MarkdownParser)
     val renderer = new Renderer
 
     path("ping") {
@@ -41,7 +41,9 @@ trait Routing {
           case Right(entry) => renderer.render(entry)
         } map {
           case Left(BlogStore.NotFound) => HttpResponse(NotFound)
-          case Left(failure) => HttpResponse(InternalServerError)
+          case Left(failure) =>
+            System.err.println(failure);
+            HttpResponse(InternalServerError)
           case Right(html) => HttpResponse(OK, entity = HttpEntity(ContentType(`text/html`, `UTF-8`), html))
         }
       }
@@ -57,6 +59,10 @@ object App extends Routing {
 
     val host = Option(System.getenv("HOST")).getOrElse("0.0.0.0")
     val port = Option(System.getenv("PORT")).map(_.toInt).getOrElse(8080)
+
+    implicit val blogSourceConfig: FilesystemMarkdownSource.Config = new FilesystemMarkdownSource.Config {
+      override def path: String = System.getenv("BLOG_STORE_PATH")
+    }
 
     println(s"Binding to $host:$port")
     Http().bindAndHandle(routes, host, port) onComplete {
