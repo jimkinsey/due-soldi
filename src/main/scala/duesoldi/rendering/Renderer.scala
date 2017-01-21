@@ -5,11 +5,13 @@ import duesoldi.markdown.MarkdownDocument._
 import duesoldi.model.BlogEntry
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.xml.{NodeSeq, XML}
+import scala.xml.{Elem, NodeSeq, XML}
 
+// TODO leave the h1 out of the content? or ditch the explicit h1?
+// TODO article tag
 class Renderer {
   def render(entry: BlogEntry)(implicit ec: ExecutionContext): Future[Either[Renderer.Failure, String]] = {
-    Future successful Right(
+    Future successful Right(html(
       <html>
         <head><title>{entry.title}</title></head>
         <body>
@@ -18,9 +20,11 @@ class Renderer {
             {html(entry.content.nodes)}
           </div>
         </body>
-      </html>.mkString
-    )
+      </html>
+    ))
   }
+
+  private def html(xml: Elem): String = s"<!DOCTYPE html>n${xml.mkString}\n"
 
   private def html(nodes: Seq[MarkdownDocument.Node]): NodeSeq = {
     nodes collect {
