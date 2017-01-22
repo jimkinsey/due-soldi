@@ -26,6 +26,14 @@ class BlogTests extends AsyncFunSpec with BlogStorage {
 
   }
 
+  describe("getting a blog entry with an invalid identifier") {
+
+    it("responds with a 400") {
+      get("/blog/this/is/not/valid") { _.status shouldBe 400 }
+    }
+
+  }
+
   describe("a blog entry page") {
 
     it("responds with a 200") {

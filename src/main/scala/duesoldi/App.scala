@@ -5,18 +5,23 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.ToResponseMarshallable._
 import akka.http.scaladsl.model.HttpCharsets.`UTF-8`
 import akka.http.scaladsl.model.MediaTypes.`text/html`
-import akka.http.scaladsl.model.StatusCodes.{InternalServerError, NotFound, OK}
-import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.StatusCodes.{BadRequest, InternalServerError, NotFound, OK}
+import akka.http.scaladsl.model.{HttpEntity, _}
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
+import cats.data.EitherT
 import duesoldi.markdown.MarkdownParser
 import duesoldi.rendering.Renderer
 import duesoldi.storage.{BlogStore, FilesystemMarkdownSource}
+import duesoldi.validation.ValidIdentifier
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
+case object InvalidId
+
 trait Routing {
+  import cats.instances.all._
 
   def routes(implicit executionContext: ExecutionContext, blogSourceConfig: FilesystemMarkdownSource.Config) = {
     val store = new BlogStore(new FilesystemMarkdownSource, new MarkdownParser)
@@ -34,17 +39,21 @@ trait Routing {
           "ping"
         }
       }
-    } ~ pathPrefix("blog" / Remaining) { name =>
+    } ~ pathPrefix("blog" / Remaining) { remaining =>
       complete {
-        store.entry(name).flatMap {
-          case Left(f) => Future successful Left(f)
-          case Right(entry) => renderer.render(entry)
-        } map {
+        (for {
+          name  <- EitherT.fromOption[Future](ValidIdentifier(remaining), { InvalidId })
+          entry <- EitherT(store.entry(name))
+          html  <- EitherT(renderer.render(entry)).leftMap(_.asInstanceOf[Any])
+        } yield {
+          html
+        }).value map {
+          case Right(html)              => HttpResponse(OK, entity = HttpEntity(ContentType(`text/html`, `UTF-8`), html))
           case Left(BlogStore.NotFound) => HttpResponse(NotFound)
-          case Left(failure) =>
+          case Left(InvalidId)          => HttpResponse(BadRequest)
+          case Left(failure)            =>
             System.err.println(failure);
             HttpResponse(InternalServerError)
-          case Right(html) => HttpResponse(OK, entity = HttpEntity(ContentType(`text/html`, `UTF-8`), html))
         }
       }
     }
