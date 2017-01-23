@@ -16,6 +16,7 @@ private object Flexmark {
   type Emphasis = ast.Emphasis
   type Strong = ast.StrongEmphasis
   type Code = ast.IndentedCodeBlock
+  type InlineCode = ast.Code
   type Link = ast.Link
   type BulletList = ast.BulletList
   type OrderedList = ast.OrderedList
@@ -42,6 +43,7 @@ class MarkdownParser {
       case strong: Flexmark.Strong       => Strong(strong.getChildChars)
       case emphasis: Flexmark.Emphasis   => Emphasis(emphasis.getChildChars)
       case code: Flexmark.Code           => Code(code.getChars)
+      case code: Flexmark.InlineCode     => InlineCode(code.getText)
       case link: Flexmark.Link           => InlineLink(link.getText, link.getUrl, Option(link.getTitle))
       case list: Flexmark.BulletList     => UnorderedList(list.getChildren.toSeq.map(c => stripRootPara(translated(c.getChildren.toSeq))))
       case list: Flexmark.OrderedList    => OrderedList(list.getChildren.toSeq.map(c => stripRootPara(translated(c.getChildren.toSeq))))
