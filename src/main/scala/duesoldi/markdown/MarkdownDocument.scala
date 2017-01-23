@@ -16,6 +16,7 @@ object MarkdownDocument {
   case class BlockQuote(content: Seq[Node]) extends Node
   case object LineBreak extends Node
   case object HorizontalRule extends Node
+  case class Image(alt: String, src: String, title: Option[String]) extends Node
 }
 
 case class MarkdownDocument(nodes: Seq[MarkdownDocument.Node])

@@ -4,7 +4,6 @@ import duesoldi.markdown.MarkdownDocument._
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 
-// TODO handle all MD tags
 class MarkdownParserTests extends WordSpec {
 
   "A markdown parser" must  {
@@ -96,6 +95,12 @@ class MarkdownParserTests extends WordSpec {
 
     "handle horizontal rules" in {
       parser.markdown("***") shouldBe MarkdownDocument(Seq(HorizontalRule))
+    }
+
+    "handle images" in {
+      parser.markdown("![Alt text](/path/to/img.jpg \"Optional title\")") shouldBe {
+        MarkdownDocument(Seq(Paragraph(Seq(Image(alt = "Alt text", src = "/path/to/img.jpg", title = Some("Optional title"))))))
+      }
     }
 
   }
