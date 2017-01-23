@@ -27,11 +27,13 @@ class Renderer {
 
   private def html(nodes: Seq[MarkdownDocument.Node]): NodeSeq = {
     nodes collect {
-      case Heading(text, level) => XML.loadString(s"<h$level>$text</h$level>")
-      case Paragraph(content)   => <p>{html(content)}</p>
-      case Text(content)        => <_>{content}</_>.child.head
-      case Emphasis(content)    => <i>{content}</i>
-      case Strong(content)      => <b>{content}</b>
+      case Heading(text, level)         => XML.loadString(s"<h$level>$text</h$level>")
+      case Paragraph(content)           => <p>{html(content)}</p>
+      case Text(content)                => <_>{content}</_>.child.head
+      case Emphasis(content)            => <i>{content}</i>
+      case Strong(content)              => <b>{content}</b>
+      case InlineLink(text, url, title) => <a href={url} title={title.orNull}>{text}</a>
+      case Code(content)                => <pre><code>{content}</code></pre>
     }
   }
 }
