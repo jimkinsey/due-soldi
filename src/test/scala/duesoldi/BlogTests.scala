@@ -75,6 +75,14 @@ class BlogTests extends AsyncFunSpec with BlogStorage {
       }
     }
 
+    it("has a copyright notice") {
+      withBlogEntries("top-content" -> "# this is well worth copyrighting") { implicit config =>
+        get("/blog/top-content") { response =>
+          new BlogEntryPage(response.body).footer.copyrightNotice shouldBe Some("© 2016-2017 Jim Kinsey")
+        }
+      }
+    }
+
   }
 
 }

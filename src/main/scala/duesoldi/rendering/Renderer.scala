@@ -18,6 +18,9 @@ class Renderer {
               {html(entry.content.nodes)}
             </article>
           </div>
+          <footer>
+            <small id="copyright">&copy; 2016-2017 Jim Kinsey</small>
+          </footer>
         </body>
       </html>
     ))
