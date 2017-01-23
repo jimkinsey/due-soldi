@@ -44,9 +44,9 @@ class MarkdownParserTests extends WordSpec {
           | * three
         """.stripMargin) shouldBe {
         MarkdownDocument(Seq(UnorderedList(Seq(
-          Seq(Paragraph(Seq(Text("one")))),
-          Seq(Paragraph(Seq(Text("two")))),
-          Seq(Paragraph(Seq(Text("three"))))
+          Seq(Text("one")),
+          Seq(Text("two")),
+          Seq(Text("three"))
         ))))
       }
     }
@@ -58,9 +58,9 @@ class MarkdownParserTests extends WordSpec {
           | 3. C
         """.stripMargin) shouldBe {
         MarkdownDocument(Seq(OrderedList(Seq(
-          Seq(Paragraph(Seq(Text("A")))),
-          Seq(Paragraph(Seq(Text("B")))),
-          Seq(Paragraph(Seq(Text("C"))))
+          Seq(Text("A")),
+          Seq(Text("B")),
+          Seq(Text("C"))
         ))))
       }
 

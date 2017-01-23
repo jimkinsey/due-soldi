@@ -10,7 +10,6 @@ import scala.collection.JavaConversions._
 import scala.language.implicitConversions
 
 private object Flexmark {
-
   type Heading = ast.Heading
   type Paragraph = ast.Paragraph
   type Text = ast.Text
@@ -44,10 +43,15 @@ class MarkdownParser {
       case emphasis: Flexmark.Emphasis   => Emphasis(emphasis.getChildChars)
       case code: Flexmark.Code           => Code(code.getChars)
       case link: Flexmark.Link           => InlineLink(link.getText, link.getUrl, Option(link.getTitle))
-      case list: Flexmark.BulletList     => UnorderedList(list.getChildren.toSeq.map(c => translated(c.getChildren.toSeq)))
-      case list: Flexmark.OrderedList    => OrderedList(list.getChildren.toSeq.map(c => translated(c.getChildren.toSeq)))
+      case list: Flexmark.BulletList     => UnorderedList(list.getChildren.toSeq.map(c => stripRootPara(translated(c.getChildren.toSeq))))
+      case list: Flexmark.OrderedList    => OrderedList(list.getChildren.toSeq.map(c => stripRootPara(translated(c.getChildren.toSeq))))
       case _                             => UnsupportedNode(node.getChars, node.getNodeName)
     }
+  }
+
+  private def stripRootPara(nodes: Seq[MarkdownDocument.Node]): Seq[MarkdownDocument.Node] = nodes.toList match {
+    case Paragraph(content) :: Nil => content
+    case _                         => nodes
   }
 
 }

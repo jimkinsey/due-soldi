@@ -34,6 +34,8 @@ class Renderer {
       case Strong(content)              => <b>{content}</b>
       case InlineLink(text, url, title) => <a href={url} title={title.orNull}>{text}</a>
       case Code(content)                => <pre><code>{content}</code></pre>
+      case UnorderedList(items)         => <ul>{items map { itemNodes => <li>{html(itemNodes)}</li>}}</ul>
+      case OrderedList(items)           => <ol>{items map { itemNodes => <li>{html(itemNodes)}</li>}}</ol>
     }
   }
 }
