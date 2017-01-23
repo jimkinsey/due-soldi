@@ -11,6 +11,7 @@ object MarkdownDocument {
   case class UnsupportedNode(content: String, nodeType: String) extends Node
   case class InlineLink(text: String, link: String, title: Option[String]) extends Node
   case class UnorderedList(items: Seq[Seq[Node]]) extends Node
+  case class OrderedList(items: Seq[Seq[Node]]) extends Node
 }
 
 case class MarkdownDocument(nodes: Seq[MarkdownDocument.Node])

@@ -51,6 +51,21 @@ class MarkdownParserTests extends WordSpec {
       }
     }
 
+    "handle ordered lists" in {
+      parser.markdown(
+        """ 1. A
+          | 2. B
+          | 3. C
+        """.stripMargin) shouldBe {
+        MarkdownDocument(Seq(OrderedList(Seq(
+          Seq(Paragraph(Seq(Text("A")))),
+          Seq(Paragraph(Seq(Text("B")))),
+          Seq(Paragraph(Seq(Text("C"))))
+        ))))
+      }
+
+    }
+
   }
 
   private lazy val parser = new MarkdownParser
