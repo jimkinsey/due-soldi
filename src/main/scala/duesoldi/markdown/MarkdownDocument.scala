@@ -9,6 +9,7 @@ object MarkdownDocument {
   case class Strong(content: String) extends Node
   case class Code(content: String) extends Node
   case class UnsupportedNode(content: String, nodeType: String) extends Node
+  case class InlineLink(text: String, link: String, title: Option[String]) extends Node
 }
 
 case class MarkdownDocument(nodes: Seq[MarkdownDocument.Node])

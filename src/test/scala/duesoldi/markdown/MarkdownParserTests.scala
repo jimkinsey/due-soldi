@@ -31,6 +31,12 @@ class MarkdownParserTests extends WordSpec {
       parser.markdown("    parser.markdown(") shouldBe MarkdownDocument(Seq(Code("parser.markdown(")))
     }
 
+    "handle inline links" in {
+      parser.markdown("This is [an example](http://example.com/ \"Title\") inline link.") shouldBe {
+        MarkdownDocument(Seq(Paragraph(Seq(Text("This is "), InlineLink("an example", "http://example.com/", Some("Title")), Text(" inline link.")))))
+      }
+    }
+
   }
 
   private lazy val parser = new MarkdownParser
