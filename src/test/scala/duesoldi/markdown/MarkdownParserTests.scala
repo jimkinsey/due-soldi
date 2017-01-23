@@ -69,6 +69,31 @@ class MarkdownParserTests extends WordSpec {
       }
     }
 
+    "handle block quotes" in {
+      parser.markdown(
+        """> Good morning.
+          |>
+          |> In less than an hour, aircraft from here will join others from around the world. And you will be launching the largest aerial battle in the history of mankind.
+          |>
+          |> “Mankind.” That word should have new meaning for all of us today.
+        """.stripMargin
+      ) shouldBe {
+        MarkdownDocument(Seq(BlockQuote(Seq(
+          Paragraph(Seq(Text("Good morning."))),
+          Paragraph(Seq(Text("In less than an hour, aircraft from here will join others from around the world. And you will be launching the largest aerial battle in the history of mankind."))),
+          Paragraph(Seq(Text("“Mankind.” That word should have new meaning for all of us today.")))
+        ))))
+      }
+    }
+
+    "handle line breaks" in {
+      parser.markdown(
+        """10: PRINT "Hello"
+          |20: GOTO 10""".stripMargin) shouldBe {
+        MarkdownDocument(Seq(Paragraph(Seq(Text("""10: PRINT "Hello""""), LineBreak, Text("""20: GOTO 10""")))))
+      }
+    }
+
   }
 
   private lazy val parser = new MarkdownParser

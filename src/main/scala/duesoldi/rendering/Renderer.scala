@@ -37,6 +37,8 @@ class Renderer {
       case InlineCode(content)          => <code>{content}</code>
       case UnorderedList(items)         => <ul>{items map { itemNodes => <li>{html(itemNodes)}</li>}}</ul>
       case OrderedList(items)           => <ol>{items map { itemNodes => <li>{html(itemNodes)}</li>}}</ol>
+      case LineBreak                    => <br/>
+      case BlockQuote(content)          => <blockquote>{html(content)}</blockquote>
     }
   }
 }

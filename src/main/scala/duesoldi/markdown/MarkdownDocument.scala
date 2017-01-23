@@ -13,6 +13,8 @@ object MarkdownDocument {
   case class InlineLink(text: String, link: String, title: Option[String]) extends Node
   case class UnorderedList(items: Seq[Seq[Node]]) extends Node
   case class OrderedList(items: Seq[Seq[Node]]) extends Node
+  case class BlockQuote(content: Seq[Node]) extends Node
+  case object LineBreak extends Node
 }
 
 case class MarkdownDocument(nodes: Seq[MarkdownDocument.Node])

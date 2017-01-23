@@ -20,6 +20,8 @@ private object Flexmark {
   type Link = ast.Link
   type BulletList = ast.BulletList
   type OrderedList = ast.OrderedList
+  type BlockQuote = ast.BlockQuote
+  type LineBreak = ast.SoftLineBreak
 }
 
 class MarkdownParser {
@@ -39,6 +41,7 @@ class MarkdownParser {
     node match {
       case heading: Flexmark.Heading     => Heading(heading.getText, heading.getLevel)
       case paragraph: Flexmark.Paragraph => Paragraph(translated(paragraph.getChildren.toSeq))
+      case quote: Flexmark.BlockQuote    => BlockQuote(translated(quote.getChildren.toSeq))
       case text: Flexmark.Text           => Text(text.getChars)
       case strong: Flexmark.Strong       => Strong(strong.getChildChars)
       case emphasis: Flexmark.Emphasis   => Emphasis(emphasis.getChildChars)
@@ -47,6 +50,7 @@ class MarkdownParser {
       case link: Flexmark.Link           => InlineLink(link.getText, link.getUrl, Option(link.getTitle))
       case list: Flexmark.BulletList     => UnorderedList(list.getChildren.toSeq.map(c => stripRootPara(translated(c.getChildren.toSeq))))
       case list: Flexmark.OrderedList    => OrderedList(list.getChildren.toSeq.map(c => stripRootPara(translated(c.getChildren.toSeq))))
+      case _: Flexmark.LineBreak         => LineBreak
       case _                             => UnsupportedNode(node.getChars, node.getNodeName)
     }
   }
