@@ -37,6 +37,20 @@ class MarkdownParserTests extends WordSpec {
       }
     }
 
+    "handle unordered lists" in {
+      parser.markdown(
+        """ * one
+          | * two
+          | * three
+        """.stripMargin) shouldBe {
+        MarkdownDocument(Seq(UnorderedList(Seq(
+          Seq(Paragraph(Seq(Text("one")))),
+          Seq(Paragraph(Seq(Text("two")))),
+          Seq(Paragraph(Seq(Text("three"))))
+        ))))
+      }
+    }
+
   }
 
   private lazy val parser = new MarkdownParser
