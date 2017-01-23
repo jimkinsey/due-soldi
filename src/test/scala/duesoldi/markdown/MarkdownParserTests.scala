@@ -94,6 +94,10 @@ class MarkdownParserTests extends WordSpec {
       }
     }
 
+    "handle horizontal rules" in {
+      parser.markdown("***") shouldBe MarkdownDocument(Seq(HorizontalRule))
+    }
+
   }
 
   private lazy val parser = new MarkdownParser

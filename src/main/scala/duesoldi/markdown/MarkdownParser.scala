@@ -22,6 +22,7 @@ private object Flexmark {
   type OrderedList = ast.OrderedList
   type BlockQuote = ast.BlockQuote
   type LineBreak = ast.SoftLineBreak
+  type HorizontalRule = ast.ThematicBreak
 }
 
 class MarkdownParser {
@@ -51,6 +52,7 @@ class MarkdownParser {
       case list: Flexmark.BulletList     => UnorderedList(list.getChildren.toSeq.map(c => stripRootPara(translated(c.getChildren.toSeq))))
       case list: Flexmark.OrderedList    => OrderedList(list.getChildren.toSeq.map(c => stripRootPara(translated(c.getChildren.toSeq))))
       case _: Flexmark.LineBreak         => LineBreak
+      case _: Flexmark.HorizontalRule    => HorizontalRule
       case _                             => UnsupportedNode(node.getChars, node.getNodeName)
     }
   }

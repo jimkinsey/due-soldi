@@ -39,6 +39,7 @@ class Renderer {
       case OrderedList(items)           => <ol>{items map { itemNodes => <li>{html(itemNodes)}</li>}}</ol>
       case LineBreak                    => <br/>
       case BlockQuote(content)          => <blockquote>{html(content)}</blockquote>
+      case HorizontalRule               => <hr/>
     }
   }
 }
