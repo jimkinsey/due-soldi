@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+git fetch blog-content
+git merge -s subtree --squash blog-content/master
+git commit -m"Update blog content"
+
