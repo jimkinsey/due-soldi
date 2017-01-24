@@ -1,6 +1,8 @@
 All the books I read in 2016
 ===
-Well, all the _prose_ books at least. I got through a fair few comics as well, but as that's a different (though not totally unrelated) medium I don't count them here. I'm working from memory here, so if I give short time to the earlier entries it's due to my age...
+Well, all the _prose_ books at least. I got through a fair few comics as well, but as that's a different medium I don't count them here. I'm working from memory, so if I give short time to the earlier entries it's due to my age...
+
+This wasn't too bad a year, 22 books is obviously far from the target of one a week I've set myself for most of the last decade, but considering I had a hugely disruptive international removal and took on the task of reading Alan Moore's Jerusalem I think I did fairly well. Looking down the list now I have a feeling there's a bigger showing from women authors than usual, which is surely a good thing. 
 
 1: Flow My Tears, the Policeman Said by Philip K. Dick
 ---
@@ -12,7 +14,7 @@ While I don't remember a lot of detail from this, I think it's more because the 
 
 3: Hotel by Joanna Walsh
 ---
-The best entry yet in the Object, Objects series, this one combines the examination of a specific topic (Hotels) with something more personal as the author's relationship breaks down. Some great insights and excellent writing, Joanna Walsh is another author I will be looking for more to read from.
+The best entry yet in the [Objects Lessons](http://objectsobjectsobjects.com/ "Official Object Lessons site") series, this one combines the examination of a specific topic (Hotels) with something more personal as the author's relationship breaks down. Some great insights and excellent writing, Joanna Walsh is another author I will be looking for more to read from.
 
 4: "Rommel?" "Gunner who?" by Spike Milligan
 ---
@@ -32,7 +34,7 @@ I have to admit, I don't remember this well at all. ISTR it was largely the auth
 
 8: I AM ERROR by Nathan Altice
 ---
-One of the best entries in the Platform Studies series so far, and having never owned an NES (or even played with one as a child) I am not coming at this from a position of nostalgia - this is a well-informed, thorough, fascinating and entertaining study and history of the game platform. The best of these books always make me think how fateful the decisions I make as a software engineer might be in terms of ultimately affecting the business and those working for it, and I find that's an important take-away.
+One of the best entries in the [Platform Studies](http://platformstudies.com/ "Official Platform Studies site") series so far, and having never owned an NES (or even played with one as a child) I am not coming at this from a position of nostalgia - this is a well-informed, thorough, fascinating and entertaining study and history of the game platform. The best of these books always make me think how fateful the decisions I make as a software engineer might be in terms of ultimately affecting the business and those working for it, and I find that's an important take-away.
 
 9: Denglisch for Better Knowers by Adam Fletcher and Paul Hawkins
 ---
@@ -56,37 +58,43 @@ A good overview of the subject, which after all is the purpose of these books, b
 
 14: The Leopard by Giusseppe Tomasi di Lampedusa (trans. Archibald Colquhoun)
 ---
-TODO
+One of those classics I should certainly have read sooner, and one of the rare occasions these days I feel I will re-read something. The language is beautiful even in translation, I can only imagine what it is like in Italian, and it does nothing to dim the love I've been nurturing for Sicily and Southern Italy in recent years.
 
 15: The Invention of Nature: The Adventures of Alexander von Humboldt, the Lost Hero of Science by Andrea Wulf
 ---
-TODO
+Humboldt is one of those names that I knew but couldn't attach to any historical person; it seems I am not alone as there are few people in the world with so many (and so many diverse) _things_ named after them that it is unlikely you haven't heard his name. This is one of those special biographies that completely drew me in and convinced me that more people should know about it's subject and his work. Well-written and deserving of the [Royal Society award it took](https://www.theguardian.com/books/2016/sep/19/royal-society-science-book-prize-andrea-wulf-the-invention-of-nature "Guardian article on Royal Society award to Andrea Wulf") (and not of the unfortunate criticism by someone who should have known better).
 
 16: Phone Booth by Ariana Kelly
 ---
-TODO
+Another good entry in [Objects Lessons](http://objectsobjectsobjects.com/ "Official Object Lessons site"), though without the personal touch that made Hotel so compelling. I can't think of much to say about it, as it does exactly what it should, well.
 
 17: Royal Assassin by Robin Hobb
 ---
-TODO
+I read the previous one something like 9 years before; the gap isn't due to a dislike, I just never felt the compulsion to read a fantasy novel brick in the meantime and like many such trilogies (especially debut ones) the first installment is self-contained enough. This is clearly a middle-book, but it is remarkably compelling despite the trad. high fantasy tropes, cringe-worthy romance and sometimes clunky writing. I am probably not selling you on this, and if you don't like this sort of thing it won't change your mind, but I found it quite a page-turner.
 
 18: Now the Chips are Down: The BBC Micro by Alison Gazzard
 ---
-TODO
+Aside from the short-lived Texas Instruments TI-99 we had at home, the BBC Micro was my early introduction to computing; I can remember the computer room(s) of lower secondary school more vividly than the form rooms and have fond memories of the likes of Martello Towers (sadly not mentioned here) and constructing pixel art by laboriously setting memory addresses. This is a good examination of both the machine and the social context that enabled it. I was heartened to find that a number of the people and companies whose stories are told here continued in the computer industry to the present day with some succes. 
 
 19: Star Wars: X-Wing: The Krytos Trap by Michael A. Stackpole
 ---
-TODO
+I don't believe in guilty pleasures, but if I did... I have a strong attachment to the now-decanonised Star Wars EU (surely there's a Brexit joke in there somewhere) after the Timothy Zahn novels reached me at a tender age, and in recent years have been going through some of those old ones from the 90s that I missed, especially the X-Wing series. Noone would argue this is great literature (exposition dumps abound, everybody is always _frowning_), but they capture the feel of Star Wars well and are a compelling way to pass some leisure reading time, especially between more weighty/serious books.
 
 20: Jerusalem by Alan Moore
 ---
-TODO
+Speaking of weighty... I'll skip straight to the TL;DR (for most people this book will be TL;DR) - I thought it was very, very good, but not without its flaws.
+
+First of all, yes, it is a big, dense book; 1280 pages split over three books with quite a high word-count-per-page. There are plenty who have criticised it for this, but I actually don't feel that. There is a lot of information here, a lot of fine detail, and the book would be poorer without it. Secondly, anyone familiar with Moore will know one of the main criticisms of his work is his use of rape as a plot device, and this book is no exception. In fact, it's fairly central and is my main source of discomfort. Finally, though it could be clunkier, it feels like more characters than you would normally credit are amateur local historians who muse frequently on the area they grew up in; this is made more forgivable due to one of the purposes of the novel (as expounded in the novel itself) being to stop these details being forgotten which otherwise so easily would.
+
+Problems aside, though, this is a remarkable, ambitious piece of work. You could come away from it convinced that a small area of a little thought about Midlands town is absolutely central in the history of western civilisation (maybe it is) and it delivers Moore's ideas about life and art very effectively. The mythology of the novel is extremely well constructed and fascinating and there is some compelling imagery (though in spite of Moore's comic background, the novel is definitely the right medium for this. I can't imagine it being successfully adapted to any other).
+
+I felt like I lived in this book for a couple of months (I never wanted to skim it or miss something through being tired, so I took my time), and missed reading it once I had finished. Very glad to have put the effort in here.
 
 21: America by Jean Baudrillard (trans. Chris Turner)
 ---
-TODO
+This had been on my to-read list for I don't know how long; it does occasionally veer too close to pretentious / obscure post-modern language, but when it is at its most lucid there are some fascinating observations about America and, in contrast, Europe.
 
 22: Mythologies by Roland Barthes (trans. Annette Lavers, Siân Reynolds)
 ---
-TODO
+Another long-standing member of the reading pile, and not unrelated to the previous book. Again there are fascinating observations in the many short essays here, occasionally undermined by pretentiousness. For all that it was written 60+ years ago, the observation about how female authors are, in contrast to male authors, almost always described in terms of their family situation felt almost contemporary. The longer essay towards the end of the book which is supposed to expand on his ideas here was near-unreadable for me though.
 
