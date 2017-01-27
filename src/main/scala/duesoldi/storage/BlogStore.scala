@@ -1,7 +1,7 @@
 package duesoldi.storage
 
 import cats.data.EitherT
-import duesoldi.markdown.MarkdownDocument.Heading
+import duesoldi.markdown.MarkdownDocument.{Container, Heading, Node, TextNode}
 import duesoldi.markdown.{MarkdownDocument, MarkdownParser}
 import duesoldi.model.BlogEntry
 import duesoldi.storage.BlogStore.{InvalidContent, NotFound}
@@ -31,7 +31,7 @@ class BlogStore(source: MarkdownSource, parser: MarkdownParser)(implicit ec: Exe
   }
 
   private def title(markdown: MarkdownDocument): Option[String] = markdown.nodes.collectFirst {
-    case Heading(content, 1) => content
+    case Heading(nodes, 1) => MarkdownDocument.text(nodes)
   }
 
 }

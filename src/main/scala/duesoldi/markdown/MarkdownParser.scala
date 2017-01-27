@@ -41,7 +41,7 @@ class MarkdownParser {
 
   private def translated(node: ast.Node): MarkdownDocument.Node = {
     node match {
-      case heading: Flexmark.Heading     => Heading(heading.getText, heading.getLevel)
+      case heading: Flexmark.Heading     => Heading(translated(heading.getChildren.toSeq), heading.getLevel)
       case paragraph: Flexmark.Paragraph => Paragraph(translated(paragraph.getChildren.toSeq))
       case quote: Flexmark.BlockQuote    => BlockQuote(translated(quote.getChildren.toSeq))
       case text: Flexmark.Text           => Text(text.getChars)

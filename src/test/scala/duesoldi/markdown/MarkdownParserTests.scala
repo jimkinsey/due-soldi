@@ -10,8 +10,12 @@ class MarkdownParserTests extends WordSpec {
 
     "handle all level headings" in {
       (1 to 6).foldLeft(succeed) { case (_, level) =>
-        parser.markdown(s"${"#" * level} Title") shouldBe MarkdownDocument(Seq(Heading("Title", level)))
+        parser.markdown(s"${"#" * level} Title") shouldBe MarkdownDocument(Seq(Heading(Seq(Text("Title")), level)))
       }
+    }
+
+    "support emphasis within headings" in {
+      parser.markdown(s"## _emphasising_ things") shouldBe MarkdownDocument(Seq(Heading(Seq(Emphasis("emphasising"), Text(" things")), 2)))
     }
 
     "handle emphasis" in {
