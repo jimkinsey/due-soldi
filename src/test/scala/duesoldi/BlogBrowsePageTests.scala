@@ -74,6 +74,16 @@ class BlogBrowsePageTests extends AsyncFunSpec with BlogStorage {
       }
     }
 
+    it("has a title and heading") {
+      withBlogEntries("content" -> "# _Content_, mofos") { implicit config =>
+        get("/blog/") { response =>
+          val page: BlogIndexPage = new BlogIndexPage(response.body)
+          page.title shouldBe "Jim Kinsey's Blog"
+          page.heading shouldBe "Latest Blog Entries"
+        }
+      }
+    }
+
   }
 
 }

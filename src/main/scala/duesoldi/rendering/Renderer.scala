@@ -12,19 +12,20 @@ class Renderer(implicit ec: ExecutionContext) {
   def render(entries: Seq[BlogEntry]): Future[Either[Renderer.Failure, String]] = {
     Future successful Right(html(
       <html>
-        <head><title>FIXME</title></head>
+        <head><title>Jim Kinsey's Blog</title></head>
         <body>
-          <div id="content">
-            <ol>
+          <header>
+            <h1>Latest Blog Entries</h1>
+          </header>
+          <section id="blog-index">
             {
               entries.map { entry =>
-                <li class="index-entry">
-                  <heading><h2><a href={"/blog/" + entry.id}>{entry.title}</a></h2></heading>
-                </li>
+                <article>
+                  <header><h2><a href={"/blog/" + entry.id}>{entry.title}</a></h2></header>
+                </article>
               }
             }
-            </ol>
-          </div>
+          </section>
           <footer>
             <small id="copyright">&copy; 2016-2017 Jim Kinsey</small>
           </footer>
@@ -38,11 +39,9 @@ class Renderer(implicit ec: ExecutionContext) {
       <html>
         <head><title>{entry.title}</title></head>
         <body>
-          <div id="content">
-            <article>
-              {html(entry.content.nodes)}
-            </article>
-          </div>
+          <article id="content">
+            {html(entry.content.nodes)}
+          </article>
           <footer>
             <small id="copyright">&copy; 2016-2017 Jim Kinsey</small>
           </footer>

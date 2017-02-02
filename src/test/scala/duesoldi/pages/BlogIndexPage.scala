@@ -7,11 +7,14 @@ import scala.collection.JavaConversions._
 class BlogIndexPage(html: String) extends Page with PageFooter {
   lazy val dom = Jsoup.parse(html)
 
-  lazy val blogEntries: Seq[BlogEntry] = dom.select("#content .index-entry").map(new BlogEntry(_))
+  lazy val title = dom.title()
+  lazy val heading = dom.select("h1").text()
+  lazy val blogEntries: Seq[BlogEntry] = dom.select("#blog-index article").map(new BlogEntry(_))
+
 
   class BlogEntry(elem: Element) {
-    lazy val title = elem.select("heading").text()
-    lazy val link = elem.select("heading a").attr("href")
+    lazy val title = elem.select("header").text()
+    lazy val link = elem.select("header a").attr("href")
   }
 
 }
