@@ -1,7 +1,7 @@
 package duesoldi.storage
 
 import cats.data.EitherT
-import duesoldi.markdown.MarkdownDocument.{Container, Heading, Node, TextNode}
+import duesoldi.markdown.MarkdownDocument.Heading
 import duesoldi.markdown.{MarkdownDocument, MarkdownParser}
 import duesoldi.model.BlogEntry
 import duesoldi.storage.BlogStore.{InvalidContent, NotFound}
@@ -16,18 +16,24 @@ class BlogStore(source: MarkdownSource, parser: MarkdownParser)(implicit ec: Exe
     val result = for {
       document <- raw(name)
       parsed   = parser.markdown(document)
-      entry    <- blogEntry(parsed)
+      entry    <- EitherT.fromEither[Future](blogEntry(name, parsed))
     } yield {
       entry
     }
     result.value
   }
 
+  def entries: Future[Seq[BlogEntry]] = {
+    source.documents map { _ flatMap { case (id, content) =>
+      blogEntry(id, parser.markdown(content)).right.toOption
+    } }
+  }
+
   private def raw(name: String): EitherT[Future, NotFound.type, String] =
     EitherT[Future, NotFound.type, String](source.document(name).map(opt => opt.toRight({ NotFound })))
 
-  private def blogEntry(document: MarkdownDocument): EitherT[Future, BlogStore.Failure, BlogEntry] = {
-    EitherT.fromOption[Future](title(document) map { title => BlogEntry(title, document) }, { InvalidContent })
+  private def blogEntry(id: String, document: MarkdownDocument): Either[BlogStore.Failure, BlogEntry] = {
+    title(document) map { title => BlogEntry(id, title, document) } toRight { InvalidContent }
   }
 
   private def title(markdown: MarkdownDocument): Option[String] = markdown.nodes.collectFirst {

@@ -3,16 +3,15 @@ package duesoldi.pages
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
-import scala.xml.{Elem, XML}
 import scala.collection.JavaConversions._
+import scala.xml.{Elem, XML}
 
-class BlogEntryPage(html: String) {
-  private lazy val dom = Jsoup.parse(html)
+class BlogEntryPage(html: String) extends Page with PageFooter {
+  lazy val dom = Jsoup.parse(html)
 
-  def title = dom.title()
-  def h1 = dom.select("h1").first()
-  def content: Content = new Content(dom.select("#content").first())
-  def footer: Footer = new Footer(dom.select("footer").first())
+  lazy val title = dom.title()
+  lazy val h1 = dom.select("h1").first()
+  lazy val content: Content = new Content(dom.select("#content").first())
 
   class Content(elem: Element) {
     lazy val paragraphs: Seq[Elem] = {
@@ -20,7 +19,4 @@ class BlogEntryPage(html: String) {
     }
   }
 
-  class Footer(elem: Element) {
-    lazy val copyrightNotice: Option[String] = Option(elem.select("#copyright")).map(_.text())
-  }
 }

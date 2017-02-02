@@ -7,8 +7,33 @@ import duesoldi.model.BlogEntry
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.{Elem, NodeSeq, XML}
 
-class Renderer {
-  def render(entry: BlogEntry)(implicit ec: ExecutionContext): Future[Either[Renderer.Failure, String]] = {
+class Renderer(implicit ec: ExecutionContext) {
+
+  def render(entries: Seq[BlogEntry]): Future[Either[Renderer.Failure, String]] = {
+    Future successful Right(html(
+      <html>
+        <head><title>FIXME</title></head>
+        <body>
+          <div id="content">
+            <ol>
+            {
+              entries.map { entry =>
+                <li class="index-entry">
+                  <heading><h2><a href={"/blog/" + entry.id}>{entry.title}</a></h2></heading>
+                </li>
+              }
+            }
+            </ol>
+          </div>
+          <footer>
+            <small id="copyright">&copy; 2016-2017 Jim Kinsey</small>
+          </footer>
+        </body>
+      </html>
+    ))
+  }
+
+  def render(entry: BlogEntry): Future[Either[Renderer.Failure, String]] = {
     Future successful Right(html(
       <html>
         <head><title>{entry.title}</title></head>
