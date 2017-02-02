@@ -36,19 +36,7 @@ trait Routing {
       }
     })
 
-    path("ping") {
-      get {
-        complete {
-          "pong"
-        }
-      }
-    } ~ path("pong") {
-      get {
-        complete {
-          "ping"
-        }
-      }
-    } ~ path("blog" / ) {
+    path("blog" / ) {
       complete {
         (for {
           entries <- blogEntries
