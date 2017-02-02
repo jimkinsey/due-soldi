@@ -15,8 +15,7 @@ class BlogStore(source: MarkdownSource, parser: MarkdownParser)(implicit ec: Exe
   def entry(name: String): Future[Either[BlogStore.Failure, BlogEntry]] = {
     val result = for {
       document <- raw(name)
-      parsed   = parser.markdown(document)
-      entry    <- EitherT.fromEither[Future](blogEntry(name, parsed))
+      entry    <- EitherT.fromEither[Future](blogEntry(name, document))
     } yield {
       entry
     }
@@ -24,16 +23,17 @@ class BlogStore(source: MarkdownSource, parser: MarkdownParser)(implicit ec: Exe
   }
 
   def entries: Future[Seq[BlogEntry]] = {
-    source.documents map { _ flatMap { case (id, content) =>
-      blogEntry(id, parser.markdown(content)).right.toOption
+    source.documents map { _ flatMap { case (id, container) =>
+      blogEntry(id, container).right.toOption
     } }
   }
 
-  private def raw(name: String): EitherT[Future, NotFound.type, String] =
-    EitherT[Future, NotFound.type, String](source.document(name).map(opt => opt.toRight({ NotFound })))
+  private def raw(name: String): EitherT[Future, NotFound.type, MarkdownContainer] =
+    EitherT[Future, NotFound.type, MarkdownContainer](source.document(name).map(opt => opt.toRight({ NotFound })))
 
-  private def blogEntry(id: String, document: MarkdownDocument): Either[BlogStore.Failure, BlogEntry] = {
-    title(document) map { title => BlogEntry(id, title, document) } toRight { InvalidContent }
+  private def blogEntry(id: String, container: MarkdownContainer): Either[BlogStore.Failure, BlogEntry] = {
+    val document = parser.markdown(container.content)
+    title(document) map { title => BlogEntry(id, title, document, container.lastModified) } toRight { InvalidContent }
   }
 
   private def title(markdown: MarkdownDocument): Option[String] = markdown.nodes.collectFirst {

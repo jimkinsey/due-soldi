@@ -1,6 +1,6 @@
 package duesoldi
 
-import duesoldi.pages.{BlogEntryPage, BlogIndexPage}
+import duesoldi.pages.BlogIndexPage
 import duesoldi.storage.BlogStorage
 import org.scalatest.AsyncFunSpec
 
@@ -80,6 +80,18 @@ class BlogBrowsePageTests extends AsyncFunSpec with BlogStorage {
           val page: BlogIndexPage = new BlogIndexPage(response.body)
           page.title shouldBe "Jim Kinsey's Blog"
           page.heading shouldBe "Latest Blog Entries"
+        }
+      }
+    }
+
+    it("lists the entries in reverse order of last modification") {
+      withBlogEntries(
+        ("2010-10-12T17:05:00", "first-post", "# First"),
+        ("2012-12-03T09:34:00", "tricky-second-post", "# Second"),
+        ("2016-04-01T09:45:00", "sorry-for-lack-of-updates", "# Third")) { implicit config =>
+        get("/blog/") { response =>
+          val page = new BlogIndexPage(response.body)
+          page.blogEntries.map(_.title) shouldBe Seq("Third", "Second", "First")
         }
       }
     }

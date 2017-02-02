@@ -1,5 +1,7 @@
 package duesoldi.rendering
 
+import java.time.ZoneOffset
+
 import duesoldi.markdown.MarkdownDocument
 import duesoldi.markdown.MarkdownDocument._
 import duesoldi.model.BlogEntry
@@ -19,7 +21,7 @@ class Renderer(implicit ec: ExecutionContext) {
           </header>
           <section id="blog-index">
             {
-              entries.map { entry =>
+              entries.sortBy(_.lastModified.toEpochSecond(ZoneOffset.UTC)).reverse map { entry =>
                 <article>
                   <header><h2><a href={"/blog/" + entry.id}>{entry.title}</a></h2></header>
                 </article>

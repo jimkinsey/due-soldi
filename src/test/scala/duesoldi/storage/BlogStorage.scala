@@ -3,22 +3,34 @@ package duesoldi.storage
 import java.io.{File, IOException, PrintWriter}
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.{FileVisitResult, Files, Path, SimpleFileVisitor}
+import java.time.{LocalDateTime, ZoneOffset}
 import java.util.UUID
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait BlogStorage {
 
-  def withBlogEntries[T <: Future[_]](entries: (String, String)*)(block: FilesystemMarkdownSource.Config => T)(implicit ec: ExecutionContext): T = {
+  case class EntryBuilder(id: String = "id", content: String = "# Title", lastModified: LocalDateTime = LocalDateTime.now())
+
+  implicit def tupleToBuilder(tuple: (String, String)): EntryBuilder = tuple match {
+    case (id, content) => EntryBuilder(id, content)
+  }
+
+  implicit def tuple3ToBuilder(tuple: (String, String, String)): EntryBuilder = tuple match {
+    case (time, id, content) => EntryBuilder(id, content, LocalDateTime.parse(time))
+  }
+
+  def withBlogEntries[T <: Future[_]](entries: EntryBuilder*)(block: FilesystemMarkdownSource.Config => T)(implicit ec: ExecutionContext): T = {
     val config = new FilesystemMarkdownSource.Config {
       lazy val path = s"/tmp/blog/${UUID.randomUUID().toString.take(6)}"
     }
-    entries foreach { case (id, content) =>
+    entries foreach { case EntryBuilder(id, content, lastModified) =>
       val file = new File(s"${config.path}/$id.md")
       file.getParentFile.mkdirs()
       val writer = new PrintWriter(file)
       writer.write(content)
       writer.close()
+      file.setLastModified(lastModified.toEpochSecond(ZoneOffset.UTC))
     }
     val fut = block(config)
     fut.onComplete( _ => DeleteDir(new File(config.path).toPath))
