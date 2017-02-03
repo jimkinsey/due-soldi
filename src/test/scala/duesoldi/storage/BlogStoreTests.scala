@@ -1,6 +1,6 @@
 package duesoldi.storage
 
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 import duesoldi.markdown.MarkdownDocument.{Heading, Text}
 import duesoldi.markdown.{MarkdownDocument, MarkdownParser}
@@ -70,7 +70,7 @@ class BlogStoreTests extends AsyncWordSpec with EitherValues {
     }
 
     "includes the last modified date of the markdown document in the blog entry" in {
-      val container = MarkdownContainer(content = "# Content!", lastModified = LocalDateTime.now())
+      val container = MarkdownContainer(content = "# Content!", lastModified = ZonedDateTime.now())
       val source = new MarkdownSource {
         override def document(id: String): Future[Option[MarkdownContainer]] = Future successful Some(container)
         override def documents: Future[Seq[(String, MarkdownContainer)]] = ???

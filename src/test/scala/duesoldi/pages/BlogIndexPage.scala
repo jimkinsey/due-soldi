@@ -2,6 +2,7 @@ package duesoldi.pages
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
+
 import scala.collection.JavaConversions._
 
 class BlogIndexPage(html: String) extends Page with PageFooter {
@@ -13,8 +14,9 @@ class BlogIndexPage(html: String) extends Page with PageFooter {
 
 
   class BlogEntry(elem: Element) {
-    lazy val title = elem.select("header").text()
+    lazy val title = elem.select("header h2").text()
     lazy val link = elem.select("header a").attr("href")
+    lazy val date = elem.select("header time").text()
   }
 
 }

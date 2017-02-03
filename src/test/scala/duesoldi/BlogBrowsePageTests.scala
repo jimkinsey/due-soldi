@@ -86,12 +86,21 @@ class BlogBrowsePageTests extends AsyncFunSpec with BlogStorage {
 
     it("lists the entries in reverse order of last modification") {
       withBlogEntries(
-        ("2010-10-12T17:05:00", "first-post", "# First"),
-        ("2012-12-03T09:34:00", "tricky-second-post", "# Second"),
-        ("2016-04-01T09:45:00", "sorry-for-lack-of-updates", "# Third")) { implicit config =>
+        ("2010-10-12T17:05:00Z", "first-post", "# First"),
+        ("2012-12-03T09:34:00Z", "tricky-second-post", "# Second"),
+        ("2016-04-01T09:45:00Z", "sorry-for-lack-of-updates", "# Third")) { implicit config =>
         get("/blog/") { response =>
           val page = new BlogIndexPage(response.body)
           page.blogEntries.map(_.title) shouldBe Seq("Third", "Second", "First")
+        }
+      }
+    }
+
+    it("includes the last modified date in the entry") {
+      withBlogEntries(("2010-10-12T17:05:00Z", "dated", "# Dated!")) { implicit config =>
+        get("/blog/") { response =>
+          val page = new BlogIndexPage(response.body)
+          page.blogEntries.head should have('date ("Tuesday, 12 October 2010"))
         }
       }
     }

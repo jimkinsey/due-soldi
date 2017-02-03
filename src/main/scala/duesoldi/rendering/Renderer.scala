@@ -1,13 +1,13 @@
 package duesoldi.rendering
 
-import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 import duesoldi.markdown.MarkdownDocument
 import duesoldi.markdown.MarkdownDocument._
 import duesoldi.model.BlogEntry
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.xml.{Elem, NodeSeq, XML}
+import scala.xml.{Elem, NodeSeq}
 
 class Renderer(implicit ec: ExecutionContext) {
 
@@ -21,9 +21,12 @@ class Renderer(implicit ec: ExecutionContext) {
           </header>
           <section id="blog-index">
             {
-              entries.sortBy(_.lastModified.toEpochSecond(ZoneOffset.UTC)).reverse map { entry =>
+              entries.sortBy(_.lastModified.toEpochSecond()).reverse map { entry =>
                 <article>
-                  <header><h2><a href={"/blog/" + entry.id}>{entry.title}</a></h2></header>
+                  <header>
+                    <h2><a href={"/blog/" + entry.id}>{entry.title}</a></h2>
+                    <small><time>{entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy"))}</time></small>
+                  </header>
                 </article>
               }
             }

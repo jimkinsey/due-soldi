@@ -1,13 +1,14 @@
 package duesoldi.storage
 
 import java.io.File
-import java.time.{LocalDateTime, ZoneOffset}
+import java.nio.file.Files
+import java.time.{ZoneOffset, ZonedDateTime}
 
 import scala.concurrent.Future
 import scala.io.Source
 import scala.util.Try
 
-case class MarkdownContainer(lastModified: LocalDateTime = LocalDateTime.now(), content: String)
+case class MarkdownContainer(lastModified: ZonedDateTime = ZonedDateTime.now(), content: String)
 
 trait MarkdownSource {
   def document(id: String): Future[Option[MarkdownContainer]]
@@ -29,7 +30,7 @@ class FilesystemMarkdownSource(implicit config: FilesystemMarkdownSource.Config)
       Try({new File(config.path).listFiles().filter(_.getName.endsWith("md")).map { file =>
         file.getName.dropRight(3) -> MarkdownContainer(
           content = Source.fromFile(file).mkString,
-          lastModified = LocalDateTime.ofEpochSecond(file.lastModified(), 0, ZoneOffset.UTC)
+          lastModified = ZonedDateTime.ofInstant(Files.getLastModifiedTime(file.toPath).toInstant, ZoneOffset.UTC)
         )
       } toSeq}) getOrElse Seq.empty
     }
