@@ -45,6 +45,7 @@ class Renderer(implicit ec: ExecutionContext) {
         <head><title>{entry.title}</title></head>
         <body>
           <article id="content">
+            <header><small><time>{entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy"))}</time></small></header>
             {html(entry.content.nodes)}
           </article>
           <footer>

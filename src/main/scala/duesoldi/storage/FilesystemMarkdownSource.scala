@@ -23,7 +23,13 @@ object FilesystemMarkdownSource {
 
 class FilesystemMarkdownSource(implicit config: FilesystemMarkdownSource.Config) extends MarkdownSource {
   override def document(id: String): Future[Option[MarkdownContainer]] =
-    Future successful Try(MarkdownContainer(content = Source.fromFile(new File(s"${config.path}/$id.md")).mkString)).toOption
+    Future successful Try({
+      val file = new File(s"${config.path}/$id.md")
+      MarkdownContainer(
+        content = Source.fromFile(file).mkString,
+        lastModified = ZonedDateTime.ofInstant(Files.getLastModifiedTime(file.toPath).toInstant, ZoneOffset.UTC)
+      )
+    }).toOption
 
   override def documents: Future[Seq[(String, MarkdownContainer)]] = {
     Future successful {

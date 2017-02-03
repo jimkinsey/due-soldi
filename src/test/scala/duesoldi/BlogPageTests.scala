@@ -83,6 +83,15 @@ class BlogPageTests extends AsyncFunSpec with BlogStorage {
       }
     }
 
+    it("includes the last modified date of the article") {
+      withBlogEntries(("2010-10-12T17:05:00Z", "dated", "# Dated!")) { implicit config =>
+        get("/blog/dated") { response =>
+          val page = new BlogEntryPage(response.body)
+          page should have('date ("Tuesday, 12 October 2010"))
+        }
+      }
+    }
+
   }
 
 }

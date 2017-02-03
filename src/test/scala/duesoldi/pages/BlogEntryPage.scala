@@ -12,6 +12,7 @@ class BlogEntryPage(html: String) extends Page with PageFooter {
   lazy val title = dom.title()
   lazy val h1 = dom.select("h1").first()
   lazy val content: Content = new Content(dom.select("#content").first())
+  lazy val date = dom.select("header time").text()
 
   class Content(elem: Element) {
     lazy val paragraphs: Seq[Elem] = {
