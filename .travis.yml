@@ -7,9 +7,9 @@ jdk:
 sudo: false
 cache:
   directories:
-  - $HOME/.ivy2/cache
-  - $HOME/.sbt/boot/
-  - $HOME/.sbt/launchers/
+  - "$HOME/.ivy2/cache"
+  - "$HOME/.sbt/boot/"
+  - "$HOME/.sbt/launchers/"
 before_cache:
 - find $HOME/.ivy2 -name "ivydata-*.properties" -delete
 - find $HOME/.sbt -name "*.lock" -delete
@@ -17,4 +17,7 @@ notifications:
   email:
     recipients:
     - kinjacono@yahoo.co.uk
-
+deploy:
+  provider: heroku
+  api_key:
+    secure: Qgr2g5j43lFXzn/GLL2HG6qiXcsIkxMjYQgMZo8zbn1t6OczW2AlnI2wZUGfuuUnldetjufFlItmKjg301rzWSE0ZKa/WS810ZWbCmwTqHjrxzeAyKb97jeS5gSfdt3gHKnaysVnyHOqJyI2mMY5YsDwKBAvV+ebgxxfjRsW3FHIQShfYinQKFBMMOojHGtE3r0VIMkWzJD4cVBZulIhBUoGEQBfzZYYcWrwFu0zwzM7Z2psxlniEGGHpZPhDNKxygqtXx0fkXt80cU1cKYH5PoTEAgvtqtgHsAwTmjzMA0tUIHTvZauYEGBIvSUFWbE67LRD/LCmguHwWm+FlpXhK0VdbcaOdkq6lQNSHPQ5RQFAJbn4toQzEs/eP/dhtyezfVhXRoOD/1i66wNHn21ZIRPH5M8s25HJN/hClcuCZhqX64O9jffpIX3Bc2K3wQHUtPCV9uRdjfoqL5IDzGpJOpXMDPQw5UKfX2KdqMrUozWFuJaqUDUzvNTGG8zAMKrXi7Hbk2NSw8T6i3RxwdJhqryjtiniOPK2YlnPWlL5sGlRFT+5OsYwNmyX7FpERm7T+fORCxtdTEllTcmNCMsMo6k72C8MC/WiQWPX3WFeX4nQd+sb0wc3xwHfcKCZ4HKqx/fiK/OKVncSPcldh/OGB9XVsRjhpszKNWEFITJ4ZM=
