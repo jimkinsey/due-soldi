@@ -4,8 +4,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.stream.ActorMaterializer
-import duesoldi.Routing
-import duesoldi.storage.FilesystemMarkdownSource
+import duesoldi.{Env, Routing}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
@@ -23,7 +22,7 @@ object TestApp extends Routing {
   implicit val system = ActorSystem("my-system")
   implicit val materializer = ActorMaterializer()
 
-  def start(implicit ec: ExecutionContext, config: FilesystemMarkdownSource.Config): Future[TestServer] = {
+  def start(implicit ec: ExecutionContext, env: Env): Future[TestServer] = {
     def newServer(attempt: Int = 0): Future[ServerBinding] = attempt match {
       case n if n > maxStartupAttempts => Future.failed(ServerStartFailure(attempt))
       case _ =>

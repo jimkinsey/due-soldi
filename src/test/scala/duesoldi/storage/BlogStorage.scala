@@ -6,6 +6,8 @@ import java.nio.file.{FileVisitResult, Files, Path, SimpleFileVisitor}
 import java.time.ZonedDateTime
 import java.util.UUID
 
+import duesoldi.Env
+
 import scala.concurrent.{ExecutionContext, Future}
 
 trait BlogStorage {
@@ -20,20 +22,18 @@ trait BlogStorage {
     case (time, id, content) => EntryBuilder(id, content, ZonedDateTime.parse(time))
   }
 
-  def withBlogEntries[T <: Future[_]](entries: EntryBuilder*)(block: FilesystemMarkdownSource.Config => T)(implicit ec: ExecutionContext): T = {
-    val config = new FilesystemMarkdownSource.Config {
-      lazy val path = s"/tmp/blog/${UUID.randomUUID().toString.take(6)}"
-    }
+  def withBlogEntries[T <: Future[_]](entries: EntryBuilder*)(block: Env => T)(implicit ec: ExecutionContext, env: Env = Map.empty): T = {
+    lazy val path = s"/tmp/blog/${UUID.randomUUID().toString.take(6)}"
     entries foreach { case EntryBuilder(id, content, lastModified) =>
-      val file = new File(s"${config.path}/$id.md")
+      val file = new File(s"$path/$id.md")
       file.getParentFile.mkdirs()
       val writer = new PrintWriter(file)
       writer.write(content)
       writer.close()
       Files.setLastModifiedTime(file.toPath, FileTime.from(lastModified.toInstant))
     }
-    val fut = block(config)
-    fut.onComplete( _ => DeleteDir(new File(config.path).toPath))
+    val fut = block(env + ("BLOG_STORE_PATH" -> path))
+    fut.onComplete( _ => DeleteDir(new File(path).toPath))
     fut
   }
 

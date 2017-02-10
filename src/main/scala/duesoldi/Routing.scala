@@ -17,7 +17,12 @@ import scala.concurrent.{ExecutionContext, Future}
 trait Routing {
   import cats.instances.all._
 
-  def routes(implicit executionContext: ExecutionContext, blogSourceConfig: FilesystemMarkdownSource.Config) = {
+  def routes(implicit executionContext: ExecutionContext, env: Map[String, String]) = {
+
+    implicit val blogSourceConfig: FilesystemMarkdownSource.Config = new FilesystemMarkdownSource.Config {
+      override def path: String = env("BLOG_STORE_PATH")
+    }
+
     val store = new BlogStore(new FilesystemMarkdownSource, new MarkdownParser)
     val renderer = new Renderer
 
@@ -28,7 +33,9 @@ trait Routing {
       }
     })
 
-    path("blog" / ) {
+    path("static" / Remaining) { remaining =>
+      getFromFile(remaining)
+    } ~ path("blog" / ) {
       complete {
         (for {
           entries <- blogEntries

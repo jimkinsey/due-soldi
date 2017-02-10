@@ -3,8 +3,8 @@ package duesoldi
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
-import duesoldi.storage.FilesystemMarkdownSource
 
+import scala.collection.JavaConverters._
 import scala.util.{Failure, Success}
 
 case object InvalidId
@@ -19,9 +19,7 @@ object App extends Routing {
     val host = Option(System.getenv("HOST")).getOrElse("0.0.0.0")
     val port = Option(System.getenv("PORT")).map(_.toInt).getOrElse(8080)
 
-    implicit val blogSourceConfig: FilesystemMarkdownSource.Config = new FilesystemMarkdownSource.Config {
-      override def path: String = System.getenv("BLOG_STORE_PATH")
-    }
+    implicit val env: Map[String, String] = System.getenv().asScala.toMap
 
     println(s"Binding to $host:$port")
     Http().bindAndHandle(routes, host, port) onComplete {
