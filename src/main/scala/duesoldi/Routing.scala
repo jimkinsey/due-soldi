@@ -1,8 +1,12 @@
 package duesoldi
 
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+
 import akka.http.scaladsl.model.HttpCharsets._
 import akka.http.scaladsl.model.MediaTypes._
 import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.model.{ContentType, HttpEntity, HttpResponse}
 import akka.http.scaladsl.server.Directives._
 import cats.data.EitherT
@@ -12,7 +16,9 @@ import duesoldi.rendering.Renderer
 import duesoldi.storage.{BlogStore, FilesystemMarkdownSource}
 import duesoldi.validation.ValidIdentifier
 
+import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 trait Routing {
   import cats.instances.all._
@@ -33,13 +39,24 @@ trait Routing {
       }
     })
 
-    path("static" / Remaining) { remaining =>
-      getFromFile(remaining)
+    val furnitureVersion = env.getOrElse("FURNITURE_VERSION", "LOCAL")
+
+    path("furniture" / Segment / Remaining) {
+      case (version: String, remaining: String) if version == furnitureVersion =>
+        val maxAge = env.get("FURNITURE_CACHE_DURATION").flatMap(s => Try(Duration(s).toSeconds).toOption).getOrElse(0L)
+        respondWithHeaders(
+          RawHeader("Cache-Control", s"max-age=$maxAge"),
+          RawHeader("Expires", ZonedDateTime.now().plusSeconds(maxAge).format(DateTimeFormatter.RFC_1123_DATE_TIME))
+        )
+        {
+          getFromFile(env("FURNITURE_PATH") + "/" + remaining)
+        }
+      case _ => complete { HttpResponse(BadRequest) }
     } ~ path("blog" / ) {
       complete {
         (for {
           entries <- blogEntries
-          html    <- EitherT(renderer.render(entries)).leftMap(_.asInstanceOf[Any])
+          html    <- EitherT(renderer.render(entries, furnitureVersion)).leftMap(_.asInstanceOf[Any])
         } yield {
           html
         }).value map {
@@ -55,7 +72,7 @@ trait Routing {
         (for {
           name  <- EitherT.fromOption[Future](ValidIdentifier(remaining), { InvalidId })
           entry <- EitherT(store.entry(name))
-          html  <- EitherT(renderer.render(entry)).leftMap(_.asInstanceOf[Any])
+          html  <- EitherT(renderer.render(entry, furnitureVersion)).leftMap(_.asInstanceOf[Any])
         } yield {
           html
         }).value map {

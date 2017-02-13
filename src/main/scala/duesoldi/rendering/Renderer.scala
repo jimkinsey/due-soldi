@@ -9,12 +9,19 @@ import duesoldi.model.BlogEntry
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.{Elem, NodeSeq}
 
+
+trait PageModel
+case class BlogIndex(entries: Seq[BlogEntry])
+
 class Renderer(implicit ec: ExecutionContext) {
 
-  def render(entries: Seq[BlogEntry]): Future[Either[Renderer.Failure, String]] = {
+  def render(entries: Seq[BlogEntry], furnitureVersion: String): Future[Either[Renderer.Failure, String]] = {
     Future successful Right(html(
       <html>
-        <head><title>Jim Kinsey's Blog</title></head>
+        <head>
+          <title>Jim Kinsey's Blog</title>
+          <link href={s"/furniture/$furnitureVersion/blog.css"} rel="stylesheet"/>
+        </head>
         <body>
           <header>
             <h1>Latest Blog Entries</h1>
@@ -24,8 +31,8 @@ class Renderer(implicit ec: ExecutionContext) {
               entries.sortBy(_.lastModified.toEpochSecond()).reverse map { entry =>
                 <article>
                   <header>
-                    <h2><a href={"/blog/" + entry.id}>{entry.title}</a></h2>
                     <small><time>{entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy"))}</time></small>
+                    <h2><a href={"/blog/" + entry.id}>{entry.title}</a></h2>
                   </header>
                 </article>
               }
@@ -39,10 +46,13 @@ class Renderer(implicit ec: ExecutionContext) {
     ))
   }
 
-  def render(entry: BlogEntry): Future[Either[Renderer.Failure, String]] = {
+  def render(entry: BlogEntry, furnitureVersion: String): Future[Either[Renderer.Failure, String]] = {
     Future successful Right(html(
       <html>
-        <head><title>{entry.title}</title></head>
+        <head>
+          <title>{entry.title}</title>
+          <link href={s"/furniture/$furnitureVersion/blog.css"} rel="stylesheet"/>
+        </head>
         <body>
           <article id="content">
             <header><small><time>{entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy"))}</time></small></header>
