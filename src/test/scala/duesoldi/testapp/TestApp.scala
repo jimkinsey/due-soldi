@@ -4,7 +4,8 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.stream.ActorMaterializer
-import duesoldi.{Env, Routing}
+import duesoldi.Env
+import duesoldi.controller.MasterController
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
@@ -18,7 +19,7 @@ case class AkkaHttpTestServer(serverBinding: ServerBinding) extends TestServer {
 
 case class ServerStartFailure(attempt: Int) extends Exception
 
-object TestApp extends Routing {
+object TestApp {
   implicit val system = ActorSystem("my-system")
   implicit val materializer = ActorMaterializer()
 
@@ -26,7 +27,7 @@ object TestApp extends Routing {
     def newServer(attempt: Int = 0): Future[ServerBinding] = attempt match {
       case n if n > maxStartupAttempts => Future.failed(ServerStartFailure(attempt))
       case _ =>
-        Http().bindAndHandle(routes, "localhost", newPort).recoverWith {
+        Http().bindAndHandle(new MasterController().routes, "localhost", newPort).recoverWith {
           case _ => newServer(attempt + 1)
         }
     }

@@ -15,16 +15,10 @@ trait MarkdownSource {
   def documents: Future[Seq[(String, MarkdownContainer)]]
 }
 
-object FilesystemMarkdownSource {
-  trait Config {
-    def path: String
-  }
-}
-
-class FilesystemMarkdownSource(implicit config: FilesystemMarkdownSource.Config) extends MarkdownSource {
+class FilesystemMarkdownSource(path: String) extends MarkdownSource {
   override def document(id: String): Future[Option[MarkdownContainer]] =
     Future successful Try({
-      val file = new File(s"${config.path}/$id.md")
+      val file = new File(s"$path/$id.md")
       MarkdownContainer(
         content = Source.fromFile(file).mkString,
         lastModified = ZonedDateTime.ofInstant(Files.getLastModifiedTime(file.toPath).toInstant, ZoneOffset.UTC)
@@ -33,7 +27,7 @@ class FilesystemMarkdownSource(implicit config: FilesystemMarkdownSource.Config)
 
   override def documents: Future[Seq[(String, MarkdownContainer)]] = {
     Future successful {
-      Try({new File(config.path).listFiles().filter(_.getName.endsWith("md")).map { file =>
+      Try({new File(path).listFiles().filter(_.getName.endsWith("md")).map { file =>
         file.getName.dropRight(3) -> MarkdownContainer(
           content = Source.fromFile(file).mkString,
           lastModified = ZonedDateTime.ofInstant(Files.getLastModifiedTime(file.toPath).toInstant, ZoneOffset.UTC)
