@@ -11,7 +11,9 @@ import duesoldi.model.BlogEntry
 import duesoldi.rendering.Renderer
 import duesoldi.storage.BlogStore
 import duesoldi.validation.ValidIdentifier
-import duesoldi.{BlogStoreEmpty, InvalidId}
+
+case object InvalidId
+case object BlogStoreEmpty
 
 import scala.concurrent.{ExecutionContext, Future}
 

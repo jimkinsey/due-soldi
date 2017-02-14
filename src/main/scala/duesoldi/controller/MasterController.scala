@@ -9,7 +9,7 @@ import duesoldi.storage.{BlogStore, FilesystemMarkdownSource}
 
 import scala.concurrent.ExecutionContext
 
-class MasterController(implicit val executionContext: ExecutionContext, val env: Env) extends Configured with FurnitureRoutes with BlogRoutes {
+class MasterController(val env: Env)(implicit val executionContext: ExecutionContext) extends Configured with FurnitureRoutes with BlogRoutes {
 
   lazy val blogStore = new BlogStore(new FilesystemMarkdownSource(config.blogStorePath), new MarkdownParser)
   lazy val renderer = new Renderer

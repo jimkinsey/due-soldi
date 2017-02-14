@@ -11,9 +11,9 @@ object TestAppRequest {
   def get[A](path: String)(handle: (Response => A))(implicit ec: ExecutionContext): Env => Future[A] = {
     (env: Env) =>
       for {
-        server <- TestApp.start(ec, env)
+        server <- TestApp.start(env)
         res    <- HttpClient.get(path, server)
-        _      <- TestApp stop server
+        _      <- server.stop()
       } yield {
         handle(res)
       }
