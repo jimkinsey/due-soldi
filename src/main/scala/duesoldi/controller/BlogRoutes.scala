@@ -1,5 +1,7 @@
 package duesoldi.controller
 
+import java.time.format.DateTimeFormatter
+
 import akka.http.scaladsl.model.HttpCharsets._
 import akka.http.scaladsl.model.MediaTypes._
 import akka.http.scaladsl.model.StatusCodes._
@@ -7,6 +9,7 @@ import akka.http.scaladsl.model.{ContentType, HttpEntity, HttpResponse}
 import akka.http.scaladsl.server.Directives._
 import cats.data.EitherT
 import duesoldi.config.Configured
+import duesoldi.markdown.MarkdownToHtmlConverter
 import duesoldi.model.BlogEntry
 import duesoldi.rendering.{BlogEntryPageModel, BlogIndexPageModel, Renderer}
 import duesoldi.storage.BlogStore
@@ -29,7 +32,13 @@ trait BlogRoutes { self: Configured =>
     complete {
       (for {
         entries <- blogEntries
-        model   = BlogIndexPageModel(entries, config.furnitureVersion)
+        model   = BlogIndexPageModel(
+          entries = entries.sortBy(_.lastModified.toEpochSecond()).reverse.map { case BlogEntry(id, title, _, lastModified) => BlogIndexPageModel.Entry(
+            lastModified = lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy")),
+            title = title,
+            id = id) },
+          furnitureVersion = config.furnitureVersion
+        )
         html    <- EitherT(renderer.render("blog-index", model)).leftMap(_.asInstanceOf[Any])
       } yield {
         html
@@ -46,7 +55,11 @@ trait BlogRoutes { self: Configured =>
       (for {
         name  <- EitherT.fromOption[Future](ValidIdentifier(remaining), { InvalidId })
         entry <- EitherT(blogStore.entry(name))
-        model = BlogEntryPageModel(entry, config.furnitureVersion)
+        model = BlogEntryPageModel(
+          title = entry.title,
+          lastModified = entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy")),
+          contentHtml = MarkdownToHtmlConverter.html(entry.content.nodes).mkString,
+          furnitureVersion = config.furnitureVersion)
         html  <- EitherT(renderer.render("blog-entry", model)).leftMap(_.asInstanceOf[Any])
       } yield {
         html
