@@ -1,6 +1,32 @@
 body {
-    font-family: serif;
+    font-family: 'Neuton', serif;
+    font-weight: lighter;
     background-color: #ffffff;
     color: #555555;
     margin: 2em;
+}
+
+header, footer, h1, h2, h3, h4, h5, h6 {
+    font-family: 'Nunito', sans-serif;
+    font-weight: bold;
+}
+
+h1 {
+    font-size: 3em;
+    margin-bottom: 0.25em;
+    margin-top: 0.25em;
+}
+
+h2 {
+    margin-bottom: 0.25em;
+    margin-top: 0.25em;
+}
+
+a {
+    text-decoration: none;
+    color: #3388ff;
+}
+
+a:visited {
+    color: #8833ff;
 }

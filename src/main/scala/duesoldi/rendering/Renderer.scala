@@ -20,6 +20,8 @@ class Renderer(implicit ec: ExecutionContext) {
       <html>
         <head>
           <title>Jim Kinsey's Blog</title>
+          <link href="https://fonts.googleapis.com/css?family=Neuton" rel="stylesheet"/>
+          <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet"/>
           <link href={s"/furniture/$furnitureVersion/blog.css"} rel="stylesheet"/>
         </head>
         <body>
@@ -51,6 +53,8 @@ class Renderer(implicit ec: ExecutionContext) {
       <html>
         <head>
           <title>{entry.title}</title>
+          <link href="https://fonts.googleapis.com/css?family=Neuton" rel="stylesheet"/>
+          <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet"/>
           <link href={s"/furniture/$furnitureVersion/blog.css"} rel="stylesheet"/>
         </head>
         <body>
