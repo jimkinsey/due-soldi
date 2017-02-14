@@ -9,65 +9,74 @@ import duesoldi.model.BlogEntry
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.{Elem, NodeSeq}
 
-
-trait PageModel
-case class BlogIndex(entries: Seq[BlogEntry])
+trait PageModel {
+  def furnitureVersion: String
+}
+case class BlogIndexPageModel(entries: Seq[BlogEntry], furnitureVersion: String)
+case class BlogEntryPageModel(entry: BlogEntry, furnitureVersion: String)
 
 class Renderer(implicit ec: ExecutionContext) {
 
-  def render(entries: Seq[BlogEntry], furnitureVersion: String): Future[Either[Renderer.Failure, String]] = {
-    Future successful Right(html(
-      <html>
-        <head>
-          <title>Jim Kinsey's Blog</title>
-          <link href="https://fonts.googleapis.com/css?family=Neuton" rel="stylesheet"/>
-          <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet"/>
-          <link href={s"/furniture/$furnitureVersion/blog.css"} rel="stylesheet"/>
-        </head>
-        <body>
-          <header>
-            <h1>Latest Blog Entries</h1>
-          </header>
-          <section id="blog-index">
-            {
-              entries.sortBy(_.lastModified.toEpochSecond()).reverse map { entry =>
-                <article>
-                  <header>
-                    <small><time>{entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy"))}</time></small>
-                    <h2><a href={"/blog/" + entry.id}>{entry.title}</a></h2>
-                  </header>
-                </article>
-              }
-            }
-          </section>
-          <footer>
-            <small id="copyright">&copy; 2016-2017 Jim Kinsey</small>
-          </footer>
-        </body>
-      </html>
-    ))
+  def render(viewName: String, model: Any): Future[Either[Renderer.Failure, String]] = model match {
+    case entryModel: BlogEntryPageModel => render(entryModel)
+    case indexModel: BlogIndexPageModel => render(indexModel)
   }
 
-  def render(entry: BlogEntry, furnitureVersion: String): Future[Either[Renderer.Failure, String]] = {
-    Future successful Right(html(
-      <html>
-        <head>
-          <title>{entry.title}</title>
-          <link href="https://fonts.googleapis.com/css?family=Neuton" rel="stylesheet"/>
-          <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet"/>
-          <link href={s"/furniture/$furnitureVersion/blog.css"} rel="stylesheet"/>
-        </head>
-        <body>
-          <article id="content">
-            <header><small><time>{entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy"))}</time></small></header>
-            {html(entry.content.nodes)}
-          </article>
-          <footer>
-            <small id="copyright">&copy; 2016-2017 Jim Kinsey</small>
-          </footer>
-        </body>
-      </html>
-    ))
+  private def render(model: BlogIndexPageModel): Future[Either[Renderer.Failure, String]] = model match {
+    case BlogIndexPageModel(entries, furnitureVersion) =>
+      Future successful Right(html(
+        <html>
+          <head>
+            <title>Jim Kinsey's Blog</title>
+            <link href="https://fonts.googleapis.com/css?family=Neuton" rel="stylesheet"/>
+            <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet"/>
+            <link href={s"/furniture/$furnitureVersion/blog.css"} rel="stylesheet"/>
+          </head>
+          <body>
+            <header>
+              <h1>Latest Blog Entries</h1>
+            </header>
+            <section id="blog-index">
+              {
+                entries.sortBy(_.lastModified.toEpochSecond()).reverse map { entry =>
+                  <article>
+                    <header>
+                      <small><time>{entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy"))}</time></small>
+                      <h2><a href={"/blog/" + entry.id}>{entry.title}</a></h2>
+                    </header>
+                  </article>
+                }
+              }
+            </section>
+            <footer>
+              <small id="copyright">&copy; 2016-2017 Jim Kinsey</small>
+            </footer>
+          </body>
+        </html>
+      ))
+  }
+
+  private def render(model: BlogEntryPageModel): Future[Either[Renderer.Failure, String]] = model match {
+    case BlogEntryPageModel(entry, furnitureVersion) =>
+      Future successful Right(html(
+        <html>
+          <head>
+            <title>{entry.title}</title>
+            <link href="https://fonts.googleapis.com/css?family=Neuton" rel="stylesheet"/>
+            <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet"/>
+            <link href={s"/furniture/$furnitureVersion/blog.css"} rel="stylesheet"/>
+          </head>
+          <body>
+            <article id="content">
+              <header><small><time>{entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy"))}</time></small></header>
+              {html(entry.content.nodes)}
+            </article>
+            <footer>
+              <small id="copyright">&copy; 2016-2017 Jim Kinsey</small>
+            </footer>
+          </body>
+        </html>
+      ))
   }
 
   private def html(xml: Elem): String = s"<!DOCTYPE html>\n${xml.mkString}\n"

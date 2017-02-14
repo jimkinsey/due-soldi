@@ -8,7 +8,7 @@ import akka.http.scaladsl.server.Directives._
 import cats.data.EitherT
 import duesoldi.config.Configured
 import duesoldi.model.BlogEntry
-import duesoldi.rendering.Renderer
+import duesoldi.rendering.{BlogEntryPageModel, BlogIndexPageModel, Renderer}
 import duesoldi.storage.BlogStore
 import duesoldi.validation.ValidIdentifier
 
@@ -29,7 +29,8 @@ trait BlogRoutes { self: Configured =>
     complete {
       (for {
         entries <- blogEntries
-        html    <- EitherT(renderer.render(entries, config.furnitureVersion)).leftMap(_.asInstanceOf[Any])
+        model   = BlogIndexPageModel(entries, config.furnitureVersion)
+        html    <- EitherT(renderer.render("blog-index", model)).leftMap(_.asInstanceOf[Any])
       } yield {
         html
       }).value map {
@@ -45,7 +46,8 @@ trait BlogRoutes { self: Configured =>
       (for {
         name  <- EitherT.fromOption[Future](ValidIdentifier(remaining), { InvalidId })
         entry <- EitherT(blogStore.entry(name))
-        html  <- EitherT(renderer.render(entry, config.furnitureVersion)).leftMap(_.asInstanceOf[Any])
+        model = BlogEntryPageModel(entry, config.furnitureVersion)
+        html  <- EitherT(renderer.render("blog-entry", model)).leftMap(_.asInstanceOf[Any])
       } yield {
         html
       }).value map {
