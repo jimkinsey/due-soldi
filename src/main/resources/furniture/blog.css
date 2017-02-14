@@ -3,7 +3,7 @@ body {
     font-weight: lighter;
     background-color: #ffffff;
     color: #555555;
-    margin: 2em;
+    margin: 0.25em;
 }
 
 header, footer, h1, h2, h3, h4, h5, h6 {
@@ -11,15 +11,29 @@ header, footer, h1, h2, h3, h4, h5, h6 {
     font-weight: bold;
 }
 
+header, footer {
+    font-weight: lighter;
+    font-size: small;
+}
+
 h1 {
-    font-size: 3em;
+    font-size: 1.5em;
     margin-bottom: 0.25em;
     margin-top: 0.25em;
+    border-bottom: 0.1em solid;
+    border-top: 0.1em solid;
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
 }
 
 h2 {
+    font-size: 1em;
     margin-bottom: 0.25em;
     margin-top: 0.25em;
+    border-bottom: 0.1em dotted;
+    border-top: 0.1em solid;
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
 }
 
 a {
@@ -29,4 +43,26 @@ a {
 
 a:visited {
     color: #8833ff;
+}
+
+@media only screen and (min-width: 768px) {
+    h1 {
+        color: inherit;
+        background-color: inherit;
+        font-size: 3em;
+        padding: 0;
+        border: 0;
+    }
+
+    h2 {
+        font-size: 1.5em;
+        background: none;
+        color: inherit;
+        padding: 0;
+        border: 0;
+    }
+
+    body {
+        margin: 2em;
+    }
 }
