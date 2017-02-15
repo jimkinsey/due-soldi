@@ -96,6 +96,15 @@ class BlogPageTests extends AsyncFunSpec with BlogStorage {
       }
     }
 
+    it("has a navigation for returning to the index page") {
+      withBlogEntries("navigable" -> "# Navigable!") {
+        get("/blog/navigable") { response =>
+          val page = new BlogEntryPage(response.body)
+          page.navigation.items.map(_.url) should contain("/blog/")
+        }
+      }
+    }
+
   }
 
 }

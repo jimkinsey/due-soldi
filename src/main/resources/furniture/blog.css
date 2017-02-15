@@ -36,13 +36,38 @@ h2 {
     padding-bottom: 0.25em;
 }
 
+nav {
+    margin-bottom: 0.25em;
+    background-color: #555555;
+    color: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: smaller;
+}
+
+nav ol {
+    margin: 0;
+    padding: 0.25em;
+}
+
+nav ol li {
+    list-style-type: none;
+    padding: 0;
+}
+
+nav ol li a {
+    color: white;
+}
+
+nav ol li a:visited {
+    color: white;
+}
+
+nav ol li a:before {
+    content: "« ";
+}
 
 #blurb p:first-of-type {
     margin-top: 0;
-}
-
-#blog-index article header small {
-// font-size: 1em;
 }
 
 #blog-index article header h2 {
@@ -108,5 +133,18 @@ a:visited {
         left: 0;
         bottom: 0;
         padding: 20px;
+    }
+
+    nav {
+        position:  initial;
+        background-color: white;
+    }
+
+    nav ol li a {
+        color: #3388ff;
+    }
+
+    nav ol li a:visited {
+        color: #8833ff;
     }
 }
