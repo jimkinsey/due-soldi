@@ -107,6 +107,16 @@ class BlogIndexPageTests extends AsyncFunSpec with BlogStorage {
       }
     }
 
+    it("has a bio section with a title and some text") {
+      withBlogEntries("year-in-review" -> "# Year in review!") {
+        get("/blog/") { response =>
+          val page = new BlogIndexPage(response.body)
+          page.blurb should have('title ("About"))
+          page.blurb.paragraphs should not(be(empty))
+        }
+      }
+    }
+
   }
 
 }

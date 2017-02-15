@@ -36,6 +36,30 @@ h2 {
     padding-bottom: 0.25em;
 }
 
+
+#blurb p:first-of-type {
+    margin-top: 0;
+}
+
+#blog-index article header small {
+// font-size: 1em;
+}
+
+#blog-index article header h2 {
+    font-size: 1.5em;
+    border: none;
+    margin-top: 0;
+    padding-top: 0;
+}
+
+#blog-index article {
+    border-bottom: 0.1em dotted;
+}
+
+#blog-index article:last-of-type {
+    border-bottom: none;
+}
+
 a {
     text-decoration: none;
     color: #3388ff;
@@ -64,5 +88,25 @@ a:visited {
 
     body {
         margin: 2em;
+        margin-left: 240px;
+    }
+
+    #blurb {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 200px;
+        padding: 20px;
+        text-align: left;
+    }
+
+    #blurb h2 {
+    }
+
+    footer {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        padding: 20px;
     }
 }
