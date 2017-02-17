@@ -8,11 +8,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 object TestAppRequest {
 
-  def get[A](path: String)(handle: (Response => A))(implicit ec: ExecutionContext): Env => Future[A] = {
+  def get[A](path: String, headers: (String, String)*)(handle: (Response => A))(implicit ec: ExecutionContext): Env => Future[A] = {
     (env: Env) =>
       for {
         server <- TestApp.start(env)
-        res    <- HttpClient.get(path, server)
+        res    <- HttpClient.get(path, server, headers) // FIXME no passing server here
         _      <- server.stop()
       } yield {
         handle(res)

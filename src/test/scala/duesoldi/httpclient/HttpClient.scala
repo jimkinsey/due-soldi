@@ -11,8 +11,8 @@ object HttpClient {
 
   case class Response(status: Int, headers: Map[String, Seq[String]], body: String)
 
-  def get(path: String, server: Server)(implicit ec: ExecutionContext): Future[Response] = {
-    Http(url(s"http://localhost:${server.port}$path")).map { res =>
+  def get(path: String, server: Server, headers: Seq[(String, String)] = Seq.empty)(implicit ec: ExecutionContext): Future[Response] = {
+    Http(url(s"http://localhost:${server.port}$path").setHeaders(headers.map { case (name, value) => name -> Seq(value) } toMap)).map { res =>
       Response(
         status = res.getStatusCode,
         headers = convertHeaders(res.getHeaders),

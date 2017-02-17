@@ -6,11 +6,12 @@ import java.nio.file.{FileVisitResult, Files, Path, SimpleFileVisitor}
 import java.time.ZonedDateTime
 import java.util.UUID
 
-import duesoldi.Env
+import duesoldi.{Env, Setup}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait BlogStorage {
+  implicit def executionContext: ExecutionContext
 
   case class EntryBuilder(id: String = "id", content: String = "# Title", lastModified: ZonedDateTime = ZonedDateTime.now())
 
@@ -22,21 +23,26 @@ trait BlogStorage {
     case (time, id, content) => EntryBuilder(id, content, ZonedDateTime.parse(time))
   }
 
-  def withBlogEntries[T <: Future[_]](entries: EntryBuilder*)(block: Env => T)(implicit ec: ExecutionContext, env: Env = Map.empty): T = {
+  def blogEntries(entries: EntryBuilder*) = new Setup {
     lazy val path = s"/tmp/blog/${UUID.randomUUID().toString.take(6)}"
-    entries foreach { case EntryBuilder(id, content, lastModified) =>
-      val file = new File(s"$path/$id.md")
-      file.getParentFile.mkdirs()
-      val writer = new PrintWriter(file)
-      writer.write(content)
-      writer.close()
-      Files.setLastModifiedTime(file.toPath, FileTime.from(lastModified.toInstant))
-    }
-    val fut = block(env + ("BLOG_STORE_PATH" -> path))
-    fut.onComplete( _ => DeleteDir(new File(path).toPath))
-    fut
-  }
 
+    override def setup: Future[Env] = {
+      entries foreach { case EntryBuilder(id, content, lastModified) =>
+        val file = new File(s"$path/$id.md")
+        file.getParentFile.mkdirs()
+        val writer = new PrintWriter(file)
+        writer.write(content)
+        writer.close()
+        Files.setLastModifiedTime(file.toPath, FileTime.from(lastModified.toInstant))
+      }
+      Future.successful(Map("BLOG_STORE_PATH" -> path))
+    }
+
+    override def tearDown: Future[Unit] = {
+      Future.successful(DeleteDir(new File(path).toPath))
+    }
+
+  }
 }
 
 object DeleteDir {
