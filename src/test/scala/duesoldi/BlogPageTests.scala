@@ -64,13 +64,13 @@ class BlogPageTests extends AsyncFunSpec with BlogStorage {
     }
 
     it("has the content of the markdown document as HTML") {
-      withBlogEntries("has-content" ->
+      withSetup(blogEntries("has-content" ->
         """# Content Galore!
           |
           |This is an __amazing__ page of _content_.
           |
           |Don't knock it.
-        """.stripMargin) {
+        """.stripMargin)) {
         get("/blog/has-content") { response =>
           val page = new BlogEntryPage(response.body)
           page.h1.text shouldBe "Content Galore!"
