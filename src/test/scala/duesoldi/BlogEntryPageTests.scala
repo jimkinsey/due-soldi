@@ -5,7 +5,7 @@ import duesoldi.pages.BlogEntryPage
 import duesoldi.storage.BlogStorage
 import org.scalatest.AsyncFunSpec
 
-class BlogPageTests extends AsyncFunSpec with BlogStorage {
+class BlogEntryPageTests extends AsyncFunSpec with BlogStorage {
   import duesoldi.testapp.TestAppRequest.get
   import org.scalatest.Matchers._
 
