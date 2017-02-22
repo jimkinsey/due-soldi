@@ -5,7 +5,7 @@ import duesoldi._
 import duesoldi.config.Configured
 import duesoldi.markdown.MarkdownParser
 import duesoldi.rendering.Renderer
-import duesoldi.storage.{BlogStore, FilesystemMarkdownSource}
+import duesoldi.storage.{BlogStore, FilesystemMarkdownSource, InMemoryMetricsStore}
 
 import scala.concurrent.ExecutionContext
 
@@ -13,6 +13,7 @@ class MasterController(val env: Env)(implicit val executionContext: ExecutionCon
 
   lazy val blogStore = new BlogStore(new FilesystemMarkdownSource(config.blogStorePath), new MarkdownParser)
   lazy val renderer = new Renderer
+  lazy val metricsStore =  new InMemoryMetricsStore
 
   def routes = furnitureRoutes ~ blogRoutes ~ metricsRoutes
 

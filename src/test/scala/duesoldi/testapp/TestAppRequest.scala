@@ -1,8 +1,8 @@
 package duesoldi.testapp
 
-import duesoldi.Env
 import duesoldi.httpclient.HttpClient
 import duesoldi.httpclient.HttpClient.Response
+import duesoldi.{Env, Server}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -17,6 +17,10 @@ object TestAppRequest {
       } yield {
         handle(res)
       }
+  }
+
+  def getRaw(path: String, headers: (String, String)*)(implicit ec: ExecutionContext, server: Server): Future[Response] = {
+    HttpClient.get(path, server, headers)
   }
 
 }
