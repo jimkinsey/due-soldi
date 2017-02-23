@@ -24,24 +24,27 @@ trait BlogStorage {
   }
 
   def blogEntries(entries: EntryBuilder*) = new Setup {
-    lazy val path = s"/tmp/blog/${UUID.randomUUID().toString.take(6)}"
+    lazy val path = s"/tmp/blog/${UUID.randomUUID().toString}"
 
     override def setup: Future[Env] = {
-      entries foreach { case EntryBuilder(id, content, lastModified) =>
-        val file = new File(s"$path/$id.md")
-        file.getParentFile.mkdirs()
-        val writer = new PrintWriter(file)
-        writer.write(content)
-        writer.close()
-        Files.setLastModifiedTime(file.toPath, FileTime.from(lastModified.toInstant))
+      Future {
+        entries foreach { case EntryBuilder(id, content, lastModified) =>
+          val file = new File(s"$path/$id.md")
+          file.getParentFile.mkdirs()
+          val writer = new PrintWriter(file)
+          writer.write(content)
+          writer.close()
+          Files.setLastModifiedTime(file.toPath, FileTime.from(lastModified.toInstant))
+        }
+        Map("BLOG_STORE_PATH" -> path)
       }
-      Future.successful(Map("BLOG_STORE_PATH" -> path))
     }
 
     override def tearDown: Future[Unit] = {
-      Future.successful(DeleteDir(new File(path).toPath))
+      Future {
+        DeleteDir(new File(path).toPath)
+      }
     }
-
   }
 }
 

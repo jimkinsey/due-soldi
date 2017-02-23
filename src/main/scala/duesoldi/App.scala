@@ -7,7 +7,7 @@ import akka.stream.ActorMaterializer
 import duesoldi.controller.MasterController
 
 import scala.collection.JavaConverters._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 object App {
@@ -39,7 +39,7 @@ object App {
 
 }
 
-class Server(binding: ServerBinding) {
+class Server(binding: ServerBinding)(implicit executionContext: ExecutionContext) {
   lazy val port = binding.localAddress.getPort
   lazy val host = binding.localAddress.getHostName
 

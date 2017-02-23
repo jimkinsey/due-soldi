@@ -48,9 +48,11 @@ trait BlogRoutes { self: Configured =>
           html
         }).value map {
           case Right(html)              => HttpResponse(OK, entity = HttpEntity(ContentType(`text/html`, `UTF-8`), html))
-          case Left(BlogStoreEmpty)     => HttpResponse(NotFound)
+          case Left(BlogStoreEmpty)     =>
+            System.err.println(s"No blog entries in the store, not rendering index page")
+            HttpResponse(NotFound)
           case Left(failure)            =>
-            System.err.println(failure)
+            System.err.println(s"Failed to render blog index page - $failure")
             HttpResponse(InternalServerError)
         }
       }
@@ -71,10 +73,14 @@ trait BlogRoutes { self: Configured =>
           html
         }).value map {
           case Right(html)              => HttpResponse(OK, entity = HttpEntity(ContentType(`text/html`, `UTF-8`), html))
-          case Left(BlogStore.NotFound) => HttpResponse(NotFound)
-          case Left(InvalidId)          => HttpResponse(BadRequest)
+          case Left(BlogStore.NotFound) =>
+            System.err.println(s"Blog $remaining not found")
+            HttpResponse(NotFound)
+          case Left(InvalidId)          =>
+            System.err.println(s"ID '$remaining' is invalid")
+            HttpResponse(BadRequest)
           case Left(failure)            =>
-            System.err.println(failure)
+            System.err.println(s"Failed to render blog '$remaining' - $failure")
             HttpResponse(InternalServerError)
         }
       }
