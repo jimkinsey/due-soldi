@@ -13,8 +13,8 @@ import duesoldi.config.Configured
 import duesoldi.markdown.MarkdownToHtmlConverter
 import duesoldi.model.BlogEntry
 import duesoldi.rendering.{BlogEntryPageModel, BlogIndexPageModel, Renderer}
-import duesoldi.storage.MetricsStore.Access
-import duesoldi.storage.{BlogStore, MetricsStore}
+import duesoldi.storage.AccessRecordStore.Access
+import duesoldi.storage.{AccessRecordStore, BlogStore}
 import duesoldi.validation.ValidIdentifier
 
 case object InvalidId
@@ -29,7 +29,7 @@ trait BlogRoutes { self: Configured =>
 
   def blogStore: BlogStore
   def renderer: Renderer
-  def metricsStore: MetricsStore
+  def accessRecordStore: AccessRecordStore
 
   final def blogRoutes = path("blog" / ) {
     recordAccess {
@@ -95,7 +95,7 @@ trait BlogRoutes { self: Configured =>
   })
 
   private def recordAccess = mapRequest { req =>
-    metricsStore.record(Access(ZonedDateTime.now(), req.uri.path.toString))
+    accessRecordStore.record(Access(ZonedDateTime.now(), req.uri.path.toString))
     req
   }
 

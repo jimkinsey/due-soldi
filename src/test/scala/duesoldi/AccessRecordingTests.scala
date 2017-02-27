@@ -12,7 +12,7 @@ import org.scalatest.Matchers._
 
 import scala.concurrent.Future
 
-class MetricsTests extends AsyncWordSpec with BlogStorage with ServerSupport with CustomMatchers with ServerRequests {
+class AccessRecordingTests extends AsyncWordSpec with BlogStorage with ServerSupport with CustomMatchers with ServerRequests {
 
   "the access CSV endpoint" must {
 
