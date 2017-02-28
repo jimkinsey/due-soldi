@@ -99,7 +99,6 @@ trait BlogRoutes { self: Configured =>
 
   private def recordAccess = mapRequest { req =>
     if (config.accessRecordingEnabled) {
-      println(s"Request headers: ${req.headers}")
       accessRecordStore.record(Access(
         time = ZonedDateTime.now(),
         path = req.uri.path.toString,
