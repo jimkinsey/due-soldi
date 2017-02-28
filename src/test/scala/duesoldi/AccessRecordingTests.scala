@@ -5,14 +5,14 @@ import java.time.format.DateTimeFormatter.ISO_DATE_TIME
 import akka.parboiled2.util.Base64
 import duesoldi.Setup.withSetup
 import duesoldi.scalatest.CustomMatchers
-import duesoldi.storage.BlogStorage
+import duesoldi.storage.{BlogStorage, Database}
 import duesoldi.testapp.{ServerRequests, ServerSupport}
 import org.scalatest.AsyncWordSpec
 import org.scalatest.Matchers._
 
 import scala.concurrent.Future
 
-class AccessRecordingTests extends AsyncWordSpec with BlogStorage with ServerSupport with CustomMatchers with ServerRequests {
+class AccessRecordingTests extends AsyncWordSpec with BlogStorage with ServerSupport with CustomMatchers with ServerRequests with Database {
 
   "the access CSV endpoint" must {
 
@@ -29,7 +29,9 @@ class AccessRecordingTests extends AsyncWordSpec with BlogStorage with ServerSup
     }
 
     "serve a CSV file with a header when there are no metrics recorded" in {
-      withSetup(metrics(adminCredentials = "admin:password")) {
+      withSetup(
+        database,
+        metrics(adminCredentials = "admin:password")) {
         withServer { implicit server =>
           for {
             response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
@@ -44,6 +46,7 @@ class AccessRecordingTests extends AsyncWordSpec with BlogStorage with ServerSup
 
     "serve a CSV file containing a row for each blog entry page request" in {
       withSetup(
+        database,
         metrics(adminCredentials = "admin:password"),
         blogEntries("id" -> "# Content!")
       ) {
@@ -63,6 +66,7 @@ class AccessRecordingTests extends AsyncWordSpec with BlogStorage with ServerSup
 
     "serve a CSV file containing a row for each blog index page request" in {
       withSetup(
+        database,
         metrics(adminCredentials = "admin:password"),
         blogEntries("id" -> "# Content!")
       ) {
@@ -80,11 +84,55 @@ class AccessRecordingTests extends AsyncWordSpec with BlogStorage with ServerSup
       }
     }
 
+    "have no records for periods when access recording is disabled" in {
+      withSetup(
+        database,
+        metrics(accessRecordingEnabled = false),
+        blogEntries("id" -> "# Content!")
+      ) {
+        withServer { implicit server: Server =>
+          for {
+            _        <- get("/blog/")
+            _        <- get("/blog/id")
+            response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
+          } yield {
+            response.body.lines.toList.tail.size shouldBe 0
+          }
+        }
+      }
+    }
+
   }
 
-  private def metrics(adminCredentials: String) = new Setup {
-    override def setup: Future[Env] = Future.successful(Map("ADMIN_CREDENTIALS" -> adminCredentials))
-    override def tearDown: Future[Unit] = Future.successful({})
+  "access recording" must {
+
+    "not prevent page loading if it fails due to database connection problems" in {
+      withSetup(
+        noDatabase,
+        metrics(accessRecordingEnabled = true),
+        blogEntries("id" -> "# Content!")
+      ) {
+        withServer { implicit server: Server =>
+          for {
+            response <- get("/blog/id")
+          } yield {
+            response.status shouldBe 200
+          }
+        }
+      }
+    }
+
+  }
+
+  private def metrics(adminCredentials: String = "admin:password", accessRecordingEnabled: Boolean = true) = new Setup {
+    override def setup: Future[Env] = {
+      Future {
+        Map(
+          "ADMIN_CREDENTIALS" -> adminCredentials,
+          "ACCESS_RECORDING_ENABLED" -> accessRecordingEnabled.toString
+        )
+      }
+    }
   }
 
   object BasicAuthorization {

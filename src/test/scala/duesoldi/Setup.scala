@@ -4,7 +4,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait Setup {
   def setup: Future[Env]
-  def tearDown: Future[Unit]
+  def tearDown: Future[Unit] = Future.successful({})
 }
 
 object Setup {

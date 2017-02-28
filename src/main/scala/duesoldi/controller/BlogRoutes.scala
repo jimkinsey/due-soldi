@@ -17,6 +17,8 @@ import duesoldi.storage.AccessRecordStore.Access
 import duesoldi.storage.{AccessRecordStore, BlogStore}
 import duesoldi.validation.ValidIdentifier
 
+import scala.util.Failure
+
 case object InvalidId
 case object BlogStoreEmpty
 
@@ -95,7 +97,14 @@ trait BlogRoutes { self: Configured =>
   })
 
   private def recordAccess = mapRequest { req =>
-    accessRecordStore.record(Access(ZonedDateTime.now(), req.uri.path.toString))
+    if (config.accessRecordingEnabled) {
+      accessRecordStore.record(Access(ZonedDateTime.now(), req.uri.path.toString)).onComplete {
+        case Failure(ex) =>
+          System.err.println(s"Failed to record access - ${ex.getMessage}")
+          ex.printStackTrace()
+        case _ =>
+      }
+    }
     req
   }
 

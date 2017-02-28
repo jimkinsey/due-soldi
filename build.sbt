@@ -15,6 +15,8 @@ libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-xml" % "1.0.5",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
   "net.databinder.dispatch" %% "dispatch-core" % "0.12.0" % "test",
+  "com.h2database" % "h2" % "1.4.193",
+  "org.postgresql" % "postgresql" % "9.4.1212",
   "org.jsoup" % "jsoup" % "1.10.2" % "test",
   "org.typelevel" %% "cats" % "0.9.0",
   "com.vladsch.flexmark" % "flexmark" % "0.11.1",

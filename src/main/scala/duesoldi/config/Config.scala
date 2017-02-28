@@ -9,7 +9,11 @@ case class Config(
   furnitureVersion: String,
   furniturePath: String,
   furnitureCacheDuration: Duration,
-  adminCredentials: Option[Credentials]
+  adminCredentials: Option[Credentials],
+  accessRecordingEnabled: Boolean,
+  jdbcDatabaseUrl: String,
+  jdbcDatabaseUsername: String,
+  jdbcDatabasePassword: String
 )
 
 object Config {
