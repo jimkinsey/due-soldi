@@ -1,8 +1,10 @@
 package duesoldi
 
+import java.io.StringReader
 import java.time.format.DateTimeFormatter.ISO_DATE_TIME
 
 import akka.parboiled2.util.Base64
+import com.github.tototoshi.csv.CSVReader
 import duesoldi.Setup.withSetup
 import duesoldi.scalatest.CustomMatchers
 import duesoldi.storage.{BlogStorage, Database}
@@ -37,7 +39,7 @@ class AccessRecordingTests extends AsyncWordSpec with BlogStorage with ServerSup
             response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
           } yield {
             response.status shouldBe 200
-            response.body.lines.toList.head shouldBe "Timestamp,Path"
+            response.body.lines.toList.head shouldBe "Timestamp,Path,Referer"
             response.body.lines.toList.tail shouldBe empty
           }
         }
@@ -72,13 +74,14 @@ class AccessRecordingTests extends AsyncWordSpec with BlogStorage with ServerSup
       ) {
         withServer { implicit server: Server =>
           for {
-            _        <- get("/blog/")
+            _        <- get("/blog/", headers = "REFERER" -> "http://altavista.is")
             response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
           } yield {
-            response.body.lines.size shouldBe 2
-            val fields = response.body.lines.toList.tail.head.split(",")
-            fields(0) shouldBe parsableAs(ISO_DATE_TIME)
-            fields(1) shouldBe "/blog/"
+            val content = CSVReader.open(new StringReader(response.body)).allWithHeaders()
+            content.size            shouldBe 1
+            content(0)("Timestamp") shouldBe parsableAs(ISO_DATE_TIME)
+            content(0)("Path")      shouldBe "/blog/"
+            content(0)("Referer")   shouldBe "http://altavista.is"
           }
         }
       }
