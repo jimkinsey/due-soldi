@@ -22,14 +22,15 @@ trait MetricsRoutes { self: Configured =>
         complete {
           accessRecordStore.allRecords.map(
             { accesses =>
-              val rows = accesses.map { case Access(time, path, referer) =>
+              val rows = accesses.map { case Access(time, path, referer, userAgent) =>
                 Seq(
                   time.format(DateTimeFormatter.ISO_DATE_TIME),
                   path,
-                  referer.getOrElse("")
+                  referer.getOrElse(""),
+                  userAgent.getOrElse("")
                 ).map(csvFriendly).mkString(",")
               }
-              HttpResponse(entity = ("Timestamp,Path,Referer" +: rows).mkString("\n")) // ,User-agent,Duration,Status code,IP
+              HttpResponse(entity = ("Timestamp,Path,Referer,User-Agent" +: rows).mkString("\n")) // Duration,Status code,IP
             }).recover { case ex =>
               ex.printStackTrace()
               HttpResponse(StatusCodes.InternalServerError)

@@ -39,7 +39,7 @@ class AccessRecordingTests extends AsyncWordSpec with BlogStorage with ServerSup
             response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
           } yield {
             response.status shouldBe 200
-            response.body.lines.toList.head shouldBe "Timestamp,Path,Referer"
+            response.body.lines.toList.head shouldBe "Timestamp,Path,Referer,User-Agent"
             response.body.lines.toList.tail shouldBe empty
           }
         }
@@ -74,14 +74,15 @@ class AccessRecordingTests extends AsyncWordSpec with BlogStorage with ServerSup
       ) {
         withServer { implicit server: Server =>
           for {
-            _        <- get("/blog/", headers = "REFERER" -> "http://altavista.is")
+            _        <- get("/blog/", headers = "Referer" -> "http://altavista.is", "User-Agent" -> "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0")
             response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
           } yield {
             val content = CSVReader.open(new StringReader(response.body)).allWithHeaders()
-            content.size            shouldBe 1
-            content(0)("Timestamp") shouldBe parsableAs(ISO_DATE_TIME)
-            content(0)("Path")      shouldBe "/blog/"
-            content(0)("Referer")   shouldBe "http://altavista.is"
+            content.size             shouldBe 1
+            content(0)("Timestamp")  shouldBe parsableAs(ISO_DATE_TIME)
+            content(0)("Path")       shouldBe "/blog/"
+            content(0)("Referer")    shouldBe "http://altavista.is"
+            content(0)("User-Agent") shouldBe "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0"
           }
         }
       }

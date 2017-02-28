@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter
 import akka.http.scaladsl.model.HttpCharsets._
 import akka.http.scaladsl.model.MediaTypes._
 import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.model.headers.Referer
+import akka.http.scaladsl.model.headers.{Referer, `User-Agent`}
 import akka.http.scaladsl.model.{ContentType, HttpEntity, HttpResponse}
 import akka.http.scaladsl.server.Directives._
 import cats.data.EitherT
@@ -100,7 +100,12 @@ trait BlogRoutes { self: Configured =>
   private def recordAccess = mapRequest { req =>
     if (config.accessRecordingEnabled) {
       println(s"Request headers: ${req.headers}")
-      accessRecordStore.record(Access(ZonedDateTime.now(), req.uri.path.toString, req.header[Referer].map(_.getUri().toString))).onComplete {
+      accessRecordStore.record(Access(
+        time = ZonedDateTime.now(),
+        path = req.uri.path.toString,
+        referer = req.header[Referer].map(_.getUri().toString),
+        userAgent = req.header[`User-Agent` ].map(_.value())
+      )).onComplete {
         case Failure(ex) =>
           System.err.println(s"Failed to record access - ${ex.getMessage}")
           ex.printStackTrace()
