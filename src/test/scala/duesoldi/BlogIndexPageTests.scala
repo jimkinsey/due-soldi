@@ -10,6 +10,19 @@ class BlogIndexPageTests extends AsyncFunSpec with BlogStorage {
   import duesoldi.testapp.TestAppRequest.get
   import org.scalatest.Matchers._
 
+  describe("visiting 'blog' without the trailing slash") {
+
+    it("redirects to the version with the trailing slash") {
+      withSetup(blogEntries("id" -> "# Content!")) {
+        get("/blog") { response =>
+          response.status shouldBe 301
+          response.headers("Location") shouldBe List("/blog/")
+        }
+      }
+    }
+
+  }
+
   describe("when there are no blog entries") {
 
     it("responds with a 404") {

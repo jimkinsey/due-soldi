@@ -34,7 +34,7 @@ trait BlogRoutes { self: Configured =>
   def renderer: Renderer
   def accessRecordStore: AccessRecordStore
 
-  final def blogRoutes = path("blog" / ) {
+  final def blogRoutes = path("blog") { redirect("/blog/", MovedPermanently) } ~ path("blog" / ) {
     recordAccess {
       complete {
         (for {
