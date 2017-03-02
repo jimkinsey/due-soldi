@@ -9,12 +9,12 @@ import duesoldi.storage.{BlogStore, FilesystemMarkdownSource, JDBCAccessRecordSt
 
 import scala.concurrent.ExecutionContext
 
-class MasterController(val env: Env)(implicit val executionContext: ExecutionContext) extends Configured with FurnitureRoutes with MetricsRoutes with BlogRoutes {
+class MasterController(val env: Env)(implicit val executionContext: ExecutionContext) extends Configured with FurnitureRoutes with MetricsRoutes with BlogRoutes with RobotsRoutes {
 
   lazy val blogStore = new BlogStore(new FilesystemMarkdownSource(config.blogStorePath), new MarkdownParser)
   lazy val renderer = new Renderer
   lazy val accessRecordStore =  new JDBCAccessRecordStore(config.jdbcDatabaseUrl, config.jdbcDatabaseUsername, config.jdbcDatabasePassword)
 
-  def routes = furnitureRoutes ~ blogRoutes ~ metricsRoutes
+  def routes = furnitureRoutes ~ blogRoutes ~ metricsRoutes ~ robotsRoutes
 
 }

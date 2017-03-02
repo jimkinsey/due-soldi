@@ -1,18 +1,17 @@
 package duesoldi
 
 import java.io.{File, PrintWriter}
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
 import java.util.UUID
 
 import duesoldi.Setup.withSetup
+import duesoldi.scalatest.CustomMatchers
 import duesoldi.storage.DeleteDir
 import org.scalatest.AsyncWordSpec
 
 import scala.concurrent.Future
-import scala.util.{Success, Try}
 
-class FurnitureTests extends AsyncWordSpec {
+class FurnitureTests extends AsyncWordSpec with CustomMatchers {
   import duesoldi.testapp.TestAppRequest.get
   import org.scalatest.Matchers._
 
@@ -46,7 +45,7 @@ class FurnitureTests extends AsyncWordSpec {
       withSetup(furniture(version = "1.0.0", cacheDuration = Some("1 hour"))("cupboard.txt" -> "bare")) {
         get("/furniture/1.0.0/cupboard.txt") { response =>
           response.headers should contain("Cache-Control" -> Seq("max-age=3600"))
-          Try(ZonedDateTime.parse(response.headers("Expires").head, DateTimeFormatter.RFC_1123_DATE_TIME)) should be(a[Success[_]])
+          response.headers("Expires").head shouldBe parsableAs(RFC_1123_DATE_TIME)
         }
       }
     }
