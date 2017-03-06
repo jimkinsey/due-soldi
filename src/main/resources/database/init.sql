@@ -3,5 +3,5 @@ CREATE TABLE access_record (
   timestamp timestamp not null,
   referer character varying,
   user_agent character varying,
-  duration NUMERIC
+  duration NUMERIC not null
 );
