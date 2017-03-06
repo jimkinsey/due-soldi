@@ -1,10 +1,7 @@
 package duesoldi.storage
 
-import java.io.{File, IOException, PrintWriter}
-import java.nio.file.attribute.{BasicFileAttributes, FileTime}
-import java.nio.file.{FileVisitResult, Files, Path, SimpleFileVisitor}
+import java.sql.{DriverManager, Timestamp}
 import java.time.ZonedDateTime
-import java.util.UUID
 
 import duesoldi.{Env, Setup}
 
@@ -24,55 +21,27 @@ trait BlogStorage {
   }
 
   def blogEntries(entries: EntryBuilder*) = new Setup {
-    lazy val path = s"/tmp/blog/${UUID.randomUUID().toString}"
-
-    override def setup: Future[Env] = {
+    override def setup(env: Env): Future[Env] = {
+      val url = env("JDBC_DATABASE_URL")
+      val username = env("JDBC_DATABASE_USERNAME")
+      val password = env("JDBC_DATABASE_PASSWORD")
       Future {
-        entries foreach { case EntryBuilder(id, content, lastModified) =>
-          val file = new File(s"$path/$id.md")
-          file.getParentFile.mkdirs()
-          val writer = new PrintWriter(file)
-          writer.write(content)
-          writer.close()
-          Files.setLastModifiedTime(file.toPath, FileTime.from(lastModified.toInstant))
+        val connection = DriverManager.getConnection(url, username, password)
+        try {
+          entries.foreach { entry =>
+            val insert = connection.prepareStatement("INSERT INTO blog_entry (id, published, content) VALUES ( ?, ?, ? )")
+            insert.setString(1, entry.id)
+            insert.setTimestamp(2, Timestamp.from(entry.lastModified.toInstant))
+            insert.setString(3, entry.content)
+            insert.executeUpdate()
+          }
         }
-        Map("BLOG_STORE_PATH" -> path)
+        finally {
+          connection.close()
+        }
+        Map.empty
       }
     }
-
-    override def tearDown: Future[Unit] = {
-      Future {
-        DeleteDir(new File(path).toPath)
-      }
-    }
-  }
-}
-
-object DeleteDir {
-
-  def apply(path: Path) = {
-    Files.walkFileTree(path, new SimpleFileVisitor[Path](){
-      override def visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult = {
-        Files.delete(file)
-        FileVisitResult.CONTINUE
-      }
-
-      override def visitFileFailed(file: Path, e: IOException): FileVisitResult = {
-        handleException(e)
-      }
-
-      private def handleException(e: IOException) = {
-        e.printStackTrace()
-        FileVisitResult.TERMINATE
-      }
-
-      override def postVisitDirectory(dir: Path, e: IOException): FileVisitResult = {
-        Option(e).map(handleException).getOrElse {
-          Files.delete(dir)
-          FileVisitResult.CONTINUE
-        }
-      }
-    })
   }
 
 }

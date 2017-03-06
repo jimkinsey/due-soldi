@@ -5,13 +5,15 @@ import duesoldi._
 import duesoldi.config.Configured
 import duesoldi.markdown.MarkdownParser
 import duesoldi.rendering.Renderer
-import duesoldi.storage.{BlogStore, FilesystemMarkdownSource, JDBCAccessRecordStore}
+import duesoldi.storage._
 
 import scala.concurrent.ExecutionContext
 
 class MasterController(val env: Env)(implicit val executionContext: ExecutionContext) extends Configured with FurnitureRoutes with MetricsRoutes with BlogRoutes with RobotsRoutes {
 
-  lazy val blogStore = new BlogStore(new FilesystemMarkdownSource(config.blogStorePath), new MarkdownParser)
+  private lazy val markdownSource: MarkdownSource = new JDBCMarkdownSource(config.jdbcDatabaseUrl, config.jdbcDatabaseUsername, config.jdbcDatabasePassword)
+
+  lazy val blogStore = new BlogStore(markdownSource, new MarkdownParser)
   lazy val renderer = new Renderer
   lazy val accessRecordStore =  new JDBCAccessRecordStore(config.jdbcDatabaseUrl, config.jdbcDatabaseUsername, config.jdbcDatabasePassword)
 

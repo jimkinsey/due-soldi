@@ -15,7 +15,7 @@ trait Database {
   implicit def executionContext: ExecutionContext
 
   lazy val noDatabase = new Setup {
-    override def setup: Future[Env] = Future.successful(Map.empty)
+    override def setup(env: Env): Future[Env] = Future.successful(Map.empty)
     override def tearDown: Future[Unit] = Future.successful({})
   }
 
@@ -23,7 +23,7 @@ trait Database {
     private val id = UUID.randomUUID().toString.take(8)
     private var connection: Connection = _
 
-    override def setup: Future[Env] = Future {
+    override def setup(env: Env): Future[Env] = Future {
       val ds: DataSource = JdbcConnectionPool.create(s"jdbc:h2:mem:test-$id;DB_CLOSE_DELAY=-1", "user", "password")
       connection = ds.getConnection()
       new ScriptRunner(connection, true, true).runScript(new InputStreamReader(AccessRecordStore.getClass.getResourceAsStream("/database/init.sql")))

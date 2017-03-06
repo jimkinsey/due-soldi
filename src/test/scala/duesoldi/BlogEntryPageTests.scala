@@ -2,17 +2,19 @@ package duesoldi
 
 import duesoldi.Setup.withSetup
 import duesoldi.pages.BlogEntryPage
-import duesoldi.storage.BlogStorage
+import duesoldi.storage.{BlogStorage, Database}
 import org.scalatest.AsyncFunSpec
 
-class BlogEntryPageTests extends AsyncFunSpec with BlogStorage {
+class BlogEntryPageTests extends AsyncFunSpec with BlogStorage with Database {
   import duesoldi.testapp.TestAppRequest.get
   import org.scalatest.Matchers._
 
   describe("getting a non-existent blog entry") {
 
     it("responds with a 404") {
-      withSetup(blogEntries()) {
+      withSetup(
+        database,
+        blogEntries()) {
         get("/blog/what-i-had-for-breakfast") {  _.status shouldBe 404 }
       }
     }
@@ -22,7 +24,9 @@ class BlogEntryPageTests extends AsyncFunSpec with BlogStorage {
   describe("getting an invalid blog entry") {
 
     it("responds with a 500") {
-      withSetup(blogEntries("no-title" -> "boom")) {
+      withSetup(
+        database,
+        blogEntries("no-title" -> "boom")) {
         get("/blog/no-title") { _ .status shouldBe 500 }
       }
     }
@@ -32,7 +36,8 @@ class BlogEntryPageTests extends AsyncFunSpec with BlogStorage {
   describe("getting a blog entry with an invalid identifier") {
 
     it("responds with a 400") {
-      withSetup(blogEntries()) {
+      withSetup(database,
+        blogEntries()) {
         get("/blog/this/is/not/valid") { _.status shouldBe 400 }
       }
     }
@@ -42,19 +47,24 @@ class BlogEntryPageTests extends AsyncFunSpec with BlogStorage {
   describe("a blog entry page") {
 
     it("responds with a 200") {
-      withSetup(blogEntries("first-post" -> "# Hello, World!")) {
+      withSetup(database,
+        blogEntries("first-post" -> "# Hello, World!")) {
         get("/blog/first-post") { _.status shouldBe 200 }
       }
     }
 
     it("has content-type text/html") {
-      withSetup(blogEntries("year-in-review" -> "# tedious blah")) {
+      withSetup(
+        database,
+        blogEntries("year-in-review" -> "# tedious blah")) {
         get("/blog/year-in-review") { _.headers("Content-Type") should contain("text/html; charset=UTF-8") }
       }
     }
 
     it("has the title of the Markdown document in the h1 and title elements") {
-      withSetup(blogEntries("titled" -> "# A title!")) {
+      withSetup(
+        database,
+        blogEntries("titled" -> "# A title!")) {
         get("/blog/titled") { response =>
           val page = new BlogEntryPage(response.body)
           page.title shouldBe "A title!"
@@ -64,7 +74,9 @@ class BlogEntryPageTests extends AsyncFunSpec with BlogStorage {
     }
 
     it("has the content of the markdown document as HTML") {
-      withSetup(blogEntries("has-content" ->
+      withSetup(
+        database,
+        blogEntries("has-content" ->
         """# Content Galore!
           |
           |This is an __amazing__ page of _content_.
@@ -81,7 +93,9 @@ class BlogEntryPageTests extends AsyncFunSpec with BlogStorage {
     }
 
     it("has a copyright notice") {
-      withSetup(blogEntries("top-content" -> "# this is well worth copyrighting")) {
+      withSetup(
+        database,
+        blogEntries("top-content" -> "# this is well worth copyrighting")) {
         get("/blog/top-content") { response =>
           new BlogEntryPage(response.body).footer.copyrightNotice shouldBe Some("© 2016-2017 Jim Kinsey")
         }
@@ -89,7 +103,9 @@ class BlogEntryPageTests extends AsyncFunSpec with BlogStorage {
     }
 
     it("includes the last modified date of the article") {
-      withSetup(blogEntries(("2010-10-12T17:05:00Z", "dated", "# Dated!"))) {
+      withSetup(
+        database,
+        blogEntries(("2010-10-12T17:05:00Z", "dated", "# Dated!"))) {
         get("/blog/dated") { response =>
           val page = new BlogEntryPage(response.body)
           page should have('date ("Tuesday, 12 October 2010"))
@@ -98,7 +114,9 @@ class BlogEntryPageTests extends AsyncFunSpec with BlogStorage {
     }
 
     it("has a navigation for returning to the index page") {
-      withSetup(blogEntries("navigable" -> "# Navigable!")) {
+      withSetup(
+        database,
+        blogEntries("navigable" -> "# Navigable!")) {
         get("/blog/navigable") { response =>
           val page = new BlogEntryPage(response.body)
           page.navigation.items.map(_.url) should contain("/blog/")

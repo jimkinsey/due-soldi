@@ -110,28 +110,8 @@ class AccessRecordingTests extends AsyncWordSpec with BlogStorage with ServerSup
 
   }
 
-  "access recording" must {
-
-    "not prevent page loading if it fails due to database connection problems" in {
-      withSetup(
-        noDatabase,
-        metrics(accessRecordingEnabled = true),
-        blogEntries("id" -> "# Content!")
-      ) {
-        withServer { implicit server: Server =>
-          for {
-            response <- get("/blog/id")
-          } yield {
-            response.status shouldBe 200
-          }
-        }
-      }
-    }
-
-  }
-
   private def metrics(adminCredentials: String = "admin:password", accessRecordingEnabled: Boolean = true) = new Setup {
-    override def setup: Future[Env] = {
+    override def setup(env: Env): Future[Env] = {
       Future {
         Map(
           "ADMIN_CREDENTIALS" -> adminCredentials,

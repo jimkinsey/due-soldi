@@ -18,7 +18,7 @@ object AccessRecordStore {
   case class Access(time: ZonedDateTime, path: String, referer: Option[String], userAgent: Option[String], duration: Long)
 }
 
-class JDBCAccessRecordStore(url: String, username: String, password: String)(implicit executionContext: ExecutionContext) extends AccessRecordStore {
+class JDBCAccessRecordStore(val url: String, val username: String, val password: String)(implicit executionContext: ExecutionContext) extends AccessRecordStore with JDBCConnection  {
 
   override def allRecords: Future[Seq[Access]] = Future.fromTry {
     withConnection { implicit connection =>
@@ -45,8 +45,35 @@ class JDBCAccessRecordStore(url: String, username: String, password: String)(imp
       insert.executeUpdate()
     }
   }
+//
+//  private def withConnection[T](block: Connection => T): Try[T] = {
+//    Try(DriverManager.getConnection(url, username, password)).flatMap { connection =>
+//      val res = Try(block(connection))
+//      connection.close()
+//      res
+//    }
+//  }
+//
+//  private def queryResults(query: String)(implicit connection: Connection): Stream[ResultSet] = {
+//    resultStream(connection.createStatement().executeQuery(query))
+//  }
+//
+//  private def resultStream(resultSet: ResultSet): Stream[ResultSet] = {
+//    resultSet.next() match {
+//      case false => Stream.empty
+//      case true  => resultSet #:: resultStream(resultSet)
+//    }
+//  }
 
-  private def withConnection[T](block: Connection => T): Try[T] = {
+}
+
+trait JDBCConnection {
+
+  def url: String
+  def username: String
+  def password: String
+
+  def withConnection[T](block: Connection => T): Try[T] = {
     Try(DriverManager.getConnection(url, username, password)).flatMap { connection =>
       val res = Try(block(connection))
       connection.close()
@@ -54,11 +81,11 @@ class JDBCAccessRecordStore(url: String, username: String, password: String)(imp
     }
   }
 
-  private def queryResults(query: String)(implicit connection: Connection): Stream[ResultSet] = {
+  def queryResults(query: String)(implicit connection: Connection): Stream[ResultSet] = {
     resultStream(connection.createStatement().executeQuery(query))
   }
 
-  private def resultStream(resultSet: ResultSet): Stream[ResultSet] = {
+  def resultStream(resultSet: ResultSet): Stream[ResultSet] = {
     resultSet.next() match {
       case false => Stream.empty
       case true  => resultSet #:: resultStream(resultSet)

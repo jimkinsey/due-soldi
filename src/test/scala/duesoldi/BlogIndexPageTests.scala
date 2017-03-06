@@ -2,10 +2,10 @@ package duesoldi
 
 import duesoldi.Setup.withSetup
 import duesoldi.pages.BlogIndexPage
-import duesoldi.storage.BlogStorage
+import duesoldi.storage.{BlogStorage, Database}
 import org.scalatest.AsyncFunSpec
 
-class BlogIndexPageTests extends AsyncFunSpec with BlogStorage {
+class BlogIndexPageTests extends AsyncFunSpec with BlogStorage with Database {
 
   import duesoldi.testapp.TestAppRequest.get
   import org.scalatest.Matchers._
@@ -13,7 +13,7 @@ class BlogIndexPageTests extends AsyncFunSpec with BlogStorage {
   describe("visiting 'blog' without the trailing slash") {
 
     it("redirects to the version with the trailing slash") {
-      withSetup(blogEntries("id" -> "# Content!")) {
+      withSetup(database, blogEntries("id" -> "# Content!")) {
         get("/blog") { response =>
           response.status shouldBe 301
           response.headers("Location") shouldBe List("/blog/")
@@ -26,7 +26,7 @@ class BlogIndexPageTests extends AsyncFunSpec with BlogStorage {
   describe("when there are no blog entries") {
 
     it("responds with a 404") {
-      withSetup(blogEntries()) {
+      withSetup(database, blogEntries()) {
         get("/blog/") {
           _.status shouldBe 404
         }
@@ -38,7 +38,7 @@ class BlogIndexPageTests extends AsyncFunSpec with BlogStorage {
   describe("when there are only invalid blog entries") {
 
     it("responds with a 404") {
-      withSetup(blogEntries(
+      withSetup(database, blogEntries(
         "invalid-content" -> "boom",
         "InVALid ID" -> "# Boom")) {
         get("/blog/") {
@@ -52,7 +52,7 @@ class BlogIndexPageTests extends AsyncFunSpec with BlogStorage {
   describe("when there is a mix of valid and invalid blog entries") {
 
     it("filters out the invalid entries") {
-      withSetup(blogEntries(
+      withSetup(database, blogEntries(
         "invalid-content" -> "boom",
         "InVALid ID" -> "# Boom",
         "valid-content-and-id" -> "# Hello!")) {
@@ -71,19 +71,19 @@ class BlogIndexPageTests extends AsyncFunSpec with BlogStorage {
   describe("the blog index page") {
 
     it("responds with a 200") {
-      withSetup(blogEntries("first-post" -> "# Hello, World!")) {
+      withSetup(database, blogEntries("first-post" -> "# Hello, World!")) {
         get("/blog/") { _.status shouldBe 200 }
       }
     }
 
     it("has content-type text/html") {
-      withSetup(blogEntries("year-in-review" -> "# tedious blah")) {
+      withSetup(database, blogEntries("year-in-review" -> "# tedious blah")) {
         get("/blog/") { _.headers("Content-Type") should contain("text/html; charset=UTF-8") }
       }
     }
 
     it("has a copyright notice") {
-      withSetup(blogEntries("top-content" -> "# this is well worth copyrighting")) {
+      withSetup(database, blogEntries("top-content" -> "# this is well worth copyrighting")) {
         get("/blog/") { response =>
           new BlogIndexPage(response.body).footer.copyrightNotice shouldBe Some("© 2016-2017 Jim Kinsey")
         }
@@ -91,7 +91,7 @@ class BlogIndexPageTests extends AsyncFunSpec with BlogStorage {
     }
 
     it("has a title and heading") {
-      withSetup(blogEntries("content" -> "# _Content_, mofos")) {
+      withSetup(database, blogEntries("content" -> "# _Content_, mofos")) {
         get("/blog/") { response =>
           val page: BlogIndexPage = new BlogIndexPage(response.body)
           page.title shouldBe "Jim Kinsey's Blog"
@@ -101,7 +101,7 @@ class BlogIndexPageTests extends AsyncFunSpec with BlogStorage {
     }
 
     it("lists the entries in reverse order of last modification") {
-      withSetup(blogEntries(
+      withSetup(database, blogEntries(
         ("2010-10-12T17:05:00Z", "first-post", "# First"),
         ("2012-12-03T09:34:00Z", "tricky-second-post", "# Second"),
         ("2016-04-01T09:45:00Z", "sorry-for-lack-of-updates", "# Third"))) {
@@ -113,7 +113,7 @@ class BlogIndexPageTests extends AsyncFunSpec with BlogStorage {
     }
 
     it("includes the last modified date in the entry") {
-      withSetup(blogEntries(("2010-10-12T17:05:00Z", "dated", "# Dated!"))) {
+      withSetup(database, blogEntries(("2010-10-12T17:05:00Z", "dated", "# Dated!"))) {
         get("/blog/") { response =>
           val page = new BlogIndexPage(response.body)
           page.blogEntries.head should have('date ("Tuesday, 12 October 2010"))
@@ -122,7 +122,7 @@ class BlogIndexPageTests extends AsyncFunSpec with BlogStorage {
     }
 
     it("has a bio section with a title and some text") {
-      withSetup(blogEntries("year-in-review" -> "# Year in review!")) {
+      withSetup(database, blogEntries("year-in-review" -> "# Year in review!")) {
         get("/blog/") { response =>
           val page = new BlogIndexPage(response.body)
           page.blurb should have('title ("About"))

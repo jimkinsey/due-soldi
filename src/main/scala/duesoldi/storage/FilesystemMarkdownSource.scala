@@ -1,12 +1,8 @@
 package duesoldi.storage
 
-import java.io.File
-import java.nio.file.Files
-import java.time.{ZoneOffset, ZonedDateTime}
+import java.time.{ZoneId, ZonedDateTime}
 
-import scala.concurrent.Future
-import scala.io.Source
-import scala.util.Try
+import scala.concurrent.{ExecutionContext, Future}
 
 case class MarkdownContainer(lastModified: ZonedDateTime = ZonedDateTime.now(), content: String)
 
@@ -15,24 +11,26 @@ trait MarkdownSource {
   def documents: Future[Seq[(String, MarkdownContainer)]]
 }
 
-class FilesystemMarkdownSource(path: String) extends MarkdownSource {
-  override def document(id: String): Future[Option[MarkdownContainer]] =
-    Future successful Try({
-      val file = new File(s"$path/$id.md")
-      MarkdownContainer(
-        content = Source.fromFile(file).mkString,
-        lastModified = ZonedDateTime.ofInstant(Files.getLastModifiedTime(file.toPath).toInstant, ZoneOffset.UTC)
-      )
-    }).toOption
-
-  override def documents: Future[Seq[(String, MarkdownContainer)]] = {
-    Future successful {
-      Try({new File(path).listFiles().filter(_.getName.endsWith("md")).map { file =>
-        file.getName.dropRight(3) -> MarkdownContainer(
-          content = Source.fromFile(file).mkString,
-          lastModified = ZonedDateTime.ofInstant(Files.getLastModifiedTime(file.toPath).toInstant, ZoneOffset.UTC)
+class JDBCMarkdownSource(val url: String, val username: String, val password: String)(implicit executionContext: ExecutionContext) extends MarkdownSource with JDBCConnection {
+  override def document(id: String): Future[Option[MarkdownContainer]] = Future.fromTry {
+    withConnection { implicit connection =>
+      queryResults("SELECT id, published, content FROM blog_entry").map { row =>
+        MarkdownContainer(
+          lastModified = row.getTimestamp(2).toInstant.atZone(ZoneId.of("UTC+1")),
+          content = row.getString(3)
         )
-      } toSeq}) getOrElse Seq.empty
+      }.toList.headOption
+    }
+  }
+
+  override def documents: Future[Seq[(String, MarkdownContainer)]] = Future.fromTry {
+    withConnection { implicit connection =>
+      queryResults("SELECT id, published, content FROM blog_entry").map { row =>
+        row.getString(1) -> MarkdownContainer(
+          lastModified = row.getTimestamp(2).toInstant.atZone(ZoneId.of("UTC+1")),
+          content = row.getString(3)
+        )
+      }.toList
     }
   }
 }

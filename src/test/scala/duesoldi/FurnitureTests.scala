@@ -5,8 +5,8 @@ import java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
 import java.util.UUID
 
 import duesoldi.Setup.withSetup
+import duesoldi.filesystem.DeleteDir
 import duesoldi.scalatest.CustomMatchers
-import duesoldi.storage.DeleteDir
 import org.scalatest.AsyncWordSpec
 
 import scala.concurrent.Future
@@ -55,7 +55,7 @@ class FurnitureTests extends AsyncWordSpec with CustomMatchers {
   def furniture(version: String, cacheDuration: Option[String] = None)(files: (String, String)*) = new Setup {
     lazy val path = s"/tmp/furniture/${UUID.randomUUID().toString.take(6)}"
 
-    override def setup = {
+    override def setup(env: Env) = {
       files foreach { case (name, content) =>
         val file = new File(s"$path/$name")
         file.getParentFile.mkdirs()
