@@ -97,21 +97,27 @@ trait BlogRoutes { self: Configured =>
     }
   })
 
-  private def recordAccess = mapRequest { req =>
-    if (config.accessRecordingEnabled) {
-      accessRecordStore.record(Access(
-        time = ZonedDateTime.now(),
-        path = req.uri.path.toString,
-        referer = req.header[Referer].map(_.getUri().toString),
-        userAgent = req.header[`User-Agent` ].map(_.value())
-      )).onComplete {
-        case Failure(ex) =>
-          System.err.println(s"Failed to record access - ${ex.getMessage}")
-          ex.printStackTrace()
-        case _ =>
+  private def recordAccess =
+    extractRequestContext.flatMap { ctx =>
+      val startTime = System.currentTimeMillis()
+      mapResponse { response =>
+        if (config.accessRecordingEnabled) {
+          val duration = System.currentTimeMillis() - startTime
+          accessRecordStore.record(Access(
+            time = ZonedDateTime.now(),
+            path = ctx.request.uri.path.toString,
+            referer = ctx.request.header[Referer].map(_.getUri().toString),
+            userAgent = ctx.request.header[`User-Agent`].map(_.value()),
+            duration = duration
+          )).onComplete {
+            case Failure(ex) =>
+              System.err.println(s"Failed to record access - ${ex.getMessage}")
+              ex.printStackTrace()
+            case _ =>
+          }
+        }
+        response
       }
     }
-    req
-  }
 
 }

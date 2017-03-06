@@ -15,19 +15,20 @@ trait AccessRecordStore {
 }
 
 object AccessRecordStore {
-  case class Access(time: ZonedDateTime, path: String, referer: Option[String], userAgent: Option[String])
+  case class Access(time: ZonedDateTime, path: String, referer: Option[String], userAgent: Option[String], duration: Long)
 }
 
 class JDBCAccessRecordStore(url: String, username: String, password: String)(implicit executionContext: ExecutionContext) extends AccessRecordStore {
 
   override def allRecords: Future[Seq[Access]] = Future.fromTry {
     withConnection { implicit connection =>
-      queryResults("SELECT timestamp, path, referer, user_agent FROM access_record").map { row =>
+      queryResults("SELECT timestamp, path, referer, user_agent, duration FROM access_record").map { row =>
         Access(
           path = row.getString(2),
           time = row.getTimestamp(1).toInstant.atZone(ZoneId.of("UTC+1")),
           referer = Option(row.getString(3)),
-          userAgent = Option(row.getString(4))
+          userAgent = Option(row.getString(4)),
+          duration = row.getString(5).toLong
         )
       } toList
     }
@@ -35,11 +36,12 @@ class JDBCAccessRecordStore(url: String, username: String, password: String)(imp
 
   override def record(access: Access): Future[Unit] = Future.fromTry {
     withConnection { connection =>
-      val insert = connection.prepareStatement("INSERT INTO access_record ( timestamp, path, referer, user_agent ) VALUES ( ?, ?, ?, ? )")
+      val insert = connection.prepareStatement("INSERT INTO access_record ( timestamp, path, referer, user_agent, duration ) VALUES ( ?, ?, ?, ?, ? )")
       insert.setTimestamp(1, Timestamp.from(access.time.toInstant))
       insert.setString(2, access.path)
       insert.setString(3, access.referer.orNull)
       insert.setString(4, access.userAgent.orNull)
+      insert.setLong(5, access.duration)
       insert.executeUpdate()
     }
   }

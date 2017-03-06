@@ -12,4 +12,8 @@ trait CustomMatchers {
     def apply(in: String) = MatchResult(Try(format.parse(in)).isSuccess, s"[$in] is not parsable in the requested format", s"Succesfully parsed")
   }
 
+  def aValidLong = new BeMatcher[String] {
+    def apply(in: String) = MatchResult(Try(in.toLong).isSuccess, s"[$in] is not a valid Long value", s"Successfully parsed $in as a Long")
+  }
+
 }
