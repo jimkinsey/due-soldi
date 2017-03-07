@@ -4,7 +4,7 @@ import cats.data.EitherT
 import duesoldi.markdown.MarkdownDocument.Heading
 import duesoldi.markdown.{MarkdownDocument, MarkdownParser}
 import duesoldi.model.BlogEntry
-import duesoldi.storage.BlogStore.{InvalidContent, NotFound}
+import duesoldi.storage.BlogStore.{Created, CreationResult, InvalidContent, NotFound}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -28,6 +28,12 @@ class BlogStore(source: MarkdownSource, parser: MarkdownParser)(implicit ec: Exe
     } }
   }
 
+  def createOrUpdate(name: String, content: String): Future[CreationResult] = {
+    source.store(name, MarkdownContainer(content = content)) map { _ =>
+      Created
+    }
+  }
+
   private def raw(name: String): EitherT[Future, NotFound.type, MarkdownContainer] =
     EitherT[Future, NotFound.type, MarkdownContainer](source.document(name).map(opt => opt.toRight({ NotFound })))
 
@@ -46,4 +52,7 @@ object BlogStore {
   sealed trait Failure
   case object NotFound extends Failure
   case object InvalidContent extends Failure
+
+  sealed trait CreationResult
+  case object Created extends CreationResult
 }

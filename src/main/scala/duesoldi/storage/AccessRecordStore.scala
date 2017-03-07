@@ -1,13 +1,12 @@
 package duesoldi.storage
 
-import java.sql.{Connection, DriverManager, ResultSet, Timestamp}
+import java.sql.Timestamp
 import java.time.{ZoneId, ZonedDateTime}
 
 import duesoldi.storage.AccessRecordStore.Access
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 
 trait AccessRecordStore {
   def allRecords: Future[Seq[AccessRecordStore.Access]]
@@ -43,52 +42,6 @@ class JDBCAccessRecordStore(val url: String, val username: String, val password:
       insert.setString(4, access.userAgent.orNull)
       insert.setLong(5, access.duration)
       insert.executeUpdate()
-    }
-  }
-//
-//  private def withConnection[T](block: Connection => T): Try[T] = {
-//    Try(DriverManager.getConnection(url, username, password)).flatMap { connection =>
-//      val res = Try(block(connection))
-//      connection.close()
-//      res
-//    }
-//  }
-//
-//  private def queryResults(query: String)(implicit connection: Connection): Stream[ResultSet] = {
-//    resultStream(connection.createStatement().executeQuery(query))
-//  }
-//
-//  private def resultStream(resultSet: ResultSet): Stream[ResultSet] = {
-//    resultSet.next() match {
-//      case false => Stream.empty
-//      case true  => resultSet #:: resultStream(resultSet)
-//    }
-//  }
-
-}
-
-trait JDBCConnection {
-
-  def url: String
-  def username: String
-  def password: String
-
-  def withConnection[T](block: Connection => T): Try[T] = {
-    Try(DriverManager.getConnection(url, username, password)).flatMap { connection =>
-      val res = Try(block(connection))
-      connection.close()
-      res
-    }
-  }
-
-  def queryResults(query: String)(implicit connection: Connection): Stream[ResultSet] = {
-    resultStream(connection.createStatement().executeQuery(query))
-  }
-
-  def resultStream(resultSet: ResultSet): Stream[ResultSet] = {
-    resultSet.next() match {
-      case false => Stream.empty
-      case true  => resultSet #:: resultStream(resultSet)
     }
   }
 

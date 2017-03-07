@@ -12,4 +12,8 @@ trait ServerRequests {
     HttpClient.get(path, server, headers)
   }
 
+  def put(path: String, body: String, headers: (String, String)*)(implicit executionContext: ExecutionContext, server: Server): Future[Response] = {
+    HttpClient.put(path, server, body, headers)
+  }
+
 }
