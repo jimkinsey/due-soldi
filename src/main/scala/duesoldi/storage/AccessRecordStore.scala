@@ -4,6 +4,7 @@ import java.sql.Timestamp
 import java.time.{ZoneId, ZonedDateTime}
 
 import duesoldi.storage.AccessRecordStore.Access
+import duesoldi.storage.JDBCConnection.ConnectionDetails
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContext, Future}
@@ -17,7 +18,7 @@ object AccessRecordStore {
   case class Access(time: ZonedDateTime, path: String, referer: Option[String], userAgent: Option[String], duration: Long)
 }
 
-class JDBCAccessRecordStore(val url: String, val username: String, val password: String)(implicit executionContext: ExecutionContext) extends AccessRecordStore with JDBCConnection  {
+class JDBCAccessRecordStore(val connectionDetails: ConnectionDetails)(implicit executionContext: ExecutionContext) extends AccessRecordStore with JDBCConnection  {
 
   override def allRecords: Future[Seq[Access]] = Future.fromTry {
     withConnection { implicit connection =>

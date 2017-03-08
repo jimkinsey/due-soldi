@@ -30,21 +30,20 @@ class BlogEditingTests extends AsyncWordSpec with BlogStorage with Database with
     }
 
     "update the blog entry at the specified ID where it already exists" in {
-      pendingUntilFixed {
-        withSetup(
-          database,
-          adminCredentials("admin", "password"),
-          blogEntries("entry" -> "# Inserted!")
-        ) {
-          withServer { implicit server =>
-            for {
-              createResponse <- put("/admin/blog/entry", body = "# Updated!", headers = BasicAuthorization("admin", "password"))
-              entryResponse <- get("/blog/entry")
-            } yield {
-              createResponse.status shouldBe 200
-              entryResponse.status shouldBe 200
-              entryResponse.body should include("Updated!")
-            }
+      pending
+      withSetup(
+        database,
+        adminCredentials("admin", "password"),
+        blogEntries("entry" -> "# Inserted!")
+      ) {
+        withServer { implicit server =>
+          for {
+            createResponse <- put("/admin/blog/entry", body = "# Updated!", headers = BasicAuthorization("admin", "password"))
+            entryResponse <- get("/blog/entry")
+          } yield {
+            createResponse.status shouldBe 200
+            entryResponse.status shouldBe 200
+            entryResponse.body should include("Updated!")
           }
         }
       }

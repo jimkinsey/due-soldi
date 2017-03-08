@@ -35,21 +35,7 @@ class BlogIndexPageTests extends AsyncFunSpec with BlogStorage with Database {
 
   }
 
-  describe("when there are only invalid blog entries") {
-
-    it("responds with a 404") {
-      withSetup(database, blogEntries(
-        "invalid-content" -> "boom",
-        "InVALid ID" -> "# Boom")) {
-        get("/blog/") {
-          _.status shouldBe 404
-        }
-      }
-    }
-
-  }
-
-  describe("when there is a mix of valid and invalid blog entries") {
+  describe("when there are invalid blog entries") {
 
     it("filters out the invalid entries") {
       withSetup(database, blogEntries(

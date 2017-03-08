@@ -1,5 +1,7 @@
 package duesoldi.controller
 
+import java.time.ZonedDateTime
+
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.server.Directives._
 import akka.stream.Materializer
@@ -15,17 +17,15 @@ trait BlogEditingRoutes extends AdminAuthentication { self: Configured =>
   def blogStore: BlogStore
 
   final def blogEditingRoutes = path("admin" / "blog" / Remaining) { remaining =>
+    // TODO validate ID, content, etc.
     put {
       authenticateBasic("admin", authenticatedAdminUser) { username =>
         entity(as[String]) { content =>
           complete {
             for {
-              result <- blogStore.createOrUpdate(remaining, content)
+              result <- blogStore.store(remaining, ZonedDateTime.now(), content)
             } yield {
-              result match {
-                case BlogStore.Created => HttpResponse(201)
-                case _ => ???
-              }
+              HttpResponse(201)
             }
           }
         }

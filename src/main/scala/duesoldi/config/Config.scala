@@ -1,6 +1,7 @@
 package duesoldi.config
 
 import duesoldi.config.Config.Credentials
+import duesoldi.storage.JDBCConnection
 
 import scala.concurrent.duration.Duration
 
@@ -10,9 +11,7 @@ case class Config(
   furnitureCacheDuration: Duration,
   adminCredentials: Option[Credentials],
   accessRecordingEnabled: Boolean,
-  jdbcDatabaseUrl: String,
-  jdbcDatabaseUsername: String,
-  jdbcDatabasePassword: String
+  jdbcConnectionDetails: JDBCConnection.ConnectionDetails
 )
 
 object Config {

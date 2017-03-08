@@ -17,11 +17,9 @@ class MasterController(val env: Env)(implicit val executionContext: ExecutionCon
   with RobotsRoutes
   with BlogEditingRoutes {
 
-  private lazy val markdownSource: MarkdownSource = new JDBCMarkdownSource(config.jdbcDatabaseUrl, config.jdbcDatabaseUsername, config.jdbcDatabasePassword)
-
-  lazy val blogStore = new BlogStore(markdownSource, new MarkdownParser)
+  lazy val blogStore = new JDBCBlogStore(config.jdbcConnectionDetails, new MarkdownParser)
   lazy val renderer = new Renderer
-  lazy val accessRecordStore =  new JDBCAccessRecordStore(config.jdbcDatabaseUrl, config.jdbcDatabaseUsername, config.jdbcDatabasePassword)
+  lazy val accessRecordStore =  new JDBCAccessRecordStore(config.jdbcConnectionDetails)
 
   def routes = furnitureRoutes ~ blogRoutes ~ metricsRoutes ~ robotsRoutes ~ blogEditingRoutes
 

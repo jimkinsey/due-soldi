@@ -2,13 +2,17 @@ package duesoldi.storage
 
 import java.sql.{Connection, DriverManager, ResultSet}
 
+import duesoldi.storage.JDBCConnection.ConnectionDetails
+
 import scala.util.Try
+
+object JDBCConnection {
+  case class ConnectionDetails(url: String, username: String, password: String)
+}
 
 trait JDBCConnection {
 
-  def url: String
-  def username: String
-  def password: String
+  def connectionDetails: ConnectionDetails
 
   def withConnection[T](block: Connection => T): Try[T] = {
     Try(DriverManager.getConnection(url, username, password)).flatMap { connection =>
@@ -18,8 +22,12 @@ trait JDBCConnection {
     }
   }
 
-  def queryResults(query: String)(implicit connection: Connection): Stream[ResultSet] = {
-    resultStream(connection.createStatement().executeQuery(query))
+  def queryResults(query: String, params: Any*)(implicit connection: Connection): Stream[ResultSet] = {
+    val statement = connection.prepareStatement(query)
+    params.zipWithIndex.foreach { case (param, index) =>
+      statement.setObject(index + 1, param)
+    }
+    resultStream(statement.executeQuery())
   }
 
   def resultStream(resultSet: ResultSet): Stream[ResultSet] = {
@@ -28,5 +36,7 @@ trait JDBCConnection {
       case true  => resultSet #:: resultStream(resultSet)
     }
   }
+
+  private lazy val ConnectionDetails(url, username, password) = connectionDetails
 
 }

@@ -1,58 +1,66 @@
 package duesoldi.storage
 
-import cats.data.EitherT
-import duesoldi.markdown.MarkdownDocument.Heading
-import duesoldi.markdown.{MarkdownDocument, MarkdownParser}
+import java.sql.Timestamp
+import java.time.{ZoneId, ZonedDateTime}
+
+import duesoldi.markdown.MarkdownParser
 import duesoldi.model.BlogEntry
-import duesoldi.storage.BlogStore.{Created, CreationResult, InvalidContent, NotFound}
+import duesoldi.storage.JDBCConnection.ConnectionDetails
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class BlogStore(source: MarkdownSource, parser: MarkdownParser)(implicit ec: ExecutionContext) {
-
-  import cats.instances.all._
-
-  def entry(name: String): Future[Either[BlogStore.Failure, BlogEntry]] = {
-    val result = for {
-      document <- raw(name)
-      entry    <- EitherT.fromEither[Future](blogEntry(name, document))
-    } yield {
-      entry
-    }
-    result.value
-  }
-
-  def entries: Future[Seq[BlogEntry]] = {
-    source.documents map { _ flatMap { case (id, container) =>
-      blogEntry(id, container).right.toOption
-    } }
-  }
-
-  def createOrUpdate(name: String, content: String): Future[CreationResult] = {
-    source.store(name, MarkdownContainer(content = content)) map { _ =>
-      Created
-    }
-  }
-
-  private def raw(name: String): EitherT[Future, NotFound.type, MarkdownContainer] =
-    EitherT[Future, NotFound.type, MarkdownContainer](source.document(name).map(opt => opt.toRight({ NotFound })))
-
-  private def blogEntry(id: String, container: MarkdownContainer): Either[BlogStore.Failure, BlogEntry] = {
-    val document = parser.markdown(container.content)
-    title(document) map { title => BlogEntry(id, title, document, container.lastModified) } toRight { InvalidContent }
-  }
-
-  private def title(markdown: MarkdownDocument): Option[String] = markdown.nodes.collectFirst {
-    case Heading(nodes, 1) => MarkdownDocument.text(nodes)
-  }
-
+trait BlogStore {
+  def entry(name: String): Future[Option[BlogEntry]]
+  def entries: Future[Seq[BlogEntry]]
+  def store(name: String, published: ZonedDateTime, content: String): Future[BlogEntry]
+  def delete(name: String): Future[Unit]
 }
 
-object BlogStore {
-  sealed trait Failure
-  case object NotFound extends Failure
-  case object InvalidContent extends Failure
+class JDBCBlogStore(val connectionDetails: ConnectionDetails, parser: MarkdownParser)(implicit executionContext: ExecutionContext) extends BlogStore with JDBCConnection {
 
-  sealed trait CreationResult
-  case object Created extends CreationResult
+  override def entry(name: String): Future[Option[BlogEntry]] = Future.fromTry {
+    withConnection { implicit connection =>
+      queryResults("SELECT id, published, content FROM blog_entry WHERE id = ?", name).map { row =>
+        blogEntry(
+          id = row.getString(1),
+          content = row.getString(3),
+          published = row.getTimestamp(2).toInstant.atZone(ZoneId.of("UTC+1"))
+        )
+      }.toList.headOption
+    }
+  }
+
+  override def entries: Future[Seq[BlogEntry]] = Future.fromTry {
+    withConnection { implicit connection =>
+      queryResults("SELECT id, published, content FROM blog_entry").map { row =>
+        blogEntry(
+          id = row.getString(1),
+          content = row.getString(3),
+          published = row.getTimestamp(2).toInstant.atZone(ZoneId.of("UTC+1"))
+        )
+      }.toList
+    }
+  }
+
+  override def store(name: String, published: ZonedDateTime, content: String) = Future.fromTry {
+    withConnection { implicit connection =>
+      val insert = connection.prepareStatement("INSERT INTO blog_entry ( id, published, content ) VALUES ( ?, ?, ? )")
+      insert.setString(1, name)
+      insert.setTimestamp(2, Timestamp.from(published.toInstant))
+      insert.setString(3, content)
+      insert.executeUpdate()
+      blogEntry(name, published, content)
+    }
+  }
+
+  override def delete(name: String): Future[Unit] = ???
+
+  private def blogEntry(id: String, published: ZonedDateTime, content: String): BlogEntry = {
+    BlogEntry(
+      id = id,
+      content = parser.markdown(content),
+      lastModified = published
+    )
+  }
+
 }
