@@ -39,11 +39,11 @@ class BlogEditingTests extends AsyncWordSpec with BlogStorage with Database with
         withServer { implicit server =>
           for {
             createResponse <- put("/admin/blog/entry", body = "# Updated!", headers = BasicAuthorization("admin", "password"))
-            entryResponse <- get("/blog/entry")
+            entryResponse  <- get("/blog/entry")
           } yield {
             createResponse.status shouldBe 200
-            entryResponse.status shouldBe 200
-            entryResponse.body should include("Updated!")
+            entryResponse.status  shouldBe 200
+            entryResponse.body    should include("Updated!")
           }
         }
       }
@@ -95,7 +95,23 @@ class BlogEditingTests extends AsyncWordSpec with BlogStorage with Database with
             entryResponse  <- get("/blog/existing")
           } yield {
             createResponse.status shouldBe 204
-            entryResponse.status shouldBe 404
+            entryResponse.status  shouldBe 404
+          }
+        }
+      }
+    }
+
+    "require admin priviliges" in {
+      withSetup(
+        database,
+        adminCredentials("admin", "password"),
+        blogEntries("any-entry" -> "# Title")
+      ) {
+        withServer { implicit server =>
+          for {
+            createResponse <- delete("/admin/blog/any-entry", headers = BasicAuthorization("not-an-admin", "password"))
+          } yield {
+            createResponse.status shouldBe 401
           }
         }
       }
