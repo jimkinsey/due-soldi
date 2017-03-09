@@ -35,14 +35,14 @@ class JDBCAccessRecordStore(val connectionDetails: ConnectionDetails)(implicit e
   }
 
   override def record(access: Access): Future[Unit] = Future.fromTry {
-    withConnection { connection =>
-      val insert = connection.prepareStatement("INSERT INTO access_record ( timestamp, path, referer, user_agent, duration ) VALUES ( ?, ?, ?, ?, ? )")
-      insert.setTimestamp(1, Timestamp.from(access.time.toInstant))
-      insert.setString(2, access.path)
-      insert.setString(3, access.referer.orNull)
-      insert.setString(4, access.userAgent.orNull)
-      insert.setLong(5, access.duration)
-      insert.executeUpdate()
+    withConnection { implicit connection =>
+      updateResults("INSERT INTO access_record ( timestamp, path, referer, user_agent, duration ) VALUES ( ?, ?, ?, ?, ? )",
+        Timestamp.from(access.time.toInstant),
+        access.path,
+        access.referer.orNull,
+        access.userAgent.orNull,
+        access.duration
+      )
     }
   }
 

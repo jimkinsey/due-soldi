@@ -31,7 +31,15 @@ object HttpClient {
     }
   }
 
-
+  def delete(path: String, server: Server, headers: Seq[(String, String)] = Seq.empty)(implicit ec: ExecutionContext): Future[Response] = {
+    Http(url(s"http://localhost:${server.port}$path").setMethod("DELETE").setHeaders(headers.map { case (name, value) => name -> Seq(value) } toMap)).map { res =>
+      Response(
+        status = res.getStatusCode,
+        headers = convertHeaders(res.getHeaders),
+        body = res.getResponseBody
+      )
+    }
+  }
 
   private def convertHeaders(headers: java.util.Map[String, java.util.List[String]]): Map[String, Seq[String]] = {
     headers.asScala map { case (key, value) => key -> Seq(value:_*) } toMap

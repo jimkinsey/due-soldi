@@ -17,7 +17,7 @@ trait BlogEditingRoutes extends AdminAuthentication { self: Configured =>
   def blogStore: BlogStore
 
   final def blogEditingRoutes = path("admin" / "blog" / Remaining) { remaining =>
-    // TODO validate ID, content, etc.
+    // TODO validate ID, content, etc. - or should this be a function of the store?
     put {
       authenticateBasic("admin", authenticatedAdminUser) { username =>
         entity(as[String]) { content =>
@@ -30,7 +30,20 @@ trait BlogEditingRoutes extends AdminAuthentication { self: Configured =>
           }
         }
       }
+    } ~ delete {
+      authenticateBasic("admin", authenticatedAdminUser) { username =>
+        entity(as[String]) { content =>
+          complete {
+            for {
+              result <- blogStore.delete(remaining)
+            } yield {
+              HttpResponse(204)
+            }
+          }
+        }
+      }
     }
+
   }
 
 }

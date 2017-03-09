@@ -16,4 +16,8 @@ trait ServerRequests {
     HttpClient.put(path, server, body, headers)
   }
 
+  def delete(path: String, headers: (String, String)*)(implicit executionContext: ExecutionContext, server: Server): Future[Response] = {
+    HttpClient.delete(path, server, headers)
+  }
+
 }

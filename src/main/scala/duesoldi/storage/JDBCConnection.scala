@@ -30,6 +30,14 @@ trait JDBCConnection {
     resultStream(statement.executeQuery())
   }
 
+  def updateResults(updateSql: String, params: Any*)(implicit connection: Connection): Int = {
+    val statement = connection.prepareStatement(updateSql)
+    params.zipWithIndex.foreach { case (param, index) =>
+      statement.setObject(index + 1, param)
+    }
+    statement.executeUpdate()
+  }
+
   def resultStream(resultSet: ResultSet): Stream[ResultSet] = {
     resultSet.next() match {
       case false => Stream.empty

@@ -44,16 +44,16 @@ class JDBCBlogStore(val connectionDetails: ConnectionDetails, parser: MarkdownPa
 
   override def store(name: String, published: ZonedDateTime, content: String) = Future.fromTry {
     withConnection { implicit connection =>
-      val insert = connection.prepareStatement("INSERT INTO blog_entry ( id, published, content ) VALUES ( ?, ?, ? )")
-      insert.setString(1, name)
-      insert.setTimestamp(2, Timestamp.from(published.toInstant))
-      insert.setString(3, content)
-      insert.executeUpdate()
+      updateResults("INSERT INTO blog_entry ( id, published, content ) VALUES ( ?, ?, ? )", name, Timestamp.from(published.toInstant), content)
       blogEntry(name, published, content)
     }
   }
 
-  override def delete(name: String): Future[Unit] = ???
+  override def delete(name: String): Future[Unit] = Future.fromTry {
+    withConnection { implicit connection =>
+      updateResults("DELETE FROM blog_entry WHERE id = ?", name)
+    }
+  }
 
   private def blogEntry(id: String, published: ZonedDateTime, content: String): BlogEntry = {
     BlogEntry(

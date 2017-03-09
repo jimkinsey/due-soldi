@@ -81,4 +81,26 @@ class BlogEditingTests extends AsyncWordSpec with BlogStorage with Database with
 
   }
 
+  "making a DELETE request to a blog entry URL" must {
+
+    "delete the blog entry at the specified ID where it already exists" in {
+      withSetup(
+        database,
+        adminCredentials("admin", "password"),
+        blogEntries("existing" -> "# Existing!")
+      ) {
+        withServer { implicit server =>
+          for {
+            createResponse <- delete("/admin/blog/existing", headers = BasicAuthorization("admin", "password"))
+            entryResponse  <- get("/blog/existing")
+          } yield {
+            createResponse.status shouldBe 204
+            entryResponse.status shouldBe 404
+          }
+        }
+      }
+    }
+
+  }
+
 }
