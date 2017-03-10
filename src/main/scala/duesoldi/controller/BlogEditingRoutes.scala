@@ -19,35 +19,31 @@ trait BlogEditingRoutes extends AdminAuthentication { self: Configured =>
 
   final def blogEditingRoutes = path("admin" / "blog" / Remaining) { remaining =>
     put {
-      authenticateBasic("admin", authenticatedAdminUser) { username =>
+      adminsOnly {
         entity(as[String]) { content =>
           complete {
             for {
               result <- blogStore.store(remaining, ZonedDateTime.now(), content)
             } yield {
               result match {
-                case Created(_) => HttpResponse(201)
-                case Invalid(reasons)    => HttpResponse(400, entity = reasons.mkString("\n"))
+                case Created(_)       => HttpResponse(201)
+                case Invalid(reasons) => HttpResponse(400, entity = reasons.mkString("\n"))
               }
-
             }
           }
         }
       }
     } ~ delete {
-      authenticateBasic("admin", authenticatedAdminUser) { username =>
-        entity(as[String]) { content =>
-          complete {
-            for {
-              result <- blogStore.delete(remaining)
-            } yield {
-              HttpResponse(204)
-            }
+      adminsOnly {
+        complete {
+          for {
+            result <- blogStore.delete(remaining)
+          } yield {
+            HttpResponse(204)
           }
         }
       }
     }
-
   }
 
 }

@@ -8,7 +8,7 @@ trait DebugRoutes extends AdminAuthentication { self: Configured =>
 
   final def debugRoutes = path("admin" / "debug" / "headers") {
     extractRequest { req =>
-      authenticateBasic("admin", authenticatedAdminUser) { _ =>
+      adminsOnly {
         complete { req.headers.map { case HttpHeader(key, value) => s"$key: $value" } mkString "\n" }
       }
     }

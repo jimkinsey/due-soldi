@@ -30,6 +30,7 @@ object App {
     implicit val materializer = ActorMaterializer()
     implicit val executionContext = system.dispatcher
 
+
     val controller = new MasterController(env)
 
     val fut = Http().bindAndHandle(controller.routes, host, port) map { binding => new Server(binding)}

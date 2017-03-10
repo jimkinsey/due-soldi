@@ -17,7 +17,7 @@ trait MetricsRoutes extends AdminAuthentication { self: Configured =>
 
   final def metricsRoutes =
     path("admin" / "metrics" / "access.csv") {
-      authenticateBasic("admin", authenticatedAdminUser) { username =>
+      adminsOnly {
         complete {
           accessRecordStore.allRecords.map(
             { accesses =>
