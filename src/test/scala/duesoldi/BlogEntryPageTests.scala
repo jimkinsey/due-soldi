@@ -3,10 +3,11 @@ package duesoldi
 import duesoldi.Setup.withSetup
 import duesoldi.pages.BlogEntryPage
 import duesoldi.storage.{BlogStorage, Database}
+import duesoldi.testapp.{ServerRequests, ServerSupport}
 import org.scalatest.AsyncFunSpec
 
-class BlogEntryPageTests extends AsyncFunSpec with BlogStorage with Database {
-  import duesoldi.testapp.TestAppRequest.get
+class BlogEntryPageTests extends AsyncFunSpec with BlogStorage with Database with ServerSupport with ServerRequests {
+
   import org.scalatest.Matchers._
 
   describe("getting a non-existent blog entry") {
@@ -15,7 +16,13 @@ class BlogEntryPageTests extends AsyncFunSpec with BlogStorage with Database {
       withSetup(
         database,
         blogEntries()) {
-        get("/blog/what-i-had-for-breakfast") {  _.status shouldBe 404 }
+        withServer { implicit server =>
+          for {
+            res <- get("/blog/what-i-had-for-breakfast")
+          } yield {
+            res.status shouldBe 404
+          }
+        }
       }
     }
 
@@ -27,7 +34,13 @@ class BlogEntryPageTests extends AsyncFunSpec with BlogStorage with Database {
       withSetup(
         database,
         blogEntries("no-title" -> "boom")) {
-        get("/blog/no-title") { _ .status shouldBe 500 }
+        withServer { implicit server =>
+          for {
+            res <- get("/blog/no-title")
+          } yield {
+            res.status shouldBe 500
+          }
+        }
       }
     }
 
@@ -38,7 +51,13 @@ class BlogEntryPageTests extends AsyncFunSpec with BlogStorage with Database {
     it("responds with a 400") {
       withSetup(database,
         blogEntries()) {
-        get("/blog/this/is/not/valid") { _.status shouldBe 400 }
+        withServer { implicit server =>
+          for {
+            res <- get("/blog/this/is/not/valid")
+          } yield {
+            res.status shouldBe 400
+          }
+        }
       }
     }
 
@@ -47,9 +66,16 @@ class BlogEntryPageTests extends AsyncFunSpec with BlogStorage with Database {
   describe("a blog entry page") {
 
     it("responds with a 200") {
-      withSetup(database,
+      withSetup(
+        database,
         blogEntries("first-post" -> "# Hello, World!")) {
-        get("/blog/first-post") { _.status shouldBe 200 }
+        withServer { implicit server =>
+          for {
+            res <- get("/blog/first-post")
+          } yield {
+            res.status shouldBe 200
+          }
+        }
       }
     }
 
@@ -57,7 +83,13 @@ class BlogEntryPageTests extends AsyncFunSpec with BlogStorage with Database {
       withSetup(
         database,
         blogEntries("year-in-review" -> "# tedious blah")) {
-        get("/blog/year-in-review") { _.headers("Content-Type") should contain("text/html; charset=UTF-8") }
+        withServer { implicit server =>
+          for {
+            res <- get("/blog/year-in-review")
+          } yield {
+            res.headers("Content-Type") should contain("text/html; charset=UTF-8")
+          }
+        }
       }
     }
 
@@ -65,10 +97,14 @@ class BlogEntryPageTests extends AsyncFunSpec with BlogStorage with Database {
       withSetup(
         database,
         blogEntries("titled" -> "# A title!")) {
-        get("/blog/titled") { response =>
-          val page = new BlogEntryPage(response.body)
-          page.title shouldBe "A title!"
-          page.h1.text shouldBe "A title!"
+        withServer { implicit server =>
+          for {
+            res <- get("/blog/titled")
+          } yield {
+            val page = new BlogEntryPage(res.body)
+            page.title shouldBe "A title!"
+            page.h1.text shouldBe "A title!"
+          }
         }
       }
     }
@@ -77,17 +113,21 @@ class BlogEntryPageTests extends AsyncFunSpec with BlogStorage with Database {
       withSetup(
         database,
         blogEntries("has-content" ->
-        """# Content Galore!
-          |
-          |This is an __amazing__ page of _content_.
-          |
-          |Don't knock it.
-        """.stripMargin)) {
-        get("/blog/has-content") { response =>
-          val page = new BlogEntryPage(response.body)
-          page.h1.text shouldBe "Content Galore!"
-          page.content.paragraphs.head shouldBe <p>This is an <b>amazing</b> page of <i>content</i>.</p>
-          page.content.paragraphs.last shouldBe <p>Don't knock it.</p>
+          """# Content Galore!
+            |
+            |This is an __amazing__ page of _content_.
+            |
+            |Don't knock it.
+          """.stripMargin)) {
+        withServer { implicit server =>
+          for {
+            response <- get("/blog/has-content")
+          } yield {
+            val page = new BlogEntryPage(response.body)
+            page.h1.text shouldBe "Content Galore!"
+            page.content.paragraphs.head shouldBe <p>This is an <b>amazing</b> page of <i>content</i>.</p>
+            page.content.paragraphs.last shouldBe <p>Don't knock it.</p>
+          }
         }
       }
     }
@@ -96,8 +136,12 @@ class BlogEntryPageTests extends AsyncFunSpec with BlogStorage with Database {
       withSetup(
         database,
         blogEntries("top-content" -> "# this is well worth copyrighting")) {
-        get("/blog/top-content") { response =>
-          new BlogEntryPage(response.body).footer.copyrightNotice shouldBe Some("© 2016-2017 Jim Kinsey")
+        withServer { implicit server =>
+          for {
+            response <- get("/blog/top-content")
+          } yield {
+            new BlogEntryPage(response.body).footer.copyrightNotice shouldBe Some("© 2016-2017 Jim Kinsey")
+          }
         }
       }
     }
@@ -106,9 +150,13 @@ class BlogEntryPageTests extends AsyncFunSpec with BlogStorage with Database {
       withSetup(
         database,
         blogEntries(("2010-10-12T17:05:00Z", "dated", "# Dated!"))) {
-        get("/blog/dated") { response =>
-          val page = new BlogEntryPage(response.body)
-          page should have('date ("Tuesday, 12 October 2010"))
+        withServer { implicit server =>
+          for {
+            response <- get("/blog/dated")
+          } yield {
+            val page = new BlogEntryPage(response.body)
+            page should have('date ("Tuesday, 12 October 2010"))
+          }
         }
       }
     }
@@ -117,14 +165,16 @@ class BlogEntryPageTests extends AsyncFunSpec with BlogStorage with Database {
       withSetup(
         database,
         blogEntries("navigable" -> "# Navigable!")) {
-        get("/blog/navigable") { response =>
-          val page = new BlogEntryPage(response.body)
-          page.navigation.items.map(_.url) should contain("/blog/")
+        withServer { implicit server =>
+          for {
+            response <- get("/blog/navigable")
+          } yield {
+            val page = new BlogEntryPage(response.body)
+            page.navigation.items.map(_.url) should contain("/blog/")
+          }
         }
       }
     }
-
   }
-
 }
 
