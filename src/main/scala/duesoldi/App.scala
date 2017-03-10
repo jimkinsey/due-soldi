@@ -30,7 +30,6 @@ object App {
     implicit val materializer = ActorMaterializer()
     implicit val executionContext = system.dispatcher
 
-
     val controller = new MasterController(env)
 
     val fut = Http().bindAndHandle(controller.routes, host, port) map { binding => new Server(binding)}
@@ -40,9 +39,14 @@ object App {
 
 }
 
-class Server(binding: ServerBinding)(implicit executionContext: ExecutionContext) {
+class Server(binding: ServerBinding)(implicit executionContext: ExecutionContext, actorSystem: ActorSystem) {
   lazy val port = binding.localAddress.getPort
   lazy val host = binding.localAddress.getHostName
 
-  def stop(): Future[Unit] = binding.unbind()
+  def stop(): Future[Unit] = {
+    for {
+      _ <- binding.unbind()
+      _ <- actorSystem.terminate()
+    } yield { }
+  }
 }
