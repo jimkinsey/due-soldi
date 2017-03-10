@@ -29,6 +29,10 @@ object MarkdownDocument {
     case (acc, text: TextNode)       => acc + text.content
     case (acc, _)                    => acc
   }
+
+  def title(markdown: MarkdownDocument) = markdown.nodes.collectFirst {
+    case Heading(nodes, 1) => MarkdownDocument.text(nodes)
+  }
 }
 
 case class MarkdownDocument(nodes: Seq[MarkdownDocument.Node])

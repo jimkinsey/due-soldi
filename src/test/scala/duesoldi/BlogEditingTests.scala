@@ -49,6 +49,36 @@ class BlogEditingTests extends AsyncWordSpec with BlogStorage with Database with
       }
     }
 
+    "return a bad request response when the id is invalid" in {
+      withSetup(
+        database,
+        adminCredentials("admin", "password")
+      ) {
+        withServer { implicit server =>
+          for {
+            createResponse <- put("/admin/blog/';+DROP+TABLE+blog_entry;", body = "# Attack!", headers = BasicAuthorization("admin", "password"))
+          } yield {
+            createResponse.status shouldBe 400
+          }
+        }
+      }
+    }
+
+    "return a bad request response when the document does not have a level 1 header" in {
+      withSetup(
+        database,
+        adminCredentials("admin", "password")
+      ) {
+        withServer { implicit server =>
+          for {
+            createResponse <- put("/admin/blog/untitled", body = "_Intentionally left blank_", headers = BasicAuthorization("admin", "password"))
+          } yield {
+            createResponse.status shouldBe 400
+          }
+        }
+      }
+    }
+
     "not allow creation where no credentials are supplied" in {
       withSetup(
         database,

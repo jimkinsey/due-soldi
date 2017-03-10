@@ -11,7 +11,6 @@ import akka.http.scaladsl.model.{ContentType, HttpEntity, HttpResponse}
 import akka.http.scaladsl.server.Directives._
 import cats.data.EitherT
 import duesoldi.config.Configured
-import duesoldi.markdown.MarkdownDocument.Heading
 import duesoldi.markdown.{MarkdownDocument, MarkdownToHtmlConverter}
 import duesoldi.model.BlogEntry
 import duesoldi.rendering.{BlogEntryPageModel, BlogIndexPageModel, Renderer}
@@ -46,7 +45,7 @@ trait BlogRoutes { self: Configured =>
               case BlogEntry(id, content, lastModified) =>
                 Try(BlogIndexPageModel.Entry(
                   lastModified = lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy")),
-                  title = title(content),
+                  title = MarkdownDocument.title(content).get,
                   id = id
                 )).toOption
             },
@@ -73,7 +72,7 @@ trait BlogRoutes { self: Configured =>
           name  <- EitherT.fromOption[Future](ValidIdentifier(remaining), { InvalidId })
           entry <- EitherT(blogStore.entry(name).map { _.toRight({ EntryNotFound }) })
           model = BlogEntryPageModel(
-            title = title(entry.content),
+            title = MarkdownDocument.title(entry.content).get,
             lastModified = entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy")),
             contentHtml = MarkdownToHtmlConverter.html(entry.content.nodes).mkString,
             furnitureVersion = config.furnitureVersion)
@@ -102,10 +101,6 @@ trait BlogRoutes { self: Configured =>
       case other => Right(other)
     }
   })
-
-  private def title(markdown: MarkdownDocument): String = markdown.nodes.collectFirst {
-    case Heading(nodes, 1) => MarkdownDocument.text(nodes)
-  } get
 
   private def recordAccess =
     extractRequestContext.flatMap { ctx =>
