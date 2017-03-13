@@ -7,45 +7,61 @@ import java.util.UUID
 import duesoldi.Setup.withSetup
 import duesoldi.filesystem.DeleteDir
 import duesoldi.scalatest.CustomMatchers
+import duesoldi.testapp.{ServerRequests, ServerSupport}
 import org.scalatest.AsyncWordSpec
 
 import scala.concurrent.Future
 
-class FurnitureTests extends AsyncWordSpec with CustomMatchers {
-  import duesoldi.testapp.TestAppRequest.get
+class FurnitureTests extends AsyncWordSpec with CustomMatchers with ServerSupport with ServerRequests {
   import org.scalatest.Matchers._
 
   "furniture requests" must {
 
     "serve the file from the furniture directory" in {
       withSetup(furniture(version = "1.0.0")("chair.txt" -> "four legs, a seat and a back")) {
-        get("/furniture/1.0.0/chair.txt") { response =>
-          response.status shouldBe 200
+        withServer { implicit server =>
+          for {
+            response <- get("/furniture/1.0.0/chair.txt")
+          } yield {
+            response.status shouldBe 200
+          }
         }
       }
     }
 
     "404 for a non-existent furniture file" in {
       withSetup(furniture(version = "1.0.0")()) {
-        get("/furniture/1.0.0/two-legged-table.txt") { response =>
-          response.status shouldBe 404
+        withServer { implicit server =>
+          for {
+            response <- get("/furniture/1.0.0/two-legged-table.txt")
+          } yield {
+            response.status shouldBe 404
+          }
         }
       }
     }
 
     "400 for an existing furniture file with the wrong version in the path" in {
       withSetup(furniture(version = "5.0.0")("sofa.txt" -> "aaaaahhh...")) {
-        get("/furniture/4.0.0/sofa.txt") { response =>
-          response.status shouldBe 400
+        withServer { implicit server =>
+          for {
+            response <- get("/furniture/4.0.0/sofa.txt")
+          } yield {
+            response.status shouldBe 400
+          }
         }
       }
     }
 
     "include cache headers when furniture caching is enabled" in {
       withSetup(furniture(version = "1.0.0", cacheDuration = Some("1 hour"))("cupboard.txt" -> "bare")) {
-        get("/furniture/1.0.0/cupboard.txt") { response =>
-          response.headers should contain("Cache-Control" -> Seq("max-age=3600"))
-          response.headers("Expires").head shouldBe parsableAs(RFC_1123_DATE_TIME)
+        withServer { implicit server =>
+          for {
+            response <- get("/furniture/1.0.0/cupboard.txt")
+          } yield {
+            response.headers should contain("Cache-Control" -> Seq("max-age=3600"))
+            response.headers("Expires").head shouldBe parsableAs(RFC_1123_DATE_TIME)
+          }
         }
       }
     }

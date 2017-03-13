@@ -3,20 +3,24 @@ package duesoldi
 import duesoldi.Setup.withSetup
 import duesoldi.pages.BlogIndexPage
 import duesoldi.storage.{BlogStorage, Database}
+import duesoldi.testapp.{ServerRequests, ServerSupport}
 import org.scalatest.AsyncFunSpec
 
-class BlogIndexPageTests extends AsyncFunSpec with BlogStorage with Database {
+class BlogIndexPageTests extends AsyncFunSpec with BlogStorage with Database with ServerRequests with ServerSupport {
 
-  import duesoldi.testapp.TestAppRequest.get
   import org.scalatest.Matchers._
 
   describe("visiting 'blog' without the trailing slash") {
 
     it("redirects to the version with the trailing slash") {
       withSetup(database, blogEntries("id" -> "# Content!")) {
-        get("/blog") { response =>
-          response.status shouldBe 301
-          response.headers("Location") shouldBe List("/blog/")
+        withServer { implicit server =>
+          for {
+            response <- get("/blog")
+          } yield {
+            response.status shouldBe 301
+            response.headers("Location") shouldBe List("/blog/")
+          }
         }
       }
     }
@@ -27,8 +31,12 @@ class BlogIndexPageTests extends AsyncFunSpec with BlogStorage with Database {
 
     it("responds with a 404") {
       withSetup(database, blogEntries()) {
-        get("/blog/") {
-          _.status shouldBe 404
+        withServer { implicit server =>
+          for {
+            response <- get("/blog/")
+          } yield {
+            response.status shouldBe 404
+          }
         }
       }
     }
@@ -42,12 +50,16 @@ class BlogIndexPageTests extends AsyncFunSpec with BlogStorage with Database {
         "invalid-content" -> "boom",
         "InVALid ID" -> "# Boom",
         "valid-content-and-id" -> "# Hello!")) {
-        get("/blog/") { response =>
-          response.status shouldBe 200
-          val page = new BlogIndexPage(response.body)
-          page.blogEntries should have(size(1))
-          page.blogEntries.head should have('link ("/blog/valid-content-and-id"),
-                                            'title ("Hello!"))
+        withServer { implicit server =>
+          for {
+            response <- get("/blog/")
+          } yield {
+            response.status shouldBe 200
+            val page = new BlogIndexPage(response.body)
+            page.blogEntries should have(size(1))
+            page.blogEntries.head should have('link ("/blog/valid-content-and-id"),
+                                              'title ("Hello!"))
+          }
         }
       }
     }
@@ -58,30 +70,50 @@ class BlogIndexPageTests extends AsyncFunSpec with BlogStorage with Database {
 
     it("responds with a 200") {
       withSetup(database, blogEntries("first-post" -> "# Hello, World!")) {
-        get("/blog/") { _.status shouldBe 200 }
+        withServer { implicit server =>
+          for {
+            response <- get("/blog/")
+          } yield {
+            response.status shouldBe 200
+          }
+        }
       }
     }
 
     it("has content-type text/html") {
       withSetup(database, blogEntries("year-in-review" -> "# tedious blah")) {
-        get("/blog/") { _.headers("Content-Type") should contain("text/html; charset=UTF-8") }
+        withServer { implicit server =>
+          for {
+            response <- get("/blog/")
+          } yield {
+            response.headers("Content-Type") should contain("text/html; charset=UTF-8")
+          }
+        }
       }
     }
 
     it("has a copyright notice") {
       withSetup(database, blogEntries("top-content" -> "# this is well worth copyrighting")) {
-        get("/blog/") { response =>
-          new BlogIndexPage(response.body).footer.copyrightNotice shouldBe Some("© 2016-2017 Jim Kinsey")
+        withServer { implicit server =>
+          for {
+            response <- get("/blog/")
+          } yield {
+            new BlogIndexPage(response.body).footer.copyrightNotice shouldBe Some("© 2016-2017 Jim Kinsey")
+          }
         }
       }
     }
 
     it("has a title and heading") {
       withSetup(database, blogEntries("content" -> "# _Content_, mofos")) {
-        get("/blog/") { response =>
-          val page: BlogIndexPage = new BlogIndexPage(response.body)
-          page.title shouldBe "Jim Kinsey's Blog"
-          page.heading shouldBe "Latest Blog Entries"
+        withServer { implicit server =>
+          for {
+            response <- get("/blog/")
+          } yield {
+            val page: BlogIndexPage = new BlogIndexPage(response.body)
+            page.title shouldBe "Jim Kinsey's Blog"
+            page.heading shouldBe "Latest Blog Entries"
+          }
         }
       }
     }
@@ -91,28 +123,40 @@ class BlogIndexPageTests extends AsyncFunSpec with BlogStorage with Database {
         ("2010-10-12T17:05:00Z", "first-post", "# First"),
         ("2012-12-03T09:34:00Z", "tricky-second-post", "# Second"),
         ("2016-04-01T09:45:00Z", "sorry-for-lack-of-updates", "# Third"))) {
-        get("/blog/") { response =>
-          val page = new BlogIndexPage(response.body)
-          page.blogEntries.map(_.title) shouldBe Seq("Third", "Second", "First")
+        withServer { implicit server =>
+          for {
+            response <- get("/blog/")
+          } yield {
+            val page = new BlogIndexPage(response.body)
+            page.blogEntries.map(_.title) shouldBe Seq("Third", "Second", "First")
+          }
         }
       }
     }
 
     it("includes the last modified date in the entry") {
       withSetup(database, blogEntries(("2010-10-12T17:05:00Z", "dated", "# Dated!"))) {
-        get("/blog/") { response =>
-          val page = new BlogIndexPage(response.body)
-          page.blogEntries.head should have('date ("Tuesday, 12 October 2010"))
+        withServer { implicit server =>
+          for {
+            response <- get("/blog/")
+          } yield {
+            val page = new BlogIndexPage(response.body)
+            page.blogEntries.head should have('date ("Tuesday, 12 October 2010"))
+          }
         }
       }
     }
 
     it("has a bio section with a title and some text") {
       withSetup(database, blogEntries("year-in-review" -> "# Year in review!")) {
-        get("/blog/") { response =>
-          val page = new BlogIndexPage(response.body)
-          page.blurb should have('title ("About"))
-          page.blurb.paragraphs should not(be(empty))
+        withServer { implicit server =>
+          for {
+            response <- get("/blog/")
+          } yield {
+            val page = new BlogIndexPage(response.body)
+            page.blurb should have('title ("About"))
+            page.blurb.paragraphs should not(be(empty))
+          }
         }
       }
     }
