@@ -15,21 +15,22 @@ trait AccessRecordStore {
 }
 
 object AccessRecordStore {
-  case class Access(time: ZonedDateTime, path: String, referer: Option[String], userAgent: Option[String], duration: Long, clientIp: Option[String])
+  case class Access(time: ZonedDateTime, path: String, referer: Option[String], userAgent: Option[String], duration: Long, clientIp: Option[String], country: Option[String])
 }
 
 class JDBCAccessRecordStore(val connectionDetails: ConnectionDetails)(implicit executionContext: ExecutionContext) extends AccessRecordStore with JDBCConnection  {
 
   override def allRecords: Future[Seq[Access]] = Future.fromTry {
     withConnection { implicit connection =>
-      queryResults("SELECT timestamp, path, referer, user_agent, duration, client_ip FROM access_record").map { row =>
+      queryResults("SELECT timestamp, path, referer, user_agent, duration, client_ip, country FROM access_record").map { row =>
         Access(
           path = row.getString(2),
           time = row.getTimestamp(1).toInstant.atZone(ZoneId.of("UTC+1")),
           referer = Option(row.getString(3)),
           userAgent = Option(row.getString(4)),
           duration = row.getString(5).toLong,
-          clientIp = Option(row.getString(6))
+          clientIp = Option(row.getString(6)),
+          country = Option(row.getString(7))
         )
       } toList
     }
@@ -37,13 +38,14 @@ class JDBCAccessRecordStore(val connectionDetails: ConnectionDetails)(implicit e
 
   override def record(access: Access): Future[Unit] = Future.fromTry {
     withConnection { implicit connection =>
-      updateResults("INSERT INTO access_record ( timestamp, path, referer, user_agent, duration, client_ip ) VALUES ( ?, ?, ?, ?, ?, ? )",
+      updateResults("INSERT INTO access_record ( timestamp, path, referer, user_agent, duration, client_ip, country ) VALUES ( ?, ?, ?, ?, ?, ?, ? )",
         Timestamp.from(access.time.toInstant),
         access.path,
         access.referer.orNull,
         access.userAgent.orNull,
         access.duration,
-        access.clientIp.orNull
+        access.clientIp.orNull,
+        access.country.orNull
       )
     }
   }

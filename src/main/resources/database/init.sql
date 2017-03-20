@@ -4,7 +4,8 @@ CREATE TABLE access_record (
   referer character varying,
   user_agent character varying,
   duration NUMERIC not null,
-  client_ip character varying
+  client_ip character varying,
+  country character varying
 );
 
 CREATE TABLE blog_entry (

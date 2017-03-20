@@ -114,7 +114,8 @@ trait BlogRoutes { self: Configured =>
             referer = ctx.request.header[Referer].map(_.getUri().toString),
             userAgent = ctx.request.header[`User-Agent`].map(_.value()),
             duration = duration,
-            clientIp = ctx.request.headers.find(_.name == "cf-connecting-ip").map(_.value)
+            clientIp = ctx.request.headers.find(_.name == "cf-connecting-ip").map(_.value),
+            country = ctx.request.headers.find(_.name == "cf-ipcountry").map(_.value)
           )).onComplete {
             case Failure(ex) =>
               System.err.println(s"Failed to record access - ${ex.getMessage}")
