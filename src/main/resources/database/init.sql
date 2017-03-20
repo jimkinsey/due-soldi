@@ -1,15 +1,15 @@
 CREATE TABLE access_record (
-  path character varying not null,
-  timestamp timestamp not null,
-  referer character varying,
+  path       character varying     not null,
+  timestamp  timestamp             not null,
+  referer    character varying,
   user_agent character varying,
-  duration NUMERIC not null,
-  client_ip character varying,
-  country character varying
+  duration   numeric               not null,
+  client_ip  character varying(15),
+  country    character(2)
 );
 
 CREATE TABLE blog_entry (
-  id character varying not null PRIMARY KEY,
-  published timestamp not null,
-  content character varying not null
+  id        character varying not null PRIMARY KEY,
+  published timestamp         not null,
+  content   text              not null
 );
