@@ -39,7 +39,7 @@ class AccessRecordingTests extends AsyncWordSpec with BlogStorage with ServerSup
             response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
           } yield {
             response.status shouldBe 200
-            response.body.lines.toList.head shouldBe "Timestamp,Path,Referer,User-Agent,Duration (ms)"
+            response.body.lines.toList.head shouldBe "Timestamp,Path,Referer,User-Agent,Duration (ms),Client IP"
             response.body.lines.toList.tail shouldBe empty
           }
         }
@@ -76,7 +76,11 @@ class AccessRecordingTests extends AsyncWordSpec with BlogStorage with ServerSup
       ) {
         withServer { implicit server: Server =>
           for {
-            _        <- get("/blog/", headers = "Referer" -> "http://altavista.is", "User-Agent" -> "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0")
+            _        <- get("/blog/", headers =
+              "Referer"          -> "http://altavista.is",
+              "User-Agent"       -> "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0",
+              "cf-connecting-ip" -> "1.2.3.4"
+            )
             response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
           } yield {
             val content = CSVReader.open(new StringReader(response.body)).allWithHeaders()
@@ -87,6 +91,7 @@ class AccessRecordingTests extends AsyncWordSpec with BlogStorage with ServerSup
             content(0)("User-Agent")    shouldBe "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0"
             content(0)("Duration (ms)") shouldBe aValidLong
             content(0)("Duration (ms)").toInt should be > 0
+            content(0)("Client IP")     shouldBe "1.2.3.4"
           }
         }
       }

@@ -81,7 +81,7 @@ trait BlogRoutes { self: Configured =>
           html
         }).value map {
           case Right(html)              => HttpResponse(OK, entity = HttpEntity(ContentType(`text/html`, `UTF-8`), html))
-          case Left(EntryNotFound) =>
+          case Left(EntryNotFound)      =>
             System.err.println(s"Blog $remaining not found")
             HttpResponse(NotFound)
           case Left(InvalidId)          =>
@@ -113,7 +113,8 @@ trait BlogRoutes { self: Configured =>
             path = ctx.request.uri.path.toString,
             referer = ctx.request.header[Referer].map(_.getUri().toString),
             userAgent = ctx.request.header[`User-Agent`].map(_.value()),
-            duration = duration
+            duration = duration,
+            clientIp = ctx.request.headers.find(_.name == "cf-connecting-ip").map(_.value)
           )).onComplete {
             case Failure(ex) =>
               System.err.println(s"Failed to record access - ${ex.getMessage}")
