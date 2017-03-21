@@ -21,7 +21,7 @@ trait MetricsRoutes extends AdminAuthentication { self: Configured =>
         complete {
           accessRecordStore.allRecords.map(
             { accesses =>
-              val rows = accesses.map { case Access(time, path, referer, userAgent, duration, ip, country) =>
+              val rows = accesses.map { case Access(time, path, referer, userAgent, duration, ip, country, statusCode) =>
                 Seq(
                   time.format(DateTimeFormatter.ISO_DATE_TIME),
                   path,
@@ -29,10 +29,11 @@ trait MetricsRoutes extends AdminAuthentication { self: Configured =>
                   userAgent.getOrElse(""),
                   duration.toString,
                   ip.getOrElse(""),
-                  country.getOrElse("")
+                  country.getOrElse(""),
+                  statusCode.toString
                 ).map(csvFriendly).mkString(",")
               }
-              HttpResponse(entity = ("Timestamp,Path,Referer,User-Agent,Duration (ms),Client IP,Country" +: rows).mkString("\n")) // Duration,Status code,IP
+              HttpResponse(entity = ("Timestamp,Path,Referer,User-Agent,Duration (ms),Client IP,Country,Status Code" +: rows).mkString("\n"))
             }).recover { case ex =>
               ex.printStackTrace()
               HttpResponse(StatusCodes.InternalServerError)

@@ -39,7 +39,7 @@ class AccessRecordingTests extends AsyncWordSpec with BlogStorage with ServerSup
             response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
           } yield {
             response.status shouldBe 200
-            response.body.lines.toList.head shouldBe "Timestamp,Path,Referer,User-Agent,Duration (ms),Client IP,Country"
+            response.body.lines.toList.head shouldBe "Timestamp,Path,Referer,User-Agent,Duration (ms),Client IP,Country,Status Code"
             response.body.lines.toList.tail shouldBe empty
           }
         }
@@ -94,6 +94,7 @@ class AccessRecordingTests extends AsyncWordSpec with BlogStorage with ServerSup
             content(0)("Duration (ms)").toInt should be > 0
             content(0)("Client IP")     shouldBe "1.2.3.4"
             content(0)("Country")       shouldBe "IS"
+            content(0)("Status Code")   shouldBe "200"
           }
         }
       }
