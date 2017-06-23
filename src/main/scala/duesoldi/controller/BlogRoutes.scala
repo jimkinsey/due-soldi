@@ -142,8 +142,8 @@ trait BlogRoutes {
             referer = ctx.request.header[Referer].map(_.getUri().toString),
             userAgent = ctx.request.header[`User-Agent`].map(_.value()),
             duration = duration,
-            clientIp = ctx.request.headers.find(_.name == "cf-connecting-ip").map(_.value),
-            country = ctx.request.headers.find(_.name == "cf-ipcountry").map(_.value),
+            clientIp = ctx.request.headers.find(_.name == "CF-Connecting-IP").map(_.value),
+            country = ctx.request.headers.find(_.name == "CF-IPCountry").map(_.value),
             statusCode = response.status.intValue
           )).onComplete {
             case Failure(ex) =>
