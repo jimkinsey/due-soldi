@@ -94,6 +94,10 @@ a:visited {
     color: #8833ff;
 }
 
+img {
+    max-width: 100%;
+}
+
 @media only screen and (min-width: 768px) {
     h1 {
         color: inherit;
