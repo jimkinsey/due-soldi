@@ -23,15 +23,14 @@ trait AccessRecording { self: Configured =>
       mapResponse { response =>
         if (config.accessRecordingEnabled) {
           val duration = System.currentTimeMillis() - startTime
-          System.out.println(s"RECORDING ACCESS FOR REQUEST WITH HEADERS: ${ctx.request.headers.map({ h => s"${h.name}: ${h.value}" }).mkString("\n") }")
           accessRecordStore.record(Access(
             time = ZonedDateTime.now(),
             path = ctx.request.uri.path.toString,
             referer = ctx.request.header[Referer].map(_.getUri().toString),
             userAgent = ctx.request.header[`User-Agent`].map(_.value()),
             duration = duration,
-            clientIp = ctx.request.headers.find(_.name == "CF-Connecting-IP").map(_.value),
-            country = ctx.request.headers.find(_.name == "CF-IPCountry").map(_.value),
+            clientIp = ctx.request.headers.find(_.name == "Cf-Connecting-Ip").map(_.value),
+            country = ctx.request.headers.find(_.name == "Cf-Ipcountry").map(_.value),
             statusCode = response.status.intValue
           )).onComplete {
             case Failure(ex) =>

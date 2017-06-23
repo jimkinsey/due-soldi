@@ -79,8 +79,8 @@ class AccessRecordingTests extends AsyncWordSpec with BlogStorage with ServerSup
             _        <- get("/blog/", headers =
               "Referer"          -> "http://altavista.is",
               "User-Agent"       -> "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0",
-              "CF-Connecting-IP" -> "1.2.3.4",
-              "CF-IPCountry"     -> "IS"
+              "Cf-Connecting-Ip" -> "1.2.3.4",
+              "Cf-Ipcountry"     -> "IS"
             )
             response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
           } yield {
