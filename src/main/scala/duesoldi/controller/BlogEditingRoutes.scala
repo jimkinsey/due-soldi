@@ -43,6 +43,19 @@ trait BlogEditingRoutes extends AdminAuthentication { self: Configured =>
           }
         }
       }
+    } ~ get {
+      adminsOnly {
+        complete {
+          for {
+            result <- blogStore.entry(remaining)
+          } yield {
+            result match {
+              case Some(entry) => HttpResponse(200, entity = entry.content.raw)
+              case _ => HttpResponse(404)
+            }
+          }
+        }
+      }
     }
   }
 

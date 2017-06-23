@@ -35,4 +35,4 @@ object MarkdownDocument {
   }
 }
 
-case class MarkdownDocument(nodes: Seq[MarkdownDocument.Node])
+case class MarkdownDocument(nodes: Seq[MarkdownDocument.Node], raw: String)

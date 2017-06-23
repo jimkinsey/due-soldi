@@ -30,7 +30,7 @@ class MarkdownParser {
   def markdown(raw: String): MarkdownDocument = {
     val parser: IParse = Parser.builder().build()
     val document: Node = parser.parse(raw)
-    MarkdownDocument(translated(document.getChildren.toSeq))
+    MarkdownDocument(translated(document.getChildren.toSeq), raw)
   }
 
   private implicit def basedSequenceToString(basedSequence: BasedSequence): String = basedSequence.toString

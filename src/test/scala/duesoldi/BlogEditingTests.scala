@@ -149,4 +149,54 @@ class BlogEditingTests extends AsyncWordSpec with BlogStorage with Database with
 
   }
 
+  "making a GET request to a blog entry URL" must {
+
+    "return a 404 when the blog entry does not exist" in {
+      withSetup(
+        database,
+        adminCredentials("admin", "password"),
+        blogEntries()) {
+        withServer { implicit server =>
+          for {
+            getResponse <- get("/admin/blog/does-not-exist", headers = BasicAuthorization("admin", "password"))
+          } yield {
+            getResponse.status shouldBe 404
+          }
+        }
+      }
+    }
+
+    "return the blog entry markdown doc when it does exist" in {
+      withSetup(
+        database,
+        adminCredentials("admin", "password"),
+        blogEntries("does-exist" -> "# Title")) {
+        withServer { implicit server =>
+          for {
+            getResponse <- get("/admin/blog/does-exist", headers = BasicAuthorization("admin", "password"))
+          } yield {
+            getResponse.status shouldBe 200
+            getResponse.body shouldBe "# Title"
+          }
+        }
+      }
+    }
+
+    "require admin privileges" in {
+      withSetup(
+        database,
+        adminCredentials("admin", "password"),
+        blogEntries()) {
+        withServer { implicit server =>
+          for {
+            getResponse <- get("/admin/blog/does-not-exist", headers = BasicAuthorization("not-admin", "password"))
+          } yield {
+            getResponse.status shouldBe 401
+          }
+        }
+      }
+    }
+
+  }
+
 }
