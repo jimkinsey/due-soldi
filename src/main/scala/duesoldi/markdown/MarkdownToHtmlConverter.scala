@@ -4,9 +4,6 @@ import duesoldi.markdown.MarkdownDocument._
 
 import scala.xml.NodeSeq
 
-/**
-  * Created by jimkinsey on 14/02/17.
-  */
 object MarkdownToHtmlConverter {
 
   def html(nodes: Seq[MarkdownDocument.Node]): NodeSeq = {
@@ -24,6 +21,7 @@ object MarkdownToHtmlConverter {
       case LineBreak                    => <br/>
       case BlockQuote(content)          => <blockquote>{html(content)}</blockquote>
       case HorizontalRule               => <hr/>
+      case Image(alt, src, title)       => <img src={src} alt={alt} title={title.orNull} />
     }
   }
 

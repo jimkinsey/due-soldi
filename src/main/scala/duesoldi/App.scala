@@ -3,6 +3,7 @@ package duesoldi
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
+import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
 import duesoldi.controller.MasterController
 
@@ -31,6 +32,28 @@ object App {
     implicit val executionContext = system.dispatcher
 
     val controller = new MasterController(env)
+
+    val fut = Http().bindAndHandle(controller.routes, host, port) map { binding => new Server(binding)}
+    fut.onComplete(complete)
+    fut
+  }
+
+}
+
+trait Controller {
+  def routes: Route
+}
+
+object Server {
+
+  type Complete = Try[Server] => Unit
+
+  val NoopComplete: Complete = _ => ()
+
+  def startServer(controller: Controller, host: String, port: Int)(complete: Complete = NoopComplete): Future[Server] = {
+    implicit val system = ActorSystem("my-system")
+    implicit val materializer = ActorMaterializer()
+    implicit val executionContext = system.dispatcher
 
     val fut = Http().bindAndHandle(controller.routes, host, port) map { binding => new Server(binding)}
     fut.onComplete(complete)

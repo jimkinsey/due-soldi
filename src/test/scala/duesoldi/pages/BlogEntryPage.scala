@@ -19,6 +19,13 @@ class BlogEntryPage(html: String) extends Page with PageFooter {
     lazy val paragraphs: Seq[Elem] = {
       elem.select("p").toSeq.map { p => XML.loadString(p.outerHtml()) }
     }
+    lazy val images = dom.select("img").toSeq.map { i => new Image(i) }
+  }
+
+  class Image(elem: Element) {
+    lazy val src = elem.attr("src")
+    lazy val alt = elem.attr("alt")
+    lazy val title = Option(elem.attr("title"))
   }
 
   class Navigation(elem: Element) {

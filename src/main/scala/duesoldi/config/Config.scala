@@ -11,7 +11,8 @@ case class Config(
   furnitureCacheDuration: Duration,
   adminCredentials: Option[Credentials],
   accessRecordingEnabled: Boolean,
-  jdbcConnectionDetails: JDBCConnection.ConnectionDetails
+  jdbcConnectionDetails: JDBCConnection.ConnectionDetails,
+  imageBaseUrl: String
 )
 
 object Config {

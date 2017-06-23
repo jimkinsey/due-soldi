@@ -19,7 +19,7 @@ class BlogIndexPageTests extends AsyncFunSpec with BlogStorage with Database wit
             response <- get("/blog")
           } yield {
             response.status shouldBe 301
-            response.headers("Location") shouldBe List("/blog/")
+            response.headers("Location") shouldBe List(s"http://${server.host}:${server.port}/blog/")
           }
         }
       }

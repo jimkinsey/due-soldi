@@ -20,6 +20,7 @@ trait Configured {
       url = env.getOrElse("JDBC_DATABASE_URL", ""),
       username = env.getOrElse("JDBC_DATABASE_USERNAME", ""),
       password = env.getOrElse("JDBC_DATABASE_PASSWORD", "")
-    )
+    ),
+    imageBaseUrl = env.getOrElse("IMAGE_BASE_URL", "")
   )
 }

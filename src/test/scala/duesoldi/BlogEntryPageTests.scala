@@ -2,11 +2,11 @@ package duesoldi
 
 import duesoldi.Setup.withSetup
 import duesoldi.pages.BlogEntryPage
-import duesoldi.storage.{BlogStorage, Database}
+import duesoldi.storage.{BlogStorage, Database, Images}
 import duesoldi.testapp.{ServerRequests, ServerSupport}
 import org.scalatest.AsyncFunSpec
 
-class BlogEntryPageTests extends AsyncFunSpec with BlogStorage with Database with ServerSupport with ServerRequests {
+class BlogEntryPageTests extends AsyncFunSpec with BlogStorage with Database with Images with ServerSupport with ServerRequests {
 
   import org.scalatest.Matchers._
 
@@ -53,7 +53,7 @@ class BlogEntryPageTests extends AsyncFunSpec with BlogStorage with Database wit
         blogEntries()) {
         withServer { implicit server =>
           for {
-            res <- get("/blog/this/is/not/valid")
+            res <- get("""/blog/NOT+A+VALID+ID""")
           } yield {
             res.status shouldBe 400
           }
@@ -127,6 +127,31 @@ class BlogEntryPageTests extends AsyncFunSpec with BlogStorage with Database wit
             page.h1.text shouldBe "Content Galore!"
             page.content.paragraphs.head shouldBe <p>This is an <b>amazing</b> page of <i>content</i>.</p>
             page.content.paragraphs.last shouldBe <p>Don't knock it.</p>
+          }
+        }
+      }
+    }
+
+    it("may include images") {
+      withSetup(
+        database,
+        images("/blog/has-image/images/a-cat.gif" -> 200),
+        blogEntries("has-image" ->
+          """# A cat!
+            |
+            |![A cat alt-text](/blog/has-image/images/a-cat.gif "A cat title")
+          """.stripMargin)) {
+        withServer { implicit server =>
+          for {
+            pageResponse  <- get("/blog/has-image")
+            imageResponse <- get("/blog/has-image/images/a-cat.gif")
+          } yield {
+            val page = new BlogEntryPage(pageResponse.body)
+            page.content.images.head should have(
+              'src ("/blog/has-image/images/a-cat.gif"),
+              'alt ("A cat alt-text"),
+              'title (Some("A cat title")))
+            imageResponse.status shouldBe 200
           }
         }
       }
