@@ -10,33 +10,36 @@ import duesoldi.storage.AccessRecordStore.Access
 
 import scala.concurrent.ExecutionContext
 
-trait MetricsRoutes extends AdminAuthentication { self: Configured =>
+trait MetricsRoutes extends AdminAuthentication with AccessRecording { self: Configured =>
   implicit def executionContext: ExecutionContext
 
   def accessRecordStore: AccessRecordStore
 
   final def metricsRoutes =
     path("admin" / "metrics" / "access.csv") {
-      adminsOnly {
-        complete {
-          accessRecordStore.allRecords.map(
-            { accesses =>
-              val rows = accesses.map { case Access(time, path, referer, userAgent, duration, ip, country, statusCode) =>
-                Seq(
-                  time.format(DateTimeFormatter.ISO_DATE_TIME),
-                  path,
-                  referer.getOrElse(""),
-                  userAgent.getOrElse(""),
-                  duration.toString,
-                  ip.getOrElse(""),
-                  country.getOrElse(""),
-                  statusCode.toString
-                ).map(csvFriendly).mkString(",")
+      recordAccess {
+        adminsOnly {
+          complete {
+            accessRecordStore.allRecords.map(
+              { accesses =>
+                val rows = accesses.map { case Access(time, path, referer, userAgent, duration, ip, country, statusCode) =>
+                  Seq(
+                    time.format(DateTimeFormatter.ISO_DATE_TIME),
+                    path,
+                    referer.getOrElse(""),
+                    userAgent.getOrElse(""),
+                    duration.toString,
+                    ip.getOrElse(""),
+                    country.getOrElse(""),
+                    statusCode.toString
+                  ).map(csvFriendly).mkString(",")
+                }
+                HttpResponse(entity = ("Timestamp,Path,Referer,User-Agent,Duration (ms),Client IP,Country,Status Code" +: rows).mkString("\n"))
+              }).recover {
+              case ex =>
+                ex.printStackTrace()
+                HttpResponse(StatusCodes.InternalServerError)
               }
-              HttpResponse(entity = ("Timestamp,Path,Referer,User-Agent,Duration (ms),Client IP,Country,Status Code" +: rows).mkString("\n"))
-            }).recover { case ex =>
-              ex.printStackTrace()
-              HttpResponse(StatusCodes.InternalServerError)
             }
           }
         }

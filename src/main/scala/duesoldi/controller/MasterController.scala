@@ -14,6 +14,7 @@ import scala.concurrent.ExecutionContext
 
 class MasterController(val env: Env)(implicit val executionContext: ExecutionContext, val materializer: Materializer, val actorSystem: ActorSystem) extends Controller
   with Configured
+  with AccessRecording
   with FurnitureRoutes
   with MetricsRoutes
   with BlogRoutes

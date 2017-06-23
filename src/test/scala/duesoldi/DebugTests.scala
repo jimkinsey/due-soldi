@@ -16,7 +16,7 @@ class DebugTests extends AsyncWordSpec with ServerSupport with ServerRequests wi
           for {
             response <- get("/admin/debug/headers", headers = BasicAuthorization("admin", "password"), "Key" -> "Value")
           } yield {
-            response.body.lines.toList should contain("key: Value")
+            response.body.lines.toList should contain("Key: Value")
           }
         }
       }
