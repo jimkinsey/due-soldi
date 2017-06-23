@@ -136,6 +136,7 @@ trait BlogRoutes {
       mapResponse { response =>
         if (config.accessRecordingEnabled) {
           val duration = System.currentTimeMillis() - startTime
+          System.out.println(s"RECORDING ACCESS FOR REQUEST WITH HEADERS: ${ctx.request.headers.map({ h => s"${h.name}: ${h.value}" }).mkString("\n") }")
           accessRecordStore.record(Access(
             time = ZonedDateTime.now(),
             path = ctx.request.uri.path.toString,
