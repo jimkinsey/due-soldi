@@ -28,12 +28,12 @@ class BlogEntryPage(html: String) extends Page with PageFooter {
     lazy val title = Option(elem.attr("title"))
   }
 
-  class Navigation(elem: Element) {
-    lazy val items: Seq[Item] = elem.select("ol > li").map(li => new Item(li))
+}
 
-    class Item(element: Element) {
-      lazy val url = element.select("a").attr("href")
-    }
-  }
+class Navigation(elem: Element) {
+  lazy val items: Seq[Item] = elem.select("ol > li").map(li => new Item(li))
+}
 
+class Item(element: Element) {
+  lazy val url = element.select("a").attr("href")
 }

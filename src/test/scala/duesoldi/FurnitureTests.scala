@@ -1,71 +1,74 @@
 package duesoldi
 
 import java.io.{File, PrintWriter}
-import java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
+import java.time.format.DateTimeFormatter._
 import java.util.UUID
 
 import duesoldi.Setup.withSetup
 import duesoldi.filesystem.DeleteDir
-import duesoldi.scalatest.CustomMatchers
 import duesoldi.testapp.{ServerRequests, ServerSupport}
-import org.scalatest.AsyncWordSpec
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
+import utest._
+import test.matchers.CustomMatchers._
 
-class FurnitureTests extends AsyncWordSpec with CustomMatchers with ServerSupport with ServerRequests {
-  import org.scalatest.Matchers._
-
-  "furniture requests" must {
-
-    "serve the file from the furniture directory" in {
-      withSetup(furniture(version = "1.0.0")("chair.txt" -> "four legs, a seat and a back")) {
-        withServer { implicit server =>
-          for {
-            response <- get("/furniture/1.0.0/chair.txt")
-          } yield {
-            response.status shouldBe 200
+object FurnitureTests 
+  extends TestSuite
+  with ServerSupport 
+  with ServerRequests 
+{
+  implicit val executionContext = utest.framework.ExecutionContext.RunNow
+  val tests = this {
+    "furniture requests" - {
+      "serve the file from the furniture directory" - {
+        withSetup(furniture(version = "1.0.0")("chair.txt" -> "four legs, a seat and a back")) {
+          withServer { implicit server =>
+            for {
+              response <- get("/furniture/1.0.0/chair.txt")
+            } yield {
+              assert(response.status == 200)
+            }
+          }
+        }
+      }
+      "404 for a non-existent furniture file" - {
+        withSetup(furniture(version = "1.0.0")()) {
+          withServer { implicit server =>
+            for {
+              response <- get("/furniture/1.0.0/two-legged-table.txt")
+            } yield {
+              assert(response.status == 404)
+            }
+          }
+        }
+      }
+      "400 for an existing furniture file with the wrong version in the path" - {
+        withSetup(furniture(version = "5.0.0")("sofa.txt" -> "aaaaahhh...")) {
+          withServer { implicit server =>
+            for {
+              response <- get("/furniture/4.0.0/sofa.txt")
+            } yield {
+              assert(response.status == 400)
+            }
+          }
+        }
+      }
+      "include cache headers when furniture caching is enabled" - {
+        withSetup(furniture(version = "1.0.0", cacheDuration = Some("1 hour"))("cupboard.txt" -> "bare")) {
+          withServer { implicit server =>
+            for {
+              response <- get("/furniture/1.0.0/cupboard.txt")
+            } yield {
+              assert(
+                response.headers.toSeq.contains("Cache-Control" -> Seq("max-age=3600")),
+                response.headers("Expires").head hasDateFormat RFC_1123_DATE_TIME
+              )
+            }
           }
         }
       }
     }
-
-    "404 for a non-existent furniture file" in {
-      withSetup(furniture(version = "1.0.0")()) {
-        withServer { implicit server =>
-          for {
-            response <- get("/furniture/1.0.0/two-legged-table.txt")
-          } yield {
-            response.status shouldBe 404
-          }
-        }
-      }
-    }
-
-    "400 for an existing furniture file with the wrong version in the path" in {
-      withSetup(furniture(version = "5.0.0")("sofa.txt" -> "aaaaahhh...")) {
-        withServer { implicit server =>
-          for {
-            response <- get("/furniture/4.0.0/sofa.txt")
-          } yield {
-            response.status shouldBe 400
-          }
-        }
-      }
-    }
-
-    "include cache headers when furniture caching is enabled" in {
-      withSetup(furniture(version = "1.0.0", cacheDuration = Some("1 hour"))("cupboard.txt" -> "bare")) {
-        withServer { implicit server =>
-          for {
-            response <- get("/furniture/1.0.0/cupboard.txt")
-          } yield {
-            response.headers should contain("Cache-Control" -> Seq("max-age=3600"))
-            response.headers("Expires").head shouldBe parsableAs(RFC_1123_DATE_TIME)
-          }
-        }
-      }
-    }
-
   }
 
   def furniture(version: String, cacheDuration: Option[String] = None)(files: (String, String)*) = new Setup {
