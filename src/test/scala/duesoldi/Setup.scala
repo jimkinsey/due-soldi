@@ -10,7 +10,6 @@ trait Setup {
 object Setup {
 
   def withSetup[T](steps: Setup*)(block: Env => Future[T])(implicit executionContext: ExecutionContext): Future[T] = {
-//    lazy val setup = Future.foldLeft[Env, Env](steps.map(_.setup).to[collection.immutable.Iterable])(Map[String, String]())(_ ++ _)
 
     def setup(env: Env, remainingSteps: Seq[Setup]): Future[Env] = {
       remainingSteps.headOption match {
