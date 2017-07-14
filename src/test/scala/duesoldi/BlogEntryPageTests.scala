@@ -2,7 +2,7 @@ package duesoldi
 
 import duesoldi.Setup.withSetup
 import duesoldi.pages.BlogEntryPage
-import duesoldi.storage.{BlogStorage, Database, Images}
+import duesoldi.storage.{BlogStorage, Database}
 import duesoldi.testapp.{ServerRequests, ServerSupport}
 import utest._
 
@@ -10,8 +10,7 @@ class BlogEntryPageTests
   extends TestSuite 
   with BlogStorage 
   with Database 
-  with Images 
-  with ServerSupport 
+  with ServerSupport
   with ServerRequests 
 {
   implicit val executionContext = utest.framework.ExecutionContext.RunNow
@@ -132,7 +131,6 @@ class BlogEntryPageTests
       "may include images" - {
         withSetup(
           database,
-          images("/blog/has-image/images/a-cat.gif" -> 200),
           blogEntries("has-image" ->
             """# A cat!
               |
@@ -141,14 +139,12 @@ class BlogEntryPageTests
           withServer { implicit server =>
             for {
               pageResponse <- get("/blog/has-image")
-              imageResponse <- get("/blog/has-image/images/a-cat.gif")
             } yield {
               val page = new BlogEntryPage(pageResponse.body)
               assert(
                 page.content.images.head.src == "/blog/has-image/images/a-cat.gif",
                 page.content.images.head.alt == "A cat alt-text",
-                page.content.images.head.title contains "A cat title",
-                imageResponse.status == 200
+                page.content.images.head.title contains "A cat title"
               )
             }
           }

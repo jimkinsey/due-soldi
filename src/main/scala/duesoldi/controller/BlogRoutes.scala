@@ -10,7 +10,6 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.{Referer, `User-Agent`}
 import akka.http.scaladsl.server.Directives._
 import cats.data.EitherT
-import duesoldi.assets.AssetStore
 import duesoldi.config.Configured
 import duesoldi.markdown.{MarkdownDocument, MarkdownToHtmlConverter}
 import duesoldi.model.BlogEntry
@@ -35,7 +34,6 @@ trait BlogRoutes extends AccessRecording {
   implicit def executionContext: ExecutionContext
 
   def blogStore: BlogStore
-  def assetStore: AssetStore
   def renderer: Renderer
 
   final def blogRoutes = pathPrefix("blog") {
@@ -69,26 +67,6 @@ trait BlogRoutes extends AccessRecording {
                 HttpResponse(InternalServerError)
             }
           }
-        }
-      }
-    }
-  } ~ path("blog" / Segment / Remaining) { case (entryId, assetPath) =>
-    extractUri { uri =>
-      complete {
-        (for {
-          name  <- EitherT.fromOption[Future](ValidIdentifier(entryId), { InvalidId })
-          entry <- EitherT(blogStore.entry(name).map { _.toRight({ EntryNotFound }) })
-          asset <- EitherT(assetStore.asset(uri.path.toString))
-          contentType <- EitherT.fromEither[Future](ContentType.parse(asset.contentType)).leftMap(_.asInstanceOf[Any])
-        } yield {
-          (asset.data, contentType)
-        }).value map {
-          case Right((data: Array[Byte], contentType: ContentType)) => HttpResponse(entity = HttpEntity(contentType, data))
-          case Left(InvalidId) => HttpResponse(status = BadRequest)
-          case Left(EntryNotFound) => HttpResponse(status = NotFound)
-          case Left(AssetStore.AssetNotFound) => HttpResponse(status = NotFound)
-          case Left(AssetStore.UpstreamError) => HttpResponse(status = BadGateway)
-          case Left(_) => HttpResponse(status = InternalServerError)
         }
       }
     }
