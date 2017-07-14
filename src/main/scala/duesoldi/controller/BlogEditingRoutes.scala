@@ -17,7 +17,7 @@ trait BlogEditingRoutes extends AdminAuthentication { self: Configured =>
 
   def blogStore: BlogStore
 
-  final def blogEditingRoutes = path("admin" / "blog" / Remaining) { remaining =>
+  lazy val blogEditingRoutes = path("admin" / "blog" / Remaining) { remaining =>
     put {
       adminsOnly {
         entity(as[String]) { content =>

@@ -1,32 +1,27 @@
 package duesoldi.controller
 
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 import akka.http.scaladsl.model.HttpCharsets._
 import akka.http.scaladsl.model.MediaTypes._
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.headers.{Referer, `User-Agent`}
 import akka.http.scaladsl.server.Directives._
 import cats.data.EitherT
 import duesoldi.config.Configured
-import duesoldi.markdown.{MarkdownDocument, MarkdownToHtmlConverter}
+import duesoldi.markdown.MarkdownDocument
 import duesoldi.model.BlogEntry
-import duesoldi.rendering.{BlogEntryPageModel, BlogIndexPageModel, Renderer}
-import duesoldi.storage.AccessRecordStore.Access
-import duesoldi.storage.{AccessRecordStore, BlogStore}
+import duesoldi.rendering.{BlogIndexPageModel, Renderer}
+import duesoldi.storage.BlogStore
 import duesoldi.validation.ValidIdentifier
 
-import scala.util.{Failure, Try}
+import scala.util.Try
 
-case object InvalidId
 case object BlogStoreEmpty
-case object EntryNotFound // FIXME name
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait BlogRoutes extends AccessRecording {
+trait BlogIndexRoutes extends AccessRecording {
   self: Configured  =>
 
   import cats.instances.all._
@@ -36,7 +31,7 @@ trait BlogRoutes extends AccessRecording {
   def blogStore: BlogStore
   def renderer: Renderer
 
-  final def blogRoutes = pathPrefix("blog") {
+  lazy val blogIndexRoutes = pathPrefix("blog") {
     pathEndOrSingleSlash {
       redirectToTrailingSlashIfMissing(MovedPermanently) {
         recordAccess {
@@ -67,34 +62,6 @@ trait BlogRoutes extends AccessRecording {
                 HttpResponse(InternalServerError)
             }
           }
-        }
-      }
-    }
-  } ~ path("blog" / Segment) { entryId =>
-    recordAccess {
-      complete {
-        (for {
-          name  <- EitherT.fromOption[Future](ValidIdentifier(entryId), { InvalidId })
-          entry <- EitherT(blogStore.entry(name).map { _.toRight({ EntryNotFound }) })
-          model = BlogEntryPageModel(
-            title = MarkdownDocument.title(entry.content).get,
-            lastModified = entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy")),
-            contentHtml = MarkdownToHtmlConverter.html(entry.content.nodes).mkString,
-            furnitureVersion = config.furnitureVersion)
-          html  <- EitherT(renderer.render("blog-entry", model)).leftMap(_.asInstanceOf[Any])
-        } yield {
-          html
-        }).value map {
-          case Right(html)              => HttpResponse(OK, entity = HttpEntity(ContentType(`text/html`, `UTF-8`), html))
-          case Left(EntryNotFound)      =>
-            System.err.println(s"Blog $entryId not found")
-            HttpResponse(NotFound)
-          case Left(InvalidId)          =>
-            System.err.println(s"ID '$entryId' is invalid")
-            HttpResponse(BadRequest)
-          case Left(failure)            =>
-            System.err.println(s"Failed to render blog '$entryId' - $failure")
-            HttpResponse(InternalServerError)
         }
       }
     }

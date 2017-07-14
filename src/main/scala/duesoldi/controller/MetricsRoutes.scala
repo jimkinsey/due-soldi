@@ -15,7 +15,7 @@ trait MetricsRoutes extends AdminAuthentication with AccessRecording { self: Con
 
   def accessRecordStore: AccessRecordStore
 
-  final def metricsRoutes =
+  lazy val metricsRoutes =
     path("admin" / "metrics" / "access.csv") {
       recordAccess {
         adminsOnly {

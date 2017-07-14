@@ -11,7 +11,7 @@ import duesoldi.config.Configured
 
 trait FurnitureRoutes { self: Configured =>
 
-  final def furnitureRoutes = path("furniture" / Segment / Remaining) {
+  lazy val furnitureRoutes = path("furniture" / Segment / Remaining) {
     case (version: String, remaining: String) if version == config.furnitureVersion =>
       val maxAge = config.furnitureCacheDuration.toSeconds
       respondWithHeaders(

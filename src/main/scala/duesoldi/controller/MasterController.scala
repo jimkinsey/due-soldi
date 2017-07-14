@@ -16,7 +16,8 @@ class MasterController(val env: Env)(implicit val executionContext: ExecutionCon
   with AccessRecording
   with FurnitureRoutes
   with MetricsRoutes
-  with BlogRoutes
+  with BlogIndexRoutes
+  with BlogEntryRoutes
   with RobotsRoutes
   with BlogEditingRoutes
   with DebugRoutes {
@@ -25,6 +26,13 @@ class MasterController(val env: Env)(implicit val executionContext: ExecutionCon
   lazy val renderer = new Renderer
   lazy val accessRecordStore =  new JDBCAccessRecordStore(config.jdbcConnectionDetails)
 
-  def routes = furnitureRoutes ~ blogRoutes ~ metricsRoutes ~ robotsRoutes ~ blogEditingRoutes ~ debugRoutes
+  lazy val routes =
+    furnitureRoutes ~
+    blogIndexRoutes ~
+    blogEntryRoutes ~
+    metricsRoutes ~
+    robotsRoutes ~
+    blogEditingRoutes ~
+    debugRoutes
 
 }
