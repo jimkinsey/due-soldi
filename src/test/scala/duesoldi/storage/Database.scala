@@ -12,14 +12,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait Database {
 
-  implicit def executionContext: ExecutionContext
-
   lazy val noDatabase = new Setup {
     override def setup(env: Env): Future[Env] = Future.successful(Map.empty)
     override def tearDown: Future[Unit] = Future.successful({})
   }
 
-  def database = new Setup {
+  def database(implicit executionContext: ExecutionContext) = new Setup {
     private val id = UUID.randomUUID().toString.take(8)
     private var connection: Connection = _
 
@@ -41,3 +39,5 @@ trait Database {
   }
 
 }
+
+object Database extends Database

@@ -3,15 +3,14 @@ package duesoldi
 import duesoldi.Setup.withSetup
 import duesoldi.pages.BlogIndexPage
 import duesoldi.storage.{BlogStorage, Database}
-import duesoldi.testapp.{ServerRequests, ServerSupport}
+import duesoldi.storage.Database._
+import duesoldi.testapp.ServerSupport._
+import duesoldi.testapp.ServerRequests._
 import utest._
 
 object BlogIndexPageTests
   extends TestSuite 
   with BlogStorage 
-  with Database 
-  with ServerRequests 
-  with ServerSupport 
 {
   implicit val executionContext = utest.framework.ExecutionContext.RunNow
   val tests = this {

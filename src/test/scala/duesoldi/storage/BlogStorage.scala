@@ -8,7 +8,6 @@ import duesoldi.{Env, Setup}
 import scala.concurrent.{ExecutionContext, Future}
 
 trait BlogStorage {
-  implicit def executionContext: ExecutionContext
 
   case class EntryBuilder(id: String = "id", content: String = "# Title", lastModified: ZonedDateTime = ZonedDateTime.now())
 
@@ -20,7 +19,7 @@ trait BlogStorage {
     case (time, id, content) => EntryBuilder(id, content, ZonedDateTime.parse(time))
   }
 
-  def blogEntries(entries: EntryBuilder*) = new Setup {
+  def blogEntries(entries: EntryBuilder*)(implicit executionContext: ExecutionContext) = new Setup {
     override def setup(env: Env): Future[Env] = {
       val url = env("JDBC_DATABASE_URL")
       val username = env("JDBC_DATABASE_USERNAME")
@@ -45,3 +44,5 @@ trait BlogStorage {
   }
 
 }
+
+object BlogStorage extends BlogStorage

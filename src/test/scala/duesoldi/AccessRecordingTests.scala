@@ -6,8 +6,11 @@ import java.time.format.DateTimeFormatter.ISO_DATE_TIME
 import com.github.tototoshi.csv.CSVReader
 import duesoldi.Setup.withSetup
 import duesoldi.httpclient.BasicAuthorization
-import duesoldi.storage.{BlogStorage, Database}
-import duesoldi.testapp.{ServerRequests, ServerSupport}
+import duesoldi.storage.BlogStorage._
+import duesoldi.testapp.ServerSupport._
+import duesoldi.testapp.ServerRequests._
+import duesoldi.storage.Database._
+import AdminSupport._
 import test.matchers.CustomMatchers._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -15,11 +18,6 @@ import utest._
 
 object AccessRecordingTests
   extends TestSuite 
-  with BlogStorage 
-  with ServerSupport 
-  with ServerRequests 
-  with Database 
-  with AdminSupport 
 {
   implicit val executionContext = utest.framework.ExecutionContext.RunNow
   val tests = this

@@ -1,18 +1,16 @@
 package duesoldi
 
 import duesoldi.httpclient.BasicAuthorization
-import duesoldi.storage.{BlogStorage, Database}
-import duesoldi.testapp.{ServerRequests, ServerSupport}
+import duesoldi.storage.BlogStorage._
+import duesoldi.testapp.ServerSupport._
+import duesoldi.testapp.ServerRequests._
+import duesoldi.storage.Database._
+import AdminSupport._
 import Setup.withSetup
 import utest._
 
 object BlogEditingTests 
   extends TestSuite 
-  with BlogStorage 
-  with Database 
-  with ServerSupport 
-  with ServerRequests 
-  with AdminSupport 
 {
   implicit val executionContext = utest.framework.ExecutionContext.RunNow
   val tests = this {

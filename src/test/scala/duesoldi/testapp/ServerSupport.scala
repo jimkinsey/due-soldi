@@ -4,7 +4,7 @@ import duesoldi.{Server, _}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait ServerSupport {
+object ServerSupport {
 
   def withServer[T](block: Server => Future[T])(implicit executionContext: ExecutionContext): Env => Future[T] = (env: Env) => {
     def doTest(server: Server) = {

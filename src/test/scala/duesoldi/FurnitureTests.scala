@@ -6,7 +6,8 @@ import java.util.UUID
 
 import duesoldi.Setup.withSetup
 import duesoldi.filesystem.DeleteDir
-import duesoldi.testapp.{ServerRequests, ServerSupport}
+import duesoldi.testapp.ServerSupport._
+import duesoldi.testapp.ServerRequests._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
@@ -15,8 +16,6 @@ import test.matchers.CustomMatchers._
 
 object FurnitureTests 
   extends TestSuite
-  with ServerSupport 
-  with ServerRequests 
 {
   implicit val executionContext = utest.framework.ExecutionContext.RunNow
   val tests = this {

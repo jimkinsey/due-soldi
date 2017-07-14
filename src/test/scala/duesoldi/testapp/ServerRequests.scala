@@ -6,7 +6,7 @@ import duesoldi.httpclient.HttpClient.Response
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait ServerRequests {
+object ServerRequests {
 
   def get(path: String, headers: (String, String)*)(implicit ec: ExecutionContext, server: Server): Future[Response] = {
     HttpClient.get(path, server, headers)

@@ -2,16 +2,14 @@ package duesoldi
 
 import duesoldi.Setup.withSetup
 import duesoldi.pages.BlogEntryPage
-import duesoldi.storage.{BlogStorage, Database}
-import duesoldi.testapp.{ServerRequests, ServerSupport}
+import duesoldi.storage.BlogStorage._
+import duesoldi.storage.Database._
+import duesoldi.testapp.ServerSupport._
+import duesoldi.testapp.ServerRequests._
 import utest._
 
 class BlogEntryPageTests 
   extends TestSuite 
-  with BlogStorage 
-  with Database 
-  with ServerSupport
-  with ServerRequests 
 {
   implicit val executionContext = utest.framework.ExecutionContext.RunNow
   val tests = this {

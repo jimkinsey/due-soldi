@@ -1,15 +1,14 @@
 package duesoldi
 
 import duesoldi.httpclient.BasicAuthorization
-import duesoldi.testapp.{ServerRequests, ServerSupport}
+import duesoldi.testapp.ServerSupport._
+import duesoldi.testapp.ServerRequests._
 import Setup.withSetup
 import utest._
+import AdminSupport._
 
 object DebugTests
   extends TestSuite
-  with ServerSupport
-  with ServerRequests
-  with AdminSupport
 {
   implicit val executionContext = utest.framework.ExecutionContext.RunNow
   val tests = this {

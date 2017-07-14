@@ -1,14 +1,13 @@
 package duesoldi
 
 import duesoldi.Setup.withSetup
-import duesoldi.testapp.{ServerRequests, ServerSupport}
+import duesoldi.testapp.ServerSupport._
+import duesoldi.testapp.ServerRequests._
 
 import utest._
 
 object RobotsTests
   extends TestSuite
-  with ServerSupport
-  with ServerRequests
 {
   implicit val executionContext = utest.framework.ExecutionContext.RunNow
   val tests = this
