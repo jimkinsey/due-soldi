@@ -13,31 +13,22 @@ import scala.util.{Failure, Success, Try}
 
 object App {
   def main(args: Array[String]) {
-    val host = Option(System.getenv("HOST")).getOrElse("0.0.0.0")
-    val port = Option(System.getenv("PORT")).map(_.toInt).getOrElse(8080)
     val env: Map[String, String] = System.getenv().asScala.toMap
+    start(env)
+  }
 
+  def start(env: Env) = {
+    val host = env.getOrElse("HOST", "0.0.0.0")
+    val port = env.get("PORT").map(_.toInt).getOrElse(8080)
+    implicit val executionContext = concurrent.ExecutionContext.Implicits.global
     println(s"Binding to $host:$port")
-    val s = startServer(host, port, env) {
+    Server.startServer(new MasterController(env), host, port) {
       case Success(_) => println(s"Bound to $host:$port")
-      case Failure(ex)      =>
+      case Failure(ex) =>
         System.err.println(s"Failed to start server: ${ex.getMessage}")
         ex.printStackTrace(System.err)
     }
   }
-
-  def startServer(host: String, port: Int, env: Env)(complete: Try[Server] => Unit = _ => ()): Future[Server] = {
-    implicit val system = ActorSystem("my-system")
-    implicit val materializer = ActorMaterializer()
-    implicit val executionContext = system.dispatcher
-
-    val controller = new MasterController(env)
-
-    val fut = Http().bindAndHandle(controller.routes, host, port) map { binding => new Server(binding)}
-    fut.onComplete(complete)
-    fut
-  }
-
 }
 
 trait Controller {
@@ -54,7 +45,6 @@ object Server {
     implicit val system = ActorSystem("my-system")
     implicit val materializer = ActorMaterializer()
     implicit val executionContext = system.dispatcher
-
     val fut = Http().bindAndHandle(controller.routes, host, port) map { binding => new Server(binding)}
     fut.onComplete(complete)
     fut

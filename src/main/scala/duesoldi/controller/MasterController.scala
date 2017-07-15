@@ -1,8 +1,6 @@
 package duesoldi.controller
 
-import akka.actor.ActorSystem
 import akka.http.scaladsl.server.Directives._
-import akka.stream.Materializer
 import duesoldi._
 import duesoldi.config.Configured
 import duesoldi.markdown.MarkdownParser
@@ -11,7 +9,7 @@ import duesoldi.storage._
 
 import scala.concurrent.ExecutionContext
 
-class MasterController(val env: Env)(implicit val executionContext: ExecutionContext, val materializer: Materializer, val actorSystem: ActorSystem) extends Controller
+class MasterController(val env: Env)(implicit val executionContext: ExecutionContext) extends Controller
   with Configured
   with AccessRecording
   with FurnitureRoutes
