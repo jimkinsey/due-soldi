@@ -4,17 +4,17 @@ import java.io.StringReader
 import java.time.format.DateTimeFormatter.ISO_DATE_TIME
 
 import com.github.tototoshi.csv.CSVReader
+import duesoldi.AdminSupport._
 import duesoldi.Setup.withSetup
 import duesoldi.httpclient.BasicAuthorization
 import duesoldi.storage.BlogStorage._
-import duesoldi.testapp.ServerSupport._
-import duesoldi.testapp.ServerRequests._
 import duesoldi.storage.Database._
-import AdminSupport._
-import test.matchers.CustomMatchers._
-
-import scala.concurrent.{ExecutionContext, Future}
+import duesoldi.test.matchers.CustomMatchers._
+import duesoldi.testapp.ServerRequests._
+import duesoldi.testapp.TestApp.runningApp
 import utest._
+
+import scala.concurrent.Future
 
 object AccessRecordingTests
   extends TestSuite 
@@ -24,13 +24,14 @@ object AccessRecordingTests
   {
     "the access CSV endpoint" - {
       "returns a 401 for unauthorised access" - {
-        withSetup(adminCredentials("admin", "password")) {
-          withServer { implicit server =>
-            for {
-              response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "wrong-password"))
-            } yield {
-              assert(response.status == 401)
-            }
+        withSetup(
+          adminCredentials("admin", "password"),
+          runningApp
+        ) { implicit env =>
+          for {
+            response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "wrong-password"))
+          } yield {
+            assert(response.status == 401)
           }
         }
       }
@@ -38,17 +39,17 @@ object AccessRecordingTests
       "serves a CSV file with a header when there are no metrics recorded" - {
         withSetup(
           database,
-          adminCredentials("admin", "password")) {
-          withServer { implicit server =>
-            for {
-              response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
-            } yield {
-              assert(
-                response.status == 200,
-                response.body.lines.toList.head == "Timestamp,Path,Referer,User-Agent,Duration (ms),Client IP,Country,Status Code",
-                response.body.lines.toList.tail == Nil
-              )
-            }
+          adminCredentials("admin", "password"),
+          runningApp
+        ) { implicit env =>
+          for {
+            response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
+          } yield {
+            assert(
+              response.status == 200,
+              response.body.lines.toList.head == "Timestamp,Path,Referer,User-Agent,Duration (ms),Client IP,Country,Status Code",
+              response.body.lines.toList.tail == Nil
+            )
           }
         }
       }
@@ -58,20 +59,19 @@ object AccessRecordingTests
           database,
           adminCredentials("admin", "password"),
           accessRecordingEnabled,
+          runningApp,
           blogEntries("id" -> "# Content!")
-        ) {
-          withServer { implicit server: Server =>
-            for {
-              _        <- get("/blog/id")
-              response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
-            } yield {
-              assert(response.body.lines.size == 2)
-              val fields = response.body.lines.toList.tail.head.split(",")
-              assert(
-                fields(0) hasDateFormat ISO_DATE_TIME,
-                fields(1) == "/blog/id"
-              )
-            }
+        ) { implicit env =>
+          for {
+            _        <- get("/blog/id")
+            response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
+          } yield {
+            assert(response.body.lines.size == 2)
+            val fields = response.body.lines.toList.tail.head.split(",")
+            assert(
+              fields(0) hasDateFormat ISO_DATE_TIME,
+              fields(1) == "/blog/id"
+            )
           }
         }
       }
@@ -81,32 +81,31 @@ object AccessRecordingTests
           database,
           adminCredentials("admin", "password"),
           accessRecordingEnabled,
+          runningApp,
           blogEntries("id" -> "# Content!")
-        ) {
-          withServer { implicit server: Server =>
-            for {
-              _        <- get("/blog/", headers =
-                "Referer"          -> "http://altavista.is",
-                "User-Agent"       -> "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0",
-                "Cf-Connecting-Ip" -> "1.2.3.4",
-                "Cf-Ipcountry"     -> "IS"
-              )
-              response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
-            } yield {
-              val content = CSVReader.open(new StringReader(response.body)).allWithHeaders()
-              assert(
-                content.size == 1,
-                content(0)("Timestamp") hasDateFormat ISO_DATE_TIME,
-                content(0)("Path") == "/blog/",
-                content(0)("Referer") == "http://altavista.is",
-                content(0)("User-Agent") == "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0",
-                content(0)("Duration (ms)") isAValidLong,
-                content(0)("Duration (ms)").toInt > 0,
-                content(0)("Client IP") == "1.2.3.4",
-                content(0)("Country") == "IS",
-                content(0)("Status Code") == "200"
-              )
-            }
+        ) { implicit env =>
+          for {
+            _        <- get("/blog/", headers =
+              "Referer"          -> "http://altavista.is",
+              "User-Agent"       -> "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0",
+              "Cf-Connecting-Ip" -> "1.2.3.4",
+              "Cf-Ipcountry"     -> "IS"
+            )
+            response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
+          } yield {
+            val content = CSVReader.open(new StringReader(response.body)).allWithHeaders()
+            assert(
+              content.size == 1,
+              content(0)("Timestamp") hasDateFormat ISO_DATE_TIME,
+              content(0)("Path") == "/blog/",
+              content(0)("Referer") == "http://altavista.is",
+              content(0)("User-Agent") == "Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0",
+              content(0)("Duration (ms)") isAValidLong,
+              content(0)("Duration (ms)").toInt > 0,
+              content(0)("Client IP") == "1.2.3.4",
+              content(0)("Country") == "IS",
+              content(0)("Status Code") == "200"
+            )
           }
         }
       }
@@ -116,16 +115,15 @@ object AccessRecordingTests
           database,
           adminCredentials("admin", "password"),
           accessRecordingDisabled,
+          runningApp,
           blogEntries("id" -> "# Content!")
-        ) {
-          withServer { implicit server: Server =>
-            for {
-              _        <- get("/blog/")
-              _        <- get("/blog/id")
-              response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
-            } yield {
-              assert(response.body.lines.toList.tail.isEmpty)
-            }
+        ) { implicit env =>
+          for {
+            _        <- get("/blog/")
+            _        <- get("/blog/id")
+            response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
+          } yield {
+            assert(response.body.lines.toList.tail.isEmpty)
           }
         }
       }

@@ -1,7 +1,7 @@
 package duesoldi.httpclient
 
 import dispatch.{Http, url}
-import duesoldi.Server
+import duesoldi.Env
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
@@ -11,8 +11,8 @@ object HttpClient {
 
   case class Response(status: Int, headers: Map[String, Seq[String]], body: String)
 
-  def get(path: String, server: Server, headers: Seq[(String, String)] = Seq.empty)(implicit ec: ExecutionContext): Future[Response] = {
-    Http(url(s"http://localhost:${server.port}$path").setHeaders(headers.map { case (name, value) => name -> Seq(value) } toMap)).map { res =>
+  def get(path: String, env: Env, headers: Seq[(String, String)] = Seq.empty)(implicit ec: ExecutionContext): Future[Response] = {
+    Http(url(s"http://localhost:${env("PORT")}$path").setHeaders(headers.map { case (name, value) => name -> Seq(value) } toMap)).map { res =>
       Response(
         status = res.getStatusCode,
         headers = convertHeaders(res.getHeaders),
@@ -21,8 +21,8 @@ object HttpClient {
     }
   }
 
-  def put(path: String, server: Server, body: String, headers: Seq[(String, String)] = Seq.empty)(implicit ec: ExecutionContext): Future[Response] = {
-    Http(url(s"http://localhost:${server.port}$path").setMethod("PUT").setBody(body).setHeaders(headers.map { case (name, value) => name -> Seq(value) } toMap)).map { res =>
+  def put(path: String, env: Env, body: String, headers: Seq[(String, String)] = Seq.empty)(implicit ec: ExecutionContext): Future[Response] = {
+    Http(url(s"http://localhost:${env("PORT")}$path").setMethod("PUT").setBody(body).setHeaders(headers.map { case (name, value) => name -> Seq(value) } toMap)).map { res =>
       Response(
         status = res.getStatusCode,
         headers = convertHeaders(res.getHeaders),
@@ -31,8 +31,8 @@ object HttpClient {
     }
   }
 
-  def delete(path: String, server: Server, headers: Seq[(String, String)] = Seq.empty)(implicit ec: ExecutionContext): Future[Response] = {
-    Http(url(s"http://localhost:${server.port}$path").setMethod("DELETE").setHeaders(headers.map { case (name, value) => name -> Seq(value) } toMap)).map { res =>
+  def delete(path: String, env: Env, headers: Seq[(String, String)] = Seq.empty)(implicit ec: ExecutionContext): Future[Response] = {
+    Http(url(s"http://localhost:${env("PORT")}$path").setMethod("DELETE").setHeaders(headers.map { case (name, value) => name -> Seq(value) } toMap)).map { res =>
       Response(
         status = res.getStatusCode,
         headers = convertHeaders(res.getHeaders),
