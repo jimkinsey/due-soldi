@@ -79,6 +79,7 @@ nav ol li a:before {
 
 #blog-index article {
     border-bottom: 0.1em dotted;
+    margin-bottom: 0.5em;
 }
 
 #blog-index article:last-of-type {
