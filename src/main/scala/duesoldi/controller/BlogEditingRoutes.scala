@@ -24,7 +24,7 @@ trait BlogEditingRoutes extends AdminAuthentication { self: Configured =>
               result <- blogStore.store(remaining, ZonedDateTime.now(), content)
             } yield {
               result match {
-                case Created(_)       => HttpResponse(201)
+                case Created(_) => HttpResponse(201)
                 case Invalid(reasons) => HttpResponse(400, entity = reasons.mkString("\n"))
               }
             }
