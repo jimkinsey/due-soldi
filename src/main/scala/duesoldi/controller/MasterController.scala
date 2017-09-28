@@ -4,7 +4,7 @@ import akka.http.scaladsl.server.Directives._
 import duesoldi._
 import duesoldi.config.Configured
 import duesoldi.markdown.MarkdownParser
-import duesoldi.page.IndexPageMaker
+import duesoldi.page.{EntryPageMaker, IndexPageMaker}
 import duesoldi.rendering.Renderer
 import duesoldi.storage._
 
@@ -25,6 +25,7 @@ class MasterController(val env: Env)(implicit val executionContext: ExecutionCon
   lazy val renderer = new Renderer
   lazy val accessRecordStore =  new JDBCAccessRecordStore(config.jdbcConnectionDetails)
   lazy val indexPageMaker = new IndexPageMaker(renderer, blogStore, config)
+  lazy val entryPageMaker = new EntryPageMaker(renderer, blogStore, config)
 
   lazy val routes =
     furnitureRoutes ~
