@@ -46,14 +46,12 @@ object BlogIndexPageTests
         }
       }
     }
-    "when there are invalid blog entries" - {
-      "filters out the invalid entries" - {
+    "when there are blog entries without titles" - {
+      "renders the title as '-untitled-'" - {
         withSetup(
           database,
           blogEntries(
-            "invalid-content" -> "boom",
-            "InVALid ID" -> "# Boom",
-            "valid-content-and-id" -> "# Hello!"
+            "sans-title" -> "boom"
           ),
           runningApp
         ) { implicit env =>
@@ -64,8 +62,8 @@ object BlogIndexPageTests
             assert(
               response.status == 200,
               page.blogEntries.size == 1,
-              page.blogEntries.head.link == "/blog/valid-content-and-id",
-              page.blogEntries.head.title == "Hello!"
+              page.blogEntries.head.link == "/blog/sans-title",
+              page.blogEntries.head.title == "-untitled-"
             )
           }
         }

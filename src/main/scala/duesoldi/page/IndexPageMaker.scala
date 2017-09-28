@@ -11,7 +11,6 @@ import duesoldi.storage.BlogStore
 import duesoldi.validation.ValidIdentifier
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 
 sealed trait IndexPageFailure
 object IndexPageFailure {
@@ -25,34 +24,36 @@ class IndexPageMaker(renderer: Renderer, blogStore: BlogStore, config: Config)(i
 
   def indexPage: Future[Either[IndexPageFailure, String]] = {
     (for {
-      entries <- blogEntries
-      model = BlogIndexPageModel(
-        entries = entries.sortBy(_.lastModified.toEpochSecond()).reverse.flatMap {
-          case BlogEntry(id, content, lastModified) =>
-            Try(BlogIndexPageModel.Entry(
-              lastModified = lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy")),
-              title = MarkdownDocument.title(content).get,
-              id = id
-            )).toOption
-        },
-        furnitureVersion = config.furnitureVersion
-      )
+      entries <- EitherT(blogEntries)
+      model = pageModel(entries)
       html <- EitherT(renderer.render("blog-index", model)).leftMap(_.asInstanceOf[Any])
     } yield {
       html
-    }).value map {
-      case Right(html) => Right(html)
-      case Left(IndexPageFailure.BlogStoreEmpty) => Left(IndexPageFailure.BlogStoreEmpty)
-      case Left(failure: Renderer.Failure) => Left(IndexPageFailure.RenderFailure(failure))
-      case Left(failure) => Left(IndexPageFailure.UnexpectedFailure(failure))
-    }
+    }).leftMap {
+      case IndexPageFailure.BlogStoreEmpty => IndexPageFailure.BlogStoreEmpty
+      case failure: Renderer.Failure => IndexPageFailure.RenderFailure(failure)
+      case failure => IndexPageFailure.UnexpectedFailure(failure)
+    }.value
   }
 
-  private def blogEntries = EitherT[Future, IndexPageFailure.BlogStoreEmpty.type, Seq[BlogEntry]](blogStore.entries.map { entries =>
-    entries.filter(entry => ValidIdentifier(entry.id).nonEmpty) match {
-      case Nil => Left(IndexPageFailure.BlogStoreEmpty)
-      case other => Right(other)
+  private def blogEntries: Future[Either[IndexPageFailure.BlogStoreEmpty.type, Seq[BlogEntry]]] =
+    blogStore.entries.map { entries =>
+      entries.filter(entry => ValidIdentifier(entry.id).nonEmpty) match {
+        case Nil => Left(IndexPageFailure.BlogStoreEmpty)
+        case other => Right(other)
+      }
     }
-  })
+
+  private def pageModel(entries: Seq[BlogEntry]) = BlogIndexPageModel(
+    entries = entries.sortBy(_.lastModified.toEpochSecond()).reverse.map {
+      case BlogEntry(id, content, lastModified) =>
+        BlogIndexPageModel.Entry(
+          lastModified = lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy")),
+          title = MarkdownDocument.title(content).getOrElse("-untitled-"),
+          id = id
+        )
+    },
+    furnitureVersion = config.furnitureVersion
+  )
 
 }
