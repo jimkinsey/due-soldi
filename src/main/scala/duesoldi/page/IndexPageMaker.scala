@@ -2,7 +2,6 @@ package duesoldi.page
 
 import java.time.format.DateTimeFormatter
 
-import cats.data.EitherT
 import duesoldi.config.Config
 import duesoldi.markdown.MarkdownDocument
 import duesoldi.model.BlogEntry
@@ -21,21 +20,17 @@ object IndexPageFailure {
 
 class IndexPageMaker(renderer: Renderer, blogStore: BlogStore, config: Config)(implicit executionContext: ExecutionContext) {
   import cats.instances.all._
+  import duesoldi.transformers.TransformerOps._
 
   def indexPage: Future[Either[IndexPageFailure, String]] = {
-    (for {
-      entries <- EitherT(blogEntries)
+    for {
+      entries <- blogEntries.propagate[IndexPageFailure]
       model = pageModel(entries)
-      html <- EitherT[Future, IndexPageFailure, String](renderPage(model))
+      html <- renderer.render("blog-index", model).failWith[IndexPageFailure](RenderFailure)
     } yield {
       html
-    }).value
+    }
   }
-
-  private def renderPage(model: BlogIndexPageModel): Future[Either[RenderFailure, String]] =
-    renderer
-      .render("blog-index", model)
-      .map(_.left.map(RenderFailure))
 
   private def blogEntries: Future[Either[IndexPageFailure.BlogStoreEmpty.type, Seq[BlogEntry]]] =
     blogStore.entries.map { entries =>

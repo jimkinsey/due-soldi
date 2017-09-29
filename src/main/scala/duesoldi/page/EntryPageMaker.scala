@@ -2,7 +2,6 @@ package duesoldi.page
 
 import java.time.format.DateTimeFormatter
 
-import cats.data.EitherT
 import duesoldi.config.Config
 import duesoldi.markdown.{MarkdownDocument, MarkdownToHtmlConverter}
 import duesoldi.model.BlogEntry
@@ -22,24 +21,17 @@ object EntryPageFailure {
 
 class EntryPageMaker(renderer: Renderer, blogStore: BlogStore, config: Config)(implicit executionContext: ExecutionContext) {
   import cats.instances.all._
+  import duesoldi.transformers.TransformerOps._
 
   def entryPage(entryId: String): Future[Either[EntryPageFailure, String]] = {
-    (for {
-      _ <- EitherT.fromEither[Future](validIdentifier(entryId))
-      entry <- EitherT(blogEntry(entryId))
+    for {
+      _ <- ValidIdentifier(entryId).failWith({ InvalidId })
+      entry <- blogStore.entry(entryId).failWith({ EntryNotFound })
       model = pageModel(entry)
-      html <- EitherT[Future, EntryPageFailure, String](render(model))
+      html <- renderer.render("blog-entry", model).failWith[EntryPageFailure](RenderFailure)
     } yield {
       html
-    }).value
-  }
-
-  private def validIdentifier(entryId: String): Either[EntryPageFailure.InvalidId.type, String] = {
-    ValidIdentifier(entryId).toRight({ InvalidId })
-  }
-
-  private def blogEntry(id: String): Future[Either[EntryPageFailure.EntryNotFound.type, BlogEntry]] = {
-    blogStore.entry(id).map { _.toRight({ EntryNotFound }) }
+    }
   }
 
   private def pageModel(entry: BlogEntry) = BlogEntryPageModel(
@@ -48,10 +40,4 @@ class EntryPageMaker(renderer: Renderer, blogStore: BlogStore, config: Config)(i
     contentHtml = MarkdownToHtmlConverter.html(entry.content.nodes).mkString,
     furnitureVersion = config.furnitureVersion
   )
-
-  private def render(model: BlogEntryPageModel): Future[Either[RenderFailure, String]] = {
-    renderer
-      .render("blog-entry", model)
-      .map(_.left.map(RenderFailure))
-  }
 }
