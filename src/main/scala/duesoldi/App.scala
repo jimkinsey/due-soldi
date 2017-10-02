@@ -6,6 +6,7 @@ import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
 import duesoldi.controller.MasterController
+import duesoldi.logging.Logger
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
@@ -18,17 +19,18 @@ object App {
   }
 
   def start(env: Env) = {
+    lazy val logger = new Logger(env.get("LOGGING_ENABLED").map(_.toBoolean).getOrElse(true))
     val host = env.getOrElse("HOST", "0.0.0.0")
     val port = env.get("PORT").map(_.toInt).getOrElse(8080)
     implicit val executionContext = concurrent.ExecutionContext.Implicits.global
-    println(s"Binding to $host:$port")
     Server.startServer(new MasterController(env), host, port) {
-      case Success(_) => println(s"Bound to $host:$port")
+      case Success(_) =>
+        logger.info(s"Started server on $host:$port")
       case Failure(ex) =>
-        System.err.println(s"Failed to start server: ${ex.getMessage}")
-        ex.printStackTrace(System.err)
+        logger.error(s"Failed to start server on $host:$port - ${ex.getMessage}")
     }
   }
+
 }
 
 trait Controller {

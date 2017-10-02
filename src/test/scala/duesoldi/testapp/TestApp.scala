@@ -16,7 +16,7 @@ object TestApp {
         case n if n > maxStartupAttempts => Future.failed(ServerStartFailure(attempts))
         case _ =>
           val port = newPort
-          val newEnv = env + ("PORT" -> port.toString) + ("HOST" -> "localhost")
+          val newEnv = env + ("PORT" -> port.toString) + ("HOST" -> "localhost") + ("LOGGING_ENABLED" -> "false")
           App
             .start(newEnv)
             .map { s =>
