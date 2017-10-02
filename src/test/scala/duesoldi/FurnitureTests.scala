@@ -77,6 +77,7 @@ object FurnitureTests
     lazy val path = s"/tmp/furniture/${UUID.randomUUID().toString.take(6)}"
 
     override def setup(env: Env) = {
+      new File(path).mkdirs()
       files foreach { case (name, content) =>
         val file = new File(s"$path/$name")
         file.getParentFile.mkdirs()
