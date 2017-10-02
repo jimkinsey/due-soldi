@@ -1,6 +1,6 @@
 package duesoldi.logging
 
-class Logger(loggingEnabled: Boolean) {
+class Logger(loggingEnabled: Boolean = true) {
 
   def info(message: => String) {
     if (loggingEnabled) {

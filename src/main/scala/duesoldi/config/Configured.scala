@@ -21,6 +21,7 @@ trait Configured {
       username = env.getOrElse("JDBC_DATABASE_USERNAME", ""),
       password = env.getOrElse("JDBC_DATABASE_PASSWORD", "")
     ),
-    imageBaseUrl = env.getOrElse("IMAGE_BASE_URL", "")
+    imageBaseUrl = env.getOrElse("IMAGE_BASE_URL", ""),
+    loggingEnabled = env.get("LOGGING_ENABLED").map(_.toBoolean).getOrElse(true)
   )
 }
