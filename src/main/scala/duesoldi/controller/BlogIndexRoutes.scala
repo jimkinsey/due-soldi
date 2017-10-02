@@ -6,6 +6,8 @@ import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import duesoldi.config.Configured
+import duesoldi.controller.BlogIndexRoutes.Event.{BlogIndexPageNotRendered, BlogIndexPageRendered}
+import duesoldi.events.Events
 import duesoldi.page.{IndexPageFailure, IndexPageMaker}
 
 import scala.concurrent.ExecutionContext
@@ -16,6 +18,7 @@ trait BlogIndexRoutes extends AccessRecording {
   implicit def executionContext: ExecutionContext
 
   def indexPageMaker: IndexPageMaker
+  def events: Events
 
   lazy val blogIndexRoutes = pathPrefix("blog") {
     pathEndOrSingleSlash {
@@ -27,12 +30,13 @@ trait BlogIndexRoutes extends AccessRecording {
             } yield {
               page match {
                 case Right(html) =>
+                  events.notify(BlogIndexPageRendered(html))
                   HttpResponse(OK, entity = HttpEntity(ContentType(`text/html`, `UTF-8`), html))
-                case Left(IndexPageFailure.BlogStoreEmpty) =>
-                  System.err.println(s"No blog entries in the store, not rendering index page")
+                case Left(failure: IndexPageFailure.BlogStoreEmpty.type) =>
+                  events.notify(BlogIndexPageNotRendered(failure))
                   HttpResponse(NotFound)
                 case Left(failure) =>
-                  System.err.println(s"Failed to render blog index page - $failure")
+                  events.notify(BlogIndexPageNotRendered(failure))
                   HttpResponse(InternalServerError)
               }
             }
@@ -42,5 +46,13 @@ trait BlogIndexRoutes extends AccessRecording {
     }
   }
 
+}
+
+object BlogIndexRoutes {
+  sealed trait Event extends duesoldi.events.Event
+  object Event {
+    case class BlogIndexPageRendered(html: String) extends Event
+    case class BlogIndexPageNotRendered(reason: IndexPageFailure) extends Event
+  }
 }
 

@@ -6,6 +6,9 @@ import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import duesoldi.config.Configured
+import duesoldi.controller.BlogEntryRoutes.Event
+import duesoldi.controller.BlogEntryRoutes.Event.{BlogEntryPageRendered, EntryNotFound, InvalidId, RenderFailure}
+import duesoldi.events.Events
 import duesoldi.page.{EntryPageFailure, EntryPageMaker}
 
 import scala.concurrent.ExecutionContext
@@ -16,6 +19,7 @@ trait BlogEntryRoutes extends AccessRecording {
   implicit def executionContext: ExecutionContext
 
   def entryPageMaker: EntryPageMaker
+  def events: Events
 
   lazy val blogEntryRoutes = path("blog" / Segment) { entryId =>
     recordAccess {
@@ -25,15 +29,16 @@ trait BlogEntryRoutes extends AccessRecording {
         } yield {
           page match {
             case Right(html) =>
+              events.notify(BlogEntryPageRendered(html))
               HttpResponse(OK, entity = HttpEntity(ContentType(`text/html`, `UTF-8`), html))
             case Left(EntryPageFailure.EntryNotFound) =>
-              System.err.println(s"Blog $entryId not found")
+              events.notify(EntryNotFound(entryId))
               HttpResponse(NotFound)
             case Left(EntryPageFailure.InvalidId) =>
-              System.err.println(s"ID '$entryId' is invalid")
+              events.notify(InvalidId(entryId))
               HttpResponse(BadRequest)
-            case Left(failure) =>
-              System.err.println(s"Failed to render blog '$entryId' - $failure")
+            case Left(failure: EntryPageFailure.RenderFailure) =>
+              events.notify(Event.RenderFailure(failure))
               HttpResponse(InternalServerError)
           }
         }
@@ -41,4 +46,14 @@ trait BlogEntryRoutes extends AccessRecording {
     }
   }
 
+}
+
+object BlogEntryRoutes {
+  sealed trait Event extends duesoldi.events.Event
+  object Event {
+    case class BlogEntryPageRendered(html: String) extends Event
+    case class EntryNotFound(id: String) extends Event
+    case class InvalidId(id: String) extends Event
+    case class RenderFailure(cause: EntryPageFailure.RenderFailure) extends Event
+  }
 }

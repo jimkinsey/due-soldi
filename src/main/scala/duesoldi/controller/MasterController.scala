@@ -3,6 +3,8 @@ package duesoldi.controller
 import akka.http.scaladsl.server.Directives._
 import duesoldi._
 import duesoldi.config.Configured
+import duesoldi.events.Events
+import duesoldi.logging.Logging
 import duesoldi.markdown.MarkdownParser
 import duesoldi.page.{EntryPageMaker, IndexPageMaker}
 import duesoldi.rendering.Renderer
@@ -21,6 +23,8 @@ class MasterController(val env: Env)(implicit val executionContext: ExecutionCon
   with BlogEditingRoutes
   with DebugRoutes {
 
+  lazy val events = new Events
+  lazy val logging = new Logging(events)
   lazy val blogStore = new JDBCBlogStore(config.jdbcConnectionDetails, new MarkdownParser)
   lazy val renderer = new Renderer
   lazy val accessRecordStore =  new JDBCAccessRecordStore(config.jdbcConnectionDetails)
