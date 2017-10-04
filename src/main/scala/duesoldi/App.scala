@@ -19,7 +19,7 @@ object App {
   }
 
   def start(env: Env) = {
-    lazy val logger = new Logger(env.get("LOGGING_ENABLED").map(_.toBoolean).getOrElse(true))
+    lazy val logger = new Logger("Application", env.get("LOGGING_ENABLED").map(_.toBoolean).getOrElse(true))
     val host = env.getOrElse("HOST", "0.0.0.0")
     val port = env.get("PORT").map(_.toInt).getOrElse(8080)
     implicit val executionContext = concurrent.ExecutionContext.Implicits.global

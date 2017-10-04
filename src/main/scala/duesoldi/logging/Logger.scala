@@ -1,16 +1,16 @@
 package duesoldi.logging
 
-class Logger(loggingEnabled: Boolean = true) {
+class Logger(name: String, loggingEnabled: Boolean = true) {
 
   def info(message: => String) {
     if (loggingEnabled) {
-      System.out.println(message)
+      System.out.println(s"[$name] $message")
     }
   }
 
   def error(message: => String) {
     if (loggingEnabled) {
-      System.err.println(message)
+      System.err.println(s"[$name] $message")
     }
   }
 

@@ -24,7 +24,7 @@ class MasterController(val env: Env)(implicit val executionContext: ExecutionCon
   with DebugRoutes {
 
   lazy val events = new Events
-  lazy val logger = new Logger(config.loggingEnabled)
+  lazy val logger = new Logger("Master Controller", config.loggingEnabled)
   lazy val logging = new EventLogging(events, logger)
   lazy val blogStore = new JDBCBlogStore(config.jdbcConnectionDetails, new MarkdownParser)
   lazy val renderer = new Renderer
