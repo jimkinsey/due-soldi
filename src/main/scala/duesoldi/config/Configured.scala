@@ -14,7 +14,7 @@ trait Configured {
     furnitureVersion = env.getOrElse("FURNITURE_VERSION", "LOCAL"),
     furniturePath = env.getOrElse("FURNITURE_PATH", "src/main/resources/furniture"),
     furnitureCacheDuration = env.get("FURNITURE_CACHE_DURATION").flatMap(s => Try(Duration(s)).toOption).getOrElse(Duration.Zero),
-    adminCredentials = env.get("ADMIN_CREDENTIALS").map(Config.Credentials(_)),
+    adminCredentials = env.get("ADMIN_CREDENTIALS").flatMap(Config.Credentials(_)),
     accessRecordingEnabled = env.get("ACCESS_RECORDING_ENABLED").map(_.toBoolean).getOrElse(false),
     jdbcConnectionDetails = JDBCConnection.ConnectionDetails(
       url = env.getOrElse("JDBC_DATABASE_URL", ""),

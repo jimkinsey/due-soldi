@@ -20,10 +20,10 @@ object Config {
   case class Credentials(username: String, password: String)
 
   object Credentials {
-    def apply(colonSeparated: String): Credentials = {
+    def apply(colonSeparated: String): Option[Credentials] = {
       colonSeparated.split(':').toList match {
-        case username :: password :: _ => Credentials(username, password)
-        case oth => println(s"Got $oth"); Credentials("", "") // FIXME
+        case username :: password :: _ => Some(Credentials(username, password))
+        case _ => None
        }
     }
   }
