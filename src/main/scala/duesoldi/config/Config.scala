@@ -1,6 +1,7 @@
 package duesoldi.config
 
 import duesoldi.config.Config.Credentials
+import duesoldi.config.Config.Credentials.ParseFailure.Malformed
 import duesoldi.storage.JDBCConnection
 
 import scala.concurrent.duration.Duration
@@ -20,10 +21,14 @@ object Config {
   case class Credentials(username: String, password: String)
 
   object Credentials {
-    def apply(colonSeparated: String): Option[Credentials] = {
+    sealed trait ParseFailure
+    object ParseFailure {
+      case object Malformed extends ParseFailure
+    }
+    def parsed(colonSeparated: String): Either[ParseFailure, Credentials] = {
       colonSeparated.split(':').toList match {
-        case username :: password :: _ => Some(Credentials(username, password))
-        case _ => None
+        case username :: password :: _ => Right(Credentials(username, password))
+        case _ => Left(Malformed)
        }
     }
   }
