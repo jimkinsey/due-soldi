@@ -5,6 +5,8 @@ import java.time.ZonedDateTime
 import akka.http.scaladsl.model.headers.{Referer, `User-Agent`}
 import akka.http.scaladsl.server.Directives._
 import duesoldi.config.Configured
+import duesoldi.controller.AccessRecording.Event.{RecordFailure, RecordSuccess}
+import duesoldi.events.Events
 import duesoldi.storage.AccessRecordStore
 import duesoldi.storage.AccessRecordStore.Access
 
@@ -16,6 +18,7 @@ trait AccessRecording { self: Configured =>
   implicit def executionContext: ExecutionContext
 
   def accessRecordStore: AccessRecordStore
+  def events: Events
 
   def recordAccess =
     extractRequestContext.flatMap { ctx =>
@@ -34,12 +37,20 @@ trait AccessRecording { self: Configured =>
             statusCode = response.status.intValue
           )).onComplete {
             case Failure(ex) =>
-              System.err.println(s"Failed to record access - ${ex.getMessage}")
-              ex.printStackTrace()
+              events.notify(RecordFailure(ex))
             case _ =>
+              events.notify(RecordSuccess)
           }
         }
         response
       }
     }
+}
+
+object AccessRecording {
+  sealed trait Event extends duesoldi.events.Event
+  object Event {
+    case class RecordFailure(cause: Throwable) extends Event
+    case object RecordSuccess extends Event
+  }
 }
