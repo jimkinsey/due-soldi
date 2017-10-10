@@ -16,8 +16,8 @@ trait BlogEditingRoutes extends AdminAuthentication { self: Configured =>
   def blogStore: BlogStore
 
   lazy val blogEditingRoutes = path("admin" / "blog" / Remaining) { remaining =>
-    put {
-      adminsOnly {
+    adminsOnly {
+      put {
         entity(as[String]) { content =>
           complete {
             for {
@@ -30,9 +30,7 @@ trait BlogEditingRoutes extends AdminAuthentication { self: Configured =>
             }
           }
         }
-      }
-    } ~ delete {
-      adminsOnly {
+      } ~ delete {
         complete {
           for {
             result <- blogStore.delete(remaining)
@@ -40,9 +38,7 @@ trait BlogEditingRoutes extends AdminAuthentication { self: Configured =>
             HttpResponse(204)
           }
         }
-      }
-    } ~ get {
-      adminsOnly {
+      } ~ get {
         complete {
           for {
             result <- blogStore.entry(remaining)
