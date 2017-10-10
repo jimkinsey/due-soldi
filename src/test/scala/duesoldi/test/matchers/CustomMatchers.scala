@@ -7,8 +7,12 @@ import scala.util.Try
 object CustomMatchers { 
 
   implicit class StringParsableAs(in: String) {
-    def hasDateFormat(format: DateTimeFormatter) = Try(format.parse(in)).isSuccess
-    def isAValidLong = Try(in.toLong).isSuccess
+    def hasDateFormat(format: DateTimeFormatter): Boolean = Try(format.parse(in)).isSuccess
+    def isAValidLong: Boolean = Try(in.toLong).isSuccess
   }
 
+  implicit class EitherAssertions[L,R](either: Either[L,R]) {
+    def isLeftOf(value: L): Boolean = either.left.toOption.contains(value)
+    def isRightOf(value: R): Boolean = either.toOption.contains(value)
+  }
 }

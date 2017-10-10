@@ -6,7 +6,7 @@ import duesoldi.config.Config
 import duesoldi.markdown.MarkdownDocument
 import duesoldi.model.BlogEntry
 import duesoldi.page.IndexPageFailure.RenderFailure
-import duesoldi.rendering.{BlogIndexPageModel, Renderer}
+import duesoldi.rendering.{BlogIndexPageModel, Rendered}
 import duesoldi.storage.BlogStore
 import duesoldi.validation.ValidIdentifier
 
@@ -15,10 +15,10 @@ import scala.concurrent.{ExecutionContext, Future}
 sealed trait IndexPageFailure
 object IndexPageFailure {
   case object BlogStoreEmpty extends IndexPageFailure
-  case class RenderFailure(failure: Renderer.Failure) extends IndexPageFailure
+  case class RenderFailure(failure: bhuj.Failure) extends IndexPageFailure
 }
 
-class IndexPageMaker(renderer: Renderer, blogStore: BlogStore, config: Config)(implicit executionContext: ExecutionContext) {
+class IndexPageMaker(rendered: Rendered, blogStore: BlogStore, config: Config)(implicit executionContext: ExecutionContext) {
   import cats.instances.all._
   import duesoldi.transformers.TransformerOps._
 
@@ -26,7 +26,7 @@ class IndexPageMaker(renderer: Renderer, blogStore: BlogStore, config: Config)(i
     for {
       entries <- blogEntries.propagate[IndexPageFailure]
       model = pageModel(entries)
-      html <- renderer.render("blog-index", model).failWith[IndexPageFailure](RenderFailure)
+      html <- rendered("blog-index", model).failWith[IndexPageFailure](RenderFailure)
     } yield {
       html
     }

@@ -33,6 +33,8 @@ object MarkdownDocument {
   def title(markdown: MarkdownDocument) = markdown.nodes.collectFirst {
     case Heading(nodes, 1) => MarkdownDocument.text(nodes)
   }
+
+  lazy val empty = MarkdownDocument(Seq.empty, "")
 }
 
 case class MarkdownDocument(nodes: Seq[MarkdownDocument.Node], raw: String)
