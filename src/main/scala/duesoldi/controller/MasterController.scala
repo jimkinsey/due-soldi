@@ -34,8 +34,8 @@ class MasterController(val env: Env)(implicit val executionContext: ExecutionCon
 
   lazy val routes =
     furnitureRoutes ~
-    blogIndexRoutes ~
-    blogEntryRoutes ~
+    recordAccess { blogIndexRoutes } ~
+    recordAccess { blogEntryRoutes } ~
     metricsRoutes ~
     robotsRoutes ~
     blogEditingRoutes ~

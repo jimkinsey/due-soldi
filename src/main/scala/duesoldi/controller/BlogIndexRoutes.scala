@@ -12,7 +12,7 @@ import duesoldi.page.{IndexPageFailure, IndexPageMaker}
 
 import scala.concurrent.ExecutionContext
 
-trait BlogIndexRoutes extends AccessRecording {
+trait BlogIndexRoutes {
   self: Configured =>
 
   implicit def executionContext: ExecutionContext
@@ -23,22 +23,20 @@ trait BlogIndexRoutes extends AccessRecording {
   lazy val blogIndexRoutes = pathPrefix("blog") {
     pathEndOrSingleSlash {
       redirectToTrailingSlashIfMissing(MovedPermanently) {
-        recordAccess {
-          complete {
-            for {
-              page <- indexPageMaker.indexPage
-            } yield {
-              page match {
-                case Right(html) =>
-                  events.notify(BlogIndexPageRendered(html))
-                  HttpResponse(OK, entity = HttpEntity(ContentType(`text/html`, `UTF-8`), html))
-                case Left(failure: IndexPageFailure.BlogStoreEmpty.type) =>
-                  events.notify(BlogIndexPageNotRendered(failure))
-                  HttpResponse(NotFound)
-                case Left(failure) =>
-                  events.notify(BlogIndexPageNotRendered(failure))
-                  HttpResponse(InternalServerError)
-              }
+        complete {
+          for {
+            page <- indexPageMaker.indexPage
+          } yield {
+            page match {
+              case Right(html) =>
+                events.notify(BlogIndexPageRendered(html))
+                HttpResponse(OK, entity = HttpEntity(ContentType(`text/html`, `UTF-8`), html))
+              case Left(failure: IndexPageFailure.BlogStoreEmpty.type) =>
+                events.notify(BlogIndexPageNotRendered(failure))
+                HttpResponse(NotFound)
+              case Left(failure) =>
+                events.notify(BlogIndexPageNotRendered(failure))
+                HttpResponse(InternalServerError)
             }
           }
         }
