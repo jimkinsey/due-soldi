@@ -1,6 +1,7 @@
 package duesoldi.controller
 
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Route
 import duesoldi._
 import duesoldi.config.Configured
 import duesoldi.events.Events
@@ -32,13 +33,15 @@ class MasterController(val env: Env)(implicit val executionContext: ExecutionCon
   lazy val indexPageMaker = new IndexPageMaker(renderer, blogStore, config)
   lazy val entryPageMaker = new EntryPageMaker(renderer, blogStore, config)
 
-  lazy val routes =
-    furnitureRoutes ~
-    recordAccess { blogIndexRoutes } ~
-    recordAccess { blogEntryRoutes } ~
-    metricsRoutes ~
-    robotsRoutes ~
-    blogEditingRoutes ~
-    debugRoutes
+  lazy val routes: Route =
+    recordAccess {
+      furnitureRoutes ~
+      blogIndexRoutes ~
+      blogEntryRoutes ~
+      metricsRoutes ~
+      robotsRoutes ~
+      blogEditingRoutes ~
+      debugRoutes
+    }
 
 }
