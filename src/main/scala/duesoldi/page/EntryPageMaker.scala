@@ -15,22 +15,30 @@ object EntryPageMaker {
                (pageModel: Model)
                (rendered: duesoldi.rendering.Rendered)
                (entryId: String)
-               (implicit executionContext: ExecutionContext): Result = {
-    for {
-      _ <- validId(entryId).failWith({ InvalidId })
-      entry <- entry(entryId).failWith({ EntryNotFound })
+               (implicit executionContext: ExecutionContext, emit: duesoldi.events.Emit = duesoldi.events.noopEmit): Result = {
+    (for {
+      _ <- validId(entryId).failWith({ InvalidId(entryId) })
+      entry <- entry(entryId).failWith({ EntryNotFound(entryId) })
       model = pageModel(entry)
       html <- rendered("blog-entry", model).failWith[Failure](RenderFailure)
     } yield {
       html
-    }
+    })
+      .onRight(html => emit(Event.MadePage(html)))
+      .onLeft(failure => emit(Event.FailedToMakePage(failure)))
   }
 
   sealed trait Failure
   object Failure {
-    case object InvalidId extends Failure
-    case object EntryNotFound extends Failure
+    case class InvalidId(id: String) extends Failure
+    case class EntryNotFound(id: String) extends Failure
     case class RenderFailure(failure: bhuj.Failure) extends Failure
+  }
+
+  sealed trait Event extends duesoldi.events.Event
+  object Event {
+    case class MadePage(html: String) extends Event
+    case class FailedToMakePage(failure: Failure) extends Event
   }
 
   type Result = Future[Either[Failure, String]]

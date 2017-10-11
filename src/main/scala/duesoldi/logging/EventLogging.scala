@@ -1,9 +1,9 @@
 package duesoldi.logging
 
-import duesoldi.controller.{AccessRecording, BlogEntryRoutes, BlogIndexRoutes}
 import duesoldi.controller.BlogIndexRoutes.Event.BlogIndexPageNotRendered
+import duesoldi.controller.{AccessRecording, BlogIndexRoutes}
 import duesoldi.events.Events
-import duesoldi.page.IndexPageFailure
+import duesoldi.page.{EntryPageMaker, IndexPageFailure}
 
 class EventLogging(events: Events, logger: Logger) {
 
@@ -14,12 +14,12 @@ class EventLogging(events: Events, logger: Logger) {
       logger.error(s"The index page failed to render - $cause")
   }
 
-  events.respondTo[BlogEntryRoutes.Event] {
-    case BlogEntryRoutes.Event.InvalidId(id) =>
+  events.respondTo[EntryPageMaker.Event] {
+    case EntryPageMaker.Event.FailedToMakePage(EntryPageMaker.Failure.InvalidId(id)) =>
       logger.error(s"ID '$id' is invalid")
-    case BlogEntryRoutes.Event.EntryNotFound(id) =>
-      logger.error(s"Blog entry '$id' not found")
-    case BlogEntryRoutes.Event.RenderFailure(cause) =>
+    case EntryPageMaker.Event.FailedToMakePage(EntryPageMaker.Failure.EntryNotFound(id)) =>
+      logger.error(s"Blog '$id' not found")
+    case EntryPageMaker.Event.FailedToMakePage(EntryPageMaker.Failure.RenderFailure(cause)) =>
       logger.error(s"Failed to render blog entry - $cause")
   }
 

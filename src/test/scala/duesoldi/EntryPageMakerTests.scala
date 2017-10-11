@@ -1,6 +1,7 @@
 package duesoldi.page
 
 import bhuj.TemplateNotFound
+import duesoldi.events.Event
 import duesoldi.markdown.MarkdownDocument
 import duesoldi.model.BlogEntry
 import duesoldi.page.EntryPageMaker.Failure.{EntryNotFound, InvalidId}
@@ -10,6 +11,7 @@ import duesoldi.storage.blog.Entry
 import duesoldi.test.matchers.CustomMatchers._
 import utest._
 
+import scala.collection.mutable
 import scala.concurrent.Future
 
 object EntryPageMakerTests 
@@ -22,14 +24,14 @@ object EntryPageMakerTests
         for {
           result <- entryPage(validIdentifier)(noEntry)(returnsModel())(rendersNothing)("hello")
         } yield {
-          assert(result isLeftOf EntryNotFound)
+          assert(result isLeftOf EntryNotFound("hello"))
         }
       }
       "produces an invalid ID failure if the provided ID is not valid" - {
         for {
           result <- entryPage(invalidIdentifier)(noEntry)(returnsModel())(rendersNothing)("hello")
         } yield {
-          assert(result isLeftOf InvalidId)
+          assert(result isLeftOf InvalidId("hello"))
         }
       }
       "produces a render failure if the renderer fails" - {
@@ -46,6 +48,24 @@ object EntryPageMakerTests
           assert(result isRightOf "Rendered Page")
         }
       }
+      "emits a success event" - {
+        val recorder = new EventRecorder
+        implicit val emit: duesoldi.events.Emit = recorder.emit
+        for {
+          _ <- entryPage(validIdentifier)(returnsEntry("hello"))(returnsModel())(renders("html"))("hello")
+        } yield {
+          assert(recorder received EntryPageMaker.Event.MadePage("html"))
+        }
+      }
+      "emits a failure event" - {
+        val recorder = new EventRecorder
+        implicit val emit: duesoldi.events.Emit = recorder.emit
+        for {
+          _ <- entryPage(invalidIdentifier)(returnsEntry("hello"))(returnsModel())(renders("html"))("hello")
+        } yield {
+          assert(recorder received EntryPageMaker.Event.FailedToMakePage(InvalidId("hello")))
+        }
+      }
     }
   }
 
@@ -57,4 +77,10 @@ object EntryPageMakerTests
   private def renders(result: String): Rendered = (_, _) => Future.successful(Right(result))
   private lazy val noEntry: Entry = _ => Future.successful(None)
   private def returnsEntry(name: String): Entry = _ => Future.successful(Some(BlogEntry("hello", MarkdownDocument.empty)))
+}
+
+class EventRecorder {
+  def emit(event: Event) = { println(s"RECEIVED $event"); events.append(event) }
+  def received(event: Event) = events.contains(event)
+  private lazy val events: mutable.Buffer[Event] = mutable.Buffer.empty
 }

@@ -13,6 +13,8 @@ object TransformerOps {
   implicit class EitherTOps[L,R](val transformer: EitherT[Future, L, R])(implicit executionContext: ExecutionContext) {
     def propagate[LL >: L]: EitherT[Future, LL, R] = transformer.asInstanceOf[EitherT[Future, LL, R]]
     def failWith[LA](ifLeft: L => LA): EitherT[Future, LA, R] = transformer.leftMap(ifLeft)
+    def onRight(f: R => Unit): EitherT[Future, L, R] = { transformer.map(f); transformer }
+    def onLeft(f: L => Unit): EitherT[Future, L, R] = { transformer.leftMap(f); transformer }
   }
 
   implicit def toValue[L,R](transformer: EitherT[Future, L, R]): Future[Either[L,R]] = transformer.value
