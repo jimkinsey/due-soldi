@@ -2,22 +2,22 @@ package duesoldi.page
 
 import duesoldi.model.BlogEntry
 import duesoldi.rendering.BlogEntryPageModel
-import duesoldi.validation.ValidIdentifier
 
 import scala.concurrent.{ExecutionContext, Future}
 
 object EntryPageMaker {
+  import Failure._
   import cats.instances.all._
   import duesoldi.transformers.TransformerOps._
-  import Failure._
 
-  def entryPage(entry: duesoldi.storage.blog.Entry)
+  def entryPage(validId: duesoldi.validation.ValidIdentifier)
+               (entry: duesoldi.storage.blog.Entry)
                (pageModel: Model)
                (rendered: duesoldi.rendering.Rendered)
                (entryId: String)
                (implicit executionContext: ExecutionContext): Result = {
     for {
-      _ <- ValidIdentifier(entryId).failWith({ InvalidId })
+      _ <- validId(entryId).failWith({ InvalidId })
       entry <- entry(entryId).failWith({ EntryNotFound })
       model = pageModel(entry)
       html <- rendered("blog-entry", model).failWith[Failure](RenderFailure)

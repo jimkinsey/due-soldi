@@ -10,6 +10,7 @@ import duesoldi.markdown.MarkdownParser
 import duesoldi.page.{EntryPageMaker, EntryPageModel, IndexPageMaker}
 import duesoldi.rendering.Renderer
 import duesoldi.storage._
+import duesoldi.validation.ValidIdentifier
 
 import scala.concurrent.ExecutionContext
 
@@ -31,7 +32,7 @@ class MasterController(val env: Env)(implicit val executionContext: ExecutionCon
   lazy val renderer = new Renderer
   lazy val accessRecordStore =  new JDBCAccessRecordStore(config.jdbcConnectionDetails)
   lazy val indexPageMaker = new IndexPageMaker(renderer.render, blogStore, config)
-  lazy val entryPage = EntryPageMaker.entryPage(blogStore.entry)(EntryPageModel.pageModel(config))(renderer.render)
+  lazy val entryPage = EntryPageMaker.entryPage(ValidIdentifier.apply)(blogStore.entry)(EntryPageModel.pageModel(config))(renderer.render)
 
   lazy val routes: Route =
     recordAccess {
