@@ -4,6 +4,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import duesoldi._
 import duesoldi.config.Configured
+import duesoldi.controller.BlogEntryRoutes.blogEntryRoutes
 import duesoldi.events.Events
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.markdown.MarkdownParser
@@ -20,7 +21,6 @@ class MasterController(val env: Env)(implicit val executionContext: ExecutionCon
   with FurnitureRoutes
   with MetricsRoutes
   with BlogIndexRoutes
-  with BlogEntryRoutes
   with RobotsRoutes
   with BlogEditingRoutes
   with DebugRoutes {
@@ -32,13 +32,13 @@ class MasterController(val env: Env)(implicit val executionContext: ExecutionCon
   lazy val renderer = new Renderer
   lazy val accessRecordStore =  new JDBCAccessRecordStore(config.jdbcConnectionDetails)
   lazy val indexPageMaker = new IndexPageMaker(renderer.render, blogStore, config)
-  lazy val entryPage = EntryPageMaker.entryPage(ValidIdentifier.apply)(blogStore.entry)(EntryPageModel.pageModel(config))(renderer.render)
+  lazy val makeEntryPage = EntryPageMaker.entryPage(ValidIdentifier.apply)(blogStore.entry)(EntryPageModel.pageModel(config))(renderer.render) _
 
   lazy val routes: Route =
     recordAccess {
       furnitureRoutes ~
       blogIndexRoutes ~
-      blogEntryRoutes ~
+      blogEntryRoutes(makeEntryPage) ~
       metricsRoutes ~
       robotsRoutes ~
       blogEditingRoutes ~

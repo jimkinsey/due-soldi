@@ -5,22 +5,16 @@ import akka.http.scaladsl.model.MediaTypes._
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
-import duesoldi.config.Configured
+import akka.http.scaladsl.server.Route
 import duesoldi.page.EntryPageMaker
 import duesoldi.page.EntryPageMaker.Failure
 
 import scala.concurrent.ExecutionContext
 
-trait BlogEntryRoutes {
-  self: Configured =>
+object BlogEntryRoutes {
+  type MakeEntryPage = (String) => EntryPageMaker.Result
 
-  implicit def executionContext: ExecutionContext
-
-  type EntryPage = (String) => EntryPageMaker.Result
-
-  def entryPage: EntryPage
-
-  lazy val blogEntryRoutes = path("blog" / Segment) { entryId =>
+  def blogEntryRoutes(entryPage: MakeEntryPage)(implicit executionContext: ExecutionContext): Route = path("blog" / Segment) { entryId =>
     complete {
       entryPage(entryId) map {
         case Right(html) =>
