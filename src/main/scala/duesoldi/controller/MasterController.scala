@@ -7,7 +7,7 @@ import duesoldi.config.Configured
 import duesoldi.events.Events
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.markdown.MarkdownParser
-import duesoldi.page.{EntryPageMaker, IndexPageMaker}
+import duesoldi.page.{EntryPageMaker, EntryPageModel, IndexPageMaker}
 import duesoldi.rendering.Renderer
 import duesoldi.storage._
 
@@ -31,7 +31,7 @@ class MasterController(val env: Env)(implicit val executionContext: ExecutionCon
   lazy val renderer = new Renderer
   lazy val accessRecordStore =  new JDBCAccessRecordStore(config.jdbcConnectionDetails)
   lazy val indexPageMaker = new IndexPageMaker(renderer.render, blogStore, config)
-  lazy val entryPage = EntryPageMaker.entryPage(config)(blogStore.entry)(renderer.render)
+  lazy val entryPage = EntryPageMaker.entryPage(blogStore.entry)(EntryPageModel.pageModel(config))(renderer.render)
 
   lazy val routes: Route =
     recordAccess {
