@@ -80,7 +80,7 @@ object EntryPageMakerTests
 }
 
 class EventRecorder {
-  def emit(event: Event) = { println(s"RECEIVED $event"); events.append(event) }
+  def emit(event: Event) = events.append(event)
   def received(event: Event) = events.contains(event)
   private lazy val events: mutable.Buffer[Event] = mutable.Buffer.empty
 }
