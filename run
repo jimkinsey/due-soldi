@@ -2,3 +2,4 @@
 set -e
 ./sbt compile stage
 heroku local web
+

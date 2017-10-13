@@ -29,13 +29,13 @@ trait BlogIndexRoutes {
           } yield {
             page match {
               case Right(html) =>
-                events.notify(BlogIndexPageRendered(html))
+                events.emit(BlogIndexPageRendered(html))
                 HttpResponse(OK, entity = HttpEntity(ContentType(`text/html`, `UTF-8`), html))
               case Left(failure: IndexPageFailure.BlogStoreEmpty.type) =>
-                events.notify(BlogIndexPageNotRendered(failure))
+                events.emit(BlogIndexPageNotRendered(failure))
                 HttpResponse(NotFound)
               case Left(failure) =>
-                events.notify(BlogIndexPageNotRendered(failure))
+                events.emit(BlogIndexPageNotRendered(failure))
                 HttpResponse(InternalServerError)
             }
           }

@@ -1,20 +1,22 @@
 package duesoldi.dependencies
 
-import akka.http.scaladsl.model.HttpRequest
-import duesoldi.config.Configured
-import duesoldi.controller.BlogEntryRoutes
+import duesoldi.controller.BlogEntryRoutes.MakeEntryPage
+import duesoldi.controller.RequestContext
+import duesoldi.events.{Event, Events}
+import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.page.{EntryPageMaker, EntryPageModel}
 import duesoldi.validation.ValidIdentifier
 
 import scala.concurrent.ExecutionContext
 
-trait RequestDependencies { self: Configured with AppDependencies =>
-  implicit def executionContext: ExecutionContext
+class RequestDependencies(appDependencies: AppDependencies, context: RequestContext)(implicit executionContext: ExecutionContext) {
+  import appDependencies.{blogStore, renderer, config}
+  implicit lazy val emit: duesoldi.events.Emit = events emit _
 
-  def withDependency[DEP]: ContextualDependencies.DependentBlock[DEP, HttpRequest] = ContextualDependencies.withDependency[DEP, HttpRequest]
+  lazy val makeEntryPage: MakeEntryPage = EntryPageMaker.entryPage(ValidIdentifier.apply)(blogStore.entry)(EntryPageModel.pageModel(config))(renderer.render)(executionContext, emit)
 
-  type ReqDep[DEP] = ContextualDependencies.ContextualDependency[DEP, HttpRequest]
+  private lazy val events = new Events
+  private lazy val logger = new Logger(s"Request ${context.id}")
+  new EventLogging(events, logger)
 
-  implicit lazy val makeEntryPage: ReqDep[BlogEntryRoutes.MakeEntryPage] =
-    _ => EntryPageMaker.entryPage(ValidIdentifier.apply)(blogStore.entry)(EntryPageModel.pageModel(config))(renderer.render) _
 }

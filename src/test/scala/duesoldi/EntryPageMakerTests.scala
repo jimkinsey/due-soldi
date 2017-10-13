@@ -1,7 +1,8 @@
 package duesoldi.page
 
 import bhuj.TemplateNotFound
-import duesoldi.events.Event
+import duesoldi.controller.BlogEntryRoutes.MakeEntryPage
+import duesoldi.events.{Emit, Event}
 import duesoldi.markdown.MarkdownDocument
 import duesoldi.model.BlogEntry
 import duesoldi.page.EntryPageMaker.Failure.{EntryNotFound, InvalidId}
@@ -9,6 +10,7 @@ import duesoldi.page.EntryPageMaker.{Failure, Model, entryPage}
 import duesoldi.rendering.{BlogEntryPageModel, Rendered}
 import duesoldi.storage.blog.Entry
 import duesoldi.test.matchers.CustomMatchers._
+import duesoldi.validation.ValidIdentifier
 import utest._
 
 import scala.collection.mutable
@@ -18,58 +20,78 @@ object EntryPageMakerTests
   extends TestSuite 
 {
   implicit val executionContext = utest.framework.ExecutionContext.RunNow
+
+  def withEntryPageMaker[T](
+    validIdentifier: ValidIdentifier = validatesIdentifier,
+    entry: Entry = returnsEntry("test"),
+    model: Model = returnsModel(),
+    rendered: Rendered = renders("some html")
+  )(block: (MakeEntryPage, EventRecorder) => T): T = {
+    val recorder = new EventRecorder
+    implicit val emit: Emit = recorder.emit
+    block(entryPage(validIdentifier)(entry)(model)(rendered), recorder)
+  }
+
   val tests = this {
     "an entry page maker" - {
       "produces a not found failure if the entry is not in the blog store" - {
-        for {
-          result <- entryPage(validIdentifier)(noEntry)(returnsModel())(rendersNothing)("hello")
-        } yield {
-          assert(result isLeftOf EntryNotFound("hello"))
+        withEntryPageMaker(entry = noEntry) { (page, _) =>
+          for {
+            result <- page("hello")
+          } yield {
+            assert(result isLeftOf EntryNotFound("hello"))
+          }
         }
       }
       "produces an invalid ID failure if the provided ID is not valid" - {
-        for {
-          result <- entryPage(invalidIdentifier)(noEntry)(returnsModel())(rendersNothing)("hello")
-        } yield {
-          assert(result isLeftOf InvalidId("hello"))
+        withEntryPageMaker(validIdentifier = invalidIdentifier) { (page, _) =>
+          for {
+            result <- page("hello")
+          } yield {
+            assert(result isLeftOf InvalidId("hello"))
+          }
         }
       }
       "produces a render failure if the renderer fails" - {
-        for {
-          result <- entryPage(validIdentifier)(returnsEntry("hello"))(returnsModel())(failsToRender)("hello")
-        } yield {
-          assert(result isLeftOf (Failure RenderFailure TemplateNotFound("foo")))
+        withEntryPageMaker(entry = returnsEntry("hello"), rendered = failsToRender) { (page, _) =>
+          for {
+            result <- page("hello")
+          } yield {
+            assert(result isLeftOf (Failure RenderFailure TemplateNotFound("foo")))
+          }
         }
       }
       "returns the result of rendering the entry" - {
-        for {
-          result <- entryPage(validIdentifier)(returnsEntry("hello"))(returnsModel())(renders("Rendered Page"))("hello")
-        } yield {
-          assert(result isRightOf "Rendered Page")
+        withEntryPageMaker(entry = returnsEntry("hello"), rendered = renders("Rendered Page")) { (page, _) =>
+          for {
+            result <- page("hello")
+          } yield {
+            assert(result isRightOf "Rendered Page")
+          }
         }
       }
       "emits a success event" - {
-        val recorder = new EventRecorder
-        implicit val emit: duesoldi.events.Emit = recorder.emit
-        for {
-          _ <- entryPage(validIdentifier)(returnsEntry("hello"))(returnsModel())(renders("html"))("hello")
-        } yield {
-          assert(recorder received EntryPageMaker.Event.MadePage("html"))
+        withEntryPageMaker(entry = returnsEntry("hello"), rendered = renders("Rendered Page")) { (page, recorder) =>
+          for {
+            _ <- page("hello")
+          } yield {
+            assert(recorder received EntryPageMaker.Event.MadePage("Rendered Page"))
+          }
         }
       }
       "emits a failure event" - {
-        val recorder = new EventRecorder
-        implicit val emit: duesoldi.events.Emit = recorder.emit
-        for {
-          _ <- entryPage(invalidIdentifier)(returnsEntry("hello"))(returnsModel())(renders("html"))("hello")
-        } yield {
-          assert(recorder received EntryPageMaker.Event.FailedToMakePage(InvalidId("hello")))
+        withEntryPageMaker(validIdentifier = invalidIdentifier) { (page, recorder) =>
+          for {
+            _ <- page("hello")
+          } yield {
+            assert(recorder received EntryPageMaker.Event.FailedToMakePage(InvalidId("hello")))
+          }
         }
       }
     }
   }
 
-  private lazy val validIdentifier: duesoldi.validation.ValidIdentifier = Option.apply
+  private lazy val validatesIdentifier: duesoldi.validation.ValidIdentifier = Option.apply
   private lazy val invalidIdentifier: duesoldi.validation.ValidIdentifier = _ => None
   private def returnsModel(): Model = _ => BlogEntryPageModel("title", "yesterday", "hello", "1")
   private lazy val rendersNothing: Rendered = (_, _) => Future.successful(Right(""))

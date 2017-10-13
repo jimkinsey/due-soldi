@@ -1,5 +1,6 @@
 package duesoldi.page
 
+import duesoldi.controller.BlogEntryRoutes.MakeEntryPage
 import duesoldi.model.BlogEntry
 import duesoldi.rendering.BlogEntryPageModel
 
@@ -14,8 +15,7 @@ object EntryPageMaker {
                (entry: duesoldi.storage.blog.Entry)
                (pageModel: Model)
                (rendered: duesoldi.rendering.Rendered)
-               (entryId: String)
-               (implicit executionContext: ExecutionContext, emit: duesoldi.events.Emit = duesoldi.events.noopEmit): Result = {
+               (implicit executionContext: ExecutionContext, emit: duesoldi.events.Emit = duesoldi.events.noopEmit): MakeEntryPage = { entryId: String =>
     (for {
       _ <- validId(entryId).failWith({ InvalidId(entryId) })
       entry <- entry(entryId).failWith({ EntryNotFound(entryId) })

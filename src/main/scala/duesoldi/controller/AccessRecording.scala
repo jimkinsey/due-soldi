@@ -3,6 +3,7 @@ package duesoldi.controller
 import java.time.ZonedDateTime
 
 import akka.http.scaladsl.model.headers.{Referer, `User-Agent`}
+import akka.http.scaladsl.server.Directive
 import akka.http.scaladsl.server.Directives._
 import duesoldi.config.Configured
 import duesoldi.controller.AccessRecording.Event.{RecordFailure, RecordSuccess}
@@ -20,7 +21,7 @@ trait AccessRecording { self: Configured =>
   def accessRecordStore: AccessRecordStore
   def events: Events
 
-  def recordAccess =
+  def recordAccess: Directive[Unit] =
     extractRequestContext.flatMap { ctx =>
       val startTime = System.currentTimeMillis()
       mapResponse { response =>
@@ -37,9 +38,9 @@ trait AccessRecording { self: Configured =>
             statusCode = response.status.intValue
           )).onComplete {
             case Failure(ex) =>
-              events.notify(RecordFailure(ex))
+              events.emit(RecordFailure(ex))
             case _ =>
-              events.notify(RecordSuccess)
+              events.emit(RecordSuccess)
           }
         }
         response
