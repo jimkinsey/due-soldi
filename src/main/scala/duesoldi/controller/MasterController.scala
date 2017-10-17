@@ -1,13 +1,14 @@
 package duesoldi.controller
 
+import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{Directive1, Route}
 import duesoldi._
 import duesoldi.config.Configured
+import duesoldi.controller.BlogEntryRoutes.blogEntryRoutes
+import duesoldi.controller.BlogIndexRoutes.blogIndexRoutes
+import duesoldi.controller.FurnitureRoutes.furnitureRoutes
 import duesoldi.controller.RequestContextDirective._
-import duesoldi.dependencies.{AppDependencies, AppDependenciesImpl, RequestDependencies}
-import BlogEntryRoutes.blogEntryRoutes
-import BlogIndexRoutes.blogIndexRoutes
+import duesoldi.dependencies.{AppDependencies, AppDependenciesImpl}
 
 import scala.concurrent.ExecutionContext
 
@@ -16,7 +17,6 @@ class MasterController(val env: Env)(implicit val executionContext: ExecutionCon
   with AppDependencies
   with RequestDependenciesDirective
   with AccessRecording
-  with FurnitureRoutes
   with MetricsRoutes
   with RobotsRoutes
   with BlogEditingRoutes
@@ -28,7 +28,7 @@ class MasterController(val env: Env)(implicit val executionContext: ExecutionCon
     inContext { implicit requestContext: RequestContext =>
       withDependencies(requestContext) { requestDependencies =>
         recordAccess {
-          furnitureRoutes ~
+          furnitureRoutes(config) ~
           blogIndexRoutes(requestDependencies.indexPageMaker, requestDependencies.events) ~
           blogEntryRoutes(requestDependencies.makeEntryPage) ~
           metricsRoutes ~

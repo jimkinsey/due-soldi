@@ -3,15 +3,17 @@ package duesoldi.controller
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Directives._
-import duesoldi.config.Configured
+import akka.http.scaladsl.server.Route
+import duesoldi.config.Config
 
-trait FurnitureRoutes { self: Configured =>
+import scala.concurrent.ExecutionContext
 
-  lazy val furnitureRoutes = path("furniture" / Segment / Remaining) {
+object FurnitureRoutes {
+  def furnitureRoutes(config: Config)(implicit executionContext: ExecutionContext): Route = path("furniture" / Segment / Remaining) {
     case (version: String, remaining: String) if version == config.furnitureVersion =>
       val maxAge = config.furnitureCacheDuration.toSeconds
       respondWithHeaders(
@@ -22,5 +24,4 @@ trait FurnitureRoutes { self: Configured =>
       }
     case _ => complete { HttpResponse(BadRequest) }
   }
-
 }
