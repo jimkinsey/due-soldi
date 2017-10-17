@@ -7,6 +7,7 @@ import duesoldi.config.Configured
 import duesoldi.controller.RequestContextDirective._
 import duesoldi.dependencies.{AppDependencies, AppDependenciesImpl, RequestDependencies}
 import BlogEntryRoutes.blogEntryRoutes
+import BlogIndexRoutes.blogIndexRoutes
 
 import scala.concurrent.ExecutionContext
 
@@ -17,7 +18,6 @@ class MasterController(val env: Env)(implicit val executionContext: ExecutionCon
   with AccessRecording
   with FurnitureRoutes
   with MetricsRoutes
-  with BlogIndexRoutes
   with RobotsRoutes
   with BlogEditingRoutes
   with DebugRoutes {
@@ -29,7 +29,7 @@ class MasterController(val env: Env)(implicit val executionContext: ExecutionCon
       withDependencies(requestContext) { requestDependencies =>
         recordAccess {
           furnitureRoutes ~
-          blogIndexRoutes ~
+          blogIndexRoutes(requestDependencies.indexPageMaker, requestDependencies.events) ~
           blogEntryRoutes(requestDependencies.makeEntryPage) ~
           metricsRoutes ~
           robotsRoutes ~
