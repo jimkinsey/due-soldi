@@ -1,16 +1,15 @@
 package duesoldi.controller
 
 import akka.http.scaladsl.server.Directives._
-import duesoldi.config.Configured
+import akka.http.scaladsl.server.Route
+import duesoldi.config.Config.Credentials
 
-trait DebugRoutes extends AdminAuthentication { self: Configured =>
-
-  lazy val debugRoutes = path("admin" / "debug" / "headers") {
+object DebugRoutes extends AdminAuthentication {
+  def debugRoutes(credentials: Option[Credentials]): Route = path("admin" / "debug" / "headers") {
     extractRequest { req =>
-      adminsOnly(config.adminCredentials) {
+      adminsOnly(credentials) {
         complete { req.headers.map { header => s"${header.name}: ${header.value}" } mkString "\n" }
       }
     }
   }
-
 }

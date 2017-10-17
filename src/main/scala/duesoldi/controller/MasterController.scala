@@ -9,6 +9,7 @@ import duesoldi.controller.BlogIndexRoutes.blogIndexRoutes
 import duesoldi.controller.FurnitureRoutes.furnitureRoutes
 import MetricsRoutes.metricsRoutes
 import duesoldi.controller.RobotsRoutes.robotsRoutes
+import duesoldi.controller.DebugRoutes.debugRoutes
 import duesoldi.controller.RequestContextDirective._
 import duesoldi.dependencies.{AppDependencies, AppDependenciesImpl}
 
@@ -20,7 +21,7 @@ class MasterController(val env: Env)(implicit val executionContext: ExecutionCon
   with RequestDependenciesDirective
   with AccessRecording
   with BlogEditingRoutes
-  with DebugRoutes {
+{
 
   implicit val appDependencies: AppDependenciesImpl = new AppDependenciesImpl(config)
 
@@ -34,7 +35,7 @@ class MasterController(val env: Env)(implicit val executionContext: ExecutionCon
           metricsRoutes(config.adminCredentials, appDependencies.accessRecordStore) ~
           robotsRoutes ~
           blogEditingRoutes ~
-          debugRoutes
+          debugRoutes(config.adminCredentials)
         }
       }
     }
