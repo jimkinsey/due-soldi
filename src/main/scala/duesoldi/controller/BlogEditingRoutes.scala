@@ -4,19 +4,16 @@ import java.time.ZonedDateTime
 
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.server.Directives._
-import duesoldi.config.Configured
+import akka.http.scaladsl.server.Route
+import duesoldi.config.Config.Credentials
 import duesoldi.storage.BlogStore
 import duesoldi.storage.BlogStore.{Created, Invalid}
 
 import scala.concurrent.ExecutionContext
 
-trait BlogEditingRoutes extends AdminAuthentication { self: Configured =>
-  implicit def executionContext: ExecutionContext
-
-  def blogStore: BlogStore
-
-  lazy val blogEditingRoutes = path("admin" / "blog" / Remaining) { remaining =>
-    adminsOnly(config.adminCredentials) {
+object BlogEditingRoutes extends AdminAuthentication {
+  def blogEditingRoutes(credentials: Option[Credentials], blogStore: BlogStore)(implicit executionContext: ExecutionContext): Route = path("admin" / "blog" / Remaining) { remaining =>
+    adminsOnly(credentials) {
       put {
         entity(as[String]) { content =>
           complete {
@@ -52,5 +49,4 @@ trait BlogEditingRoutes extends AdminAuthentication { self: Configured =>
       }
     }
   }
-
 }
