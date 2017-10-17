@@ -4,20 +4,20 @@ import akka.http.scaladsl.server
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.directives.Credentials
 import akka.http.scaladsl.server.directives.Credentials.Provided
-import duesoldi.config.{Config, Configured}
+import duesoldi.config.Config
 
-trait AdminAuthentication { self: Configured =>
+trait AdminAuthentication {
 
-  def adminsOnly[T <: server.Route](block: => T): server.Route = authenticateBasic("admin", authenticatedAdminUser)(_ => block)
+  def adminsOnly[T <: server.Route](credentials: Option[Config.Credentials])(block: => T): server.Route = authenticateBasic("admin", authenticatedAdminUser(credentials))(_ => block)
 
-  def authenticatedAdminUser: Authenticator[String] = {
-    case providedPassword@Credentials.Provided(username) if isVerifiedAdmin(username, providedPassword) =>
+  def authenticatedAdminUser(credentials: Option[Config.Credentials]): Authenticator[String] = {
+    case providedPassword@Credentials.Provided(username) if isVerifiedAdmin(username, providedPassword, credentials) =>
       Some(username)
     case _ =>
       None
   }
 
-  private def isVerifiedAdmin(providedUser: String, providedPassword: Provided) = config.adminCredentials.exists { case Config.Credentials(username, password) =>
+  private def isVerifiedAdmin(providedUser: String, providedPassword: Provided, credentials: Option[Config.Credentials]) = credentials.exists { case Config.Credentials(username, password) =>
     providedUser == username && providedPassword.verify(password)
   }
 

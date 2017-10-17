@@ -4,20 +4,17 @@ import java.time.format.DateTimeFormatter
 
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
-import duesoldi.config.Configured
+import akka.http.scaladsl.server.Route
+import duesoldi.config.Config.Credentials
 import duesoldi.storage.AccessRecordStore
 import duesoldi.storage.AccessRecordStore.Access
 
 import scala.concurrent.ExecutionContext
 
-trait MetricsRoutes extends AdminAuthentication { self: Configured =>
-  implicit def executionContext: ExecutionContext
-
-  def accessRecordStore: AccessRecordStore
-
-  lazy val metricsRoutes =
+object MetricsRoutes extends AdminAuthentication {
+  def metricsRoutes(credentials: Option[Credentials], accessRecordStore: AccessRecordStore)(implicit executionContext: ExecutionContext): Route =
     path("admin" / "metrics" / "access.csv") {
-      adminsOnly {
+      adminsOnly(credentials) {
         complete {
           accessRecordStore.allRecords.map(
             { accesses =>
