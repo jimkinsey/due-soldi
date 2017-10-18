@@ -1,6 +1,6 @@
 package duesoldi.dependencies
 
-import duesoldi.config.{Config, Configured}
+import duesoldi.config.Config
 import duesoldi.events.Events
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.markdown.MarkdownParser
@@ -10,11 +10,7 @@ import duesoldi.storage.{JDBCAccessRecordStore, JDBCBlogStore}
 
 import scala.concurrent.ExecutionContext
 
-trait AppDependencies {
-  implicit def executionContext: ExecutionContext
-
-  def config: Config
-
+class AppDependencies(val config: Config)(implicit val executionContext: ExecutionContext) {
   lazy val events = new Events
   lazy val logger = new Logger("App", config.loggingEnabled)
   lazy val eventLogging = new EventLogging(events, logger)
@@ -23,5 +19,3 @@ trait AppDependencies {
   lazy val accessRecordStore =  new JDBCAccessRecordStore(config.jdbcConnectionDetails)
   lazy val indexPageMaker = new IndexPageMaker(renderer.render, blogStore, config)
 }
-
-class AppDependenciesImpl(val config: Config)(implicit val executionContext: ExecutionContext) extends AppDependencies

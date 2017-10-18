@@ -6,9 +6,11 @@ import duesoldi.storage.JDBCConnection
 import scala.concurrent.duration.Duration
 import scala.util.Try
 
-object EnvironmentConfig {
+object EnvironmentalConfig {
   def apply(env: Env): Config = {
     Config(
+      host = env.getOrElse("HOST", "0.0.0.0"),
+      port = env.get("PORT").map(_.toInt).getOrElse(8080),
       furnitureVersion = env.getOrElse("FURNITURE_VERSION", "LOCAL"),
       furniturePath = env.getOrElse("FURNITURE_PATH", "src/main/resources/furniture"),
       furnitureCacheDuration = env.get("FURNITURE_CACHE_DURATION").flatMap(s => Try(Duration(s)).toOption).getOrElse(Duration.Zero),
@@ -23,9 +25,4 @@ object EnvironmentConfig {
       loggingEnabled = env.get("LOGGING_ENABLED").map(_.toBoolean).getOrElse(true)
     )
   }
-}
-
-trait Configured {
-  def env: Env
-  lazy val config = EnvironmentConfig(env)
 }

@@ -5,7 +5,9 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
+import duesoldi.config.EnvironmentalConfig
 import duesoldi.controller.MasterController
+import duesoldi.dependencies.AppDependencies
 import duesoldi.logging.Logger
 
 import scala.collection.JavaConverters._
@@ -19,18 +21,17 @@ object App {
   }
 
   def start(env: Env) = {
-    lazy val logger = new Logger("Application", env.get("LOGGING_ENABLED").map(_.toBoolean).getOrElse(true))
-    val host = env.getOrElse("HOST", "0.0.0.0")
-    val port = env.get("PORT").map(_.toInt).getOrElse(8080)
+    val config = EnvironmentalConfig(env)
+    lazy val logger = new Logger("Application", config.loggingEnabled)
     implicit val executionContext = concurrent.ExecutionContext.Implicits.global
-    Server.startServer(new MasterController(env), host, port) {
-      case Success(_) =>
-        logger.info(s"Started server on $host:$port")
+    implicit val appDependencies = new AppDependencies(config)
+    Server.startServer(new MasterController(config), config.host, config.port) {
+      case Success(server) =>
+        logger.info(s"Started server on ${server.host}:${server.port}")
       case Failure(ex) =>
-        logger.error(s"Failed to start server on $host:$port - ${ex.getMessage}")
+        logger.error(s"Failed to start server on ${config.host}:${config.port} - ${ex.getMessage}")
     }
   }
-
 }
 
 trait Controller {

@@ -1,34 +1,31 @@
 package duesoldi.controller
 
-import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Route
 import duesoldi._
-import duesoldi.config.Configured
+import duesoldi.config.Config
+import duesoldi.controller.BlogEditingRoutes.blogEditingRoutes
 import duesoldi.controller.BlogEntryRoutes.blogEntryRoutes
 import duesoldi.controller.BlogIndexRoutes.blogIndexRoutes
-import duesoldi.controller.FurnitureRoutes.furnitureRoutes
-import MetricsRoutes.metricsRoutes
-import duesoldi.controller.RobotsRoutes.robotsRoutes
 import duesoldi.controller.DebugRoutes.debugRoutes
-import duesoldi.controller.BlogEditingRoutes.blogEditingRoutes
+import duesoldi.controller.FurnitureRoutes.furnitureRoutes
+import duesoldi.controller.MetricsRoutes.metricsRoutes
 import duesoldi.controller.RequestContextDirective._
-import duesoldi.dependencies.{AppDependencies, AppDependenciesImpl}
+import duesoldi.controller.RobotsRoutes.robotsRoutes
+import duesoldi.dependencies.AppDependencies
 
 import scala.concurrent.ExecutionContext
 
-class MasterController(val env: Env)(implicit val executionContext: ExecutionContext) extends Controller
-  with Configured
-  with AppDependencies
-  with RequestDependenciesDirective
+class MasterController(config: Config)
+                      (implicit val executionContext: ExecutionContext, val appDependencies: AppDependencies)
+  extends Controller
   with AccessRecording
+  with RequestDependenciesDirective
 {
-
-  implicit val appDependencies: AppDependenciesImpl = new AppDependenciesImpl(config)
-
   lazy val routes: Route =
     inContext { implicit requestContext: RequestContext =>
       withDependencies(requestContext) { requestDependencies =>
-        recordAccess {
+        recordAccess(appDependencies.accessRecordStore, appDependencies.events, config.accessRecordingEnabled) {
           furnitureRoutes(config) ~
           blogIndexRoutes(requestDependencies.indexPageMaker, requestDependencies.events) ~
           blogEntryRoutes(requestDependencies.makeEntryPage) ~

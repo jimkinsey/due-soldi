@@ -7,6 +7,8 @@ import duesoldi.storage.JDBCConnection
 import scala.concurrent.duration.Duration
 
 case class Config(
+  host: String,
+  port: Int,
   furnitureVersion: String,
   furniturePath: String,
   furnitureCacheDuration: Duration,

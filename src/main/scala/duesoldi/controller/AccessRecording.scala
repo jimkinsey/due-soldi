@@ -5,7 +5,6 @@ import java.time.ZonedDateTime
 import akka.http.scaladsl.model.headers.{Referer, `User-Agent`}
 import akka.http.scaladsl.server.Directive
 import akka.http.scaladsl.server.Directives._
-import duesoldi.config.Configured
 import duesoldi.controller.AccessRecording.Event.{RecordFailure, RecordSuccess}
 import duesoldi.events.Events
 import duesoldi.storage.AccessRecordStore
@@ -14,18 +13,14 @@ import duesoldi.storage.AccessRecordStore.Access
 import scala.concurrent.ExecutionContext
 import scala.util.Failure
 
-trait AccessRecording { self: Configured =>
-
+trait AccessRecording {
   implicit def executionContext: ExecutionContext
 
-  def accessRecordStore: AccessRecordStore
-  def events: Events
-
-  def recordAccess: Directive[Unit] =
+  def recordAccess(accessRecordStore: AccessRecordStore, events: Events, enabled: Boolean): Directive[Unit] =
     extractRequestContext.flatMap { ctx =>
       val startTime = System.currentTimeMillis()
       mapResponse { response =>
-        if (config.accessRecordingEnabled) {
+        if (enabled) {
           val duration = System.currentTimeMillis() - startTime
           accessRecordStore.record(Access(
             time = ZonedDateTime.now(),
