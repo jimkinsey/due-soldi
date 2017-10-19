@@ -8,11 +8,10 @@ import akka.stream.ActorMaterializer
 import duesoldi.config.EnvironmentalConfig
 import duesoldi.controller.MasterController
 import duesoldi.dependencies.AppDependencies
-import duesoldi.logging.Logger
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
+import scala.util.{Failure, Success}
 
 object App {
   def main(args: Array[String]) {
@@ -20,44 +19,33 @@ object App {
     start(env)
   }
 
-  def start(env: Env) = {
+  def start(env: Env): Future[Server] = {
     val config = EnvironmentalConfig(env)
-    lazy val logger = new Logger("Application", config.loggingEnabled)
-    implicit val executionContext = concurrent.ExecutionContext.Implicits.global
-    implicit val appDependencies = new AppDependencies(config)
-    Server.startServer(new MasterController(config), config.host, config.port) {
+    implicit val executionContext: ExecutionContext = concurrent.ExecutionContext.Implicits.global
+    implicit val appDependencies: AppDependencies = new AppDependencies(config)
+    val eventualServer = Server.start(MasterController.routes(config), config.host, config.port)
+    eventualServer.onComplete {
       case Success(server) =>
-        logger.info(s"Started server on ${server.host}:${server.port}")
+        appDependencies.logger.info(s"Started server on ${server.host}:${server.port}")
       case Failure(ex) =>
-        logger.error(s"Failed to start server on ${config.host}:${config.port} - ${ex.getMessage}")
+        appDependencies.logger.error(s"Failed to start server on ${config.host}:${config.port} - ${ex.getMessage}")
     }
+    eventualServer
   }
-}
-
-trait Controller {
-  def routes: Route
 }
 
 object Server {
-
-  type Complete = Try[Server] => Unit
-
-  val NoopComplete: Complete = _ => ()
-
-  def startServer(controller: Controller, host: String, port: Int)(complete: Complete = NoopComplete): Future[Server] = {
-    implicit val system = ActorSystem("my-system")
-    implicit val materializer = ActorMaterializer()
-    implicit val executionContext = system.dispatcher
-    val fut = Http().bindAndHandle(controller.routes, host, port) map { binding => new Server(binding)}
-    fut.onComplete(complete)
-    fut
+  def start(route: Route, host: String, port: Int): Future[Server] = {
+    implicit val system: ActorSystem = ActorSystem("my-system")
+    implicit val materializer: ActorMaterializer = ActorMaterializer()
+    implicit val executionContext: ExecutionContextExecutor = system.dispatcher
+    Http().bindAndHandle(route, host, port) map { binding => new Server(binding) }
   }
-
 }
 
 class Server(binding: ServerBinding)(implicit executionContext: ExecutionContext, actorSystem: ActorSystem) {
-  lazy val port = binding.localAddress.getPort
-  lazy val host = binding.localAddress.getHostName
+  lazy val port: Int = binding.localAddress.getPort
+  lazy val host: String = binding.localAddress.getHostName
 
   def stop(): Future[Unit] = {
     for {

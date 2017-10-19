@@ -8,10 +8,11 @@ import akka.http.scaladsl.server.Route
 import duesoldi.config.Config.Credentials
 import duesoldi.storage.BlogStore
 import duesoldi.storage.BlogStore.{Created, Invalid}
+import AdminAuthentication.adminsOnly
 
 import scala.concurrent.ExecutionContext
 
-object BlogEditingRoutes extends AdminAuthentication {
+object BlogEditingRoutes {
   def blogEditingRoutes(credentials: Option[Credentials], blogStore: BlogStore)(implicit executionContext: ExecutionContext): Route = path("admin" / "blog" / Remaining) { remaining =>
     adminsOnly(credentials) {
       put {

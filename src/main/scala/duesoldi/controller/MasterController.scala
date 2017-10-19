@@ -2,7 +2,6 @@ package duesoldi.controller
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import duesoldi._
 import duesoldi.config.Config
 import duesoldi.controller.AccessRecordingDirective.recordAccess
 import duesoldi.controller.BlogEditingRoutes.blogEditingRoutes
@@ -18,11 +17,9 @@ import duesoldi.dependencies.AppDependencies
 
 import scala.concurrent.ExecutionContext
 
-class MasterController(config: Config)
-                      (implicit val executionContext: ExecutionContext, val appDependencies: AppDependencies)
-  extends Controller
+object MasterController
 {
-  lazy val routes: Route =
+  def routes(config: Config)(implicit executionContext: ExecutionContext, appDependencies: AppDependencies): Route =
     inContext { implicit requestContext: RequestContext =>
       withDependencies { dependencies =>
         recordAccess(dependencies.accessRecordStore, dependencies.events, config.accessRecordingEnabled) {
@@ -36,5 +33,4 @@ class MasterController(config: Config)
         }
       }
     }
-
 }

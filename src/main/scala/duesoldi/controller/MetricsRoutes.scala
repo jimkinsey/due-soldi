@@ -8,10 +8,11 @@ import akka.http.scaladsl.server.Route
 import duesoldi.config.Config.Credentials
 import duesoldi.storage.AccessRecordStore
 import duesoldi.storage.AccessRecordStore.Access
+import AdminAuthentication.adminsOnly
 
 import scala.concurrent.ExecutionContext
 
-object MetricsRoutes extends AdminAuthentication {
+object MetricsRoutes {
   def metricsRoutes(credentials: Option[Credentials], accessRecordStore: AccessRecordStore)(implicit executionContext: ExecutionContext): Route =
     path("admin" / "metrics" / "access.csv") {
       adminsOnly(credentials) {
