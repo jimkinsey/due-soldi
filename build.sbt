@@ -10,8 +10,8 @@ resolvers +=
   "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-http-core" % "10.0.1",
-  "com.typesafe.akka" %% "akka-http" % "10.0.1",
+  "com.typesafe.akka" %% "akka-http-core" % "10.0.10",
+  "com.typesafe.akka" %% "akka-http" % "10.0.10",
   "org.scala-lang.modules" %% "scala-xml" % "1.0.5",
   "net.databinder.dispatch" %% "dispatch-core" % "0.12.0" % "test",
   "com.h2database" % "h2" % "1.4.193",
