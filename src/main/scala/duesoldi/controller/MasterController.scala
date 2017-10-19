@@ -16,20 +16,22 @@ import duesoldi.controller.RobotsRoutes.robotsRoutes
 import duesoldi.dependencies.AppDependencies
 
 import scala.concurrent.ExecutionContext
-
+import AdminAuthentication.adminsOnly
 object MasterController
 {
   def routes(config: Config)(implicit executionContext: ExecutionContext, appDependencies: AppDependencies): Route =
     inContext { implicit requestContext: RequestContext =>
       withDependencies { dependencies =>
         recordAccess(dependencies.accessRecordStore, dependencies.events, config.accessRecordingEnabled) {
+          robotsRoutes ~
           furnitureRoutes(config) ~
           blogIndexRoutes(dependencies.indexPageMaker, dependencies.events) ~
           blogEntryRoutes(dependencies.makeEntryPage) ~
-          metricsRoutes(config.adminCredentials, dependencies.accessRecordStore) ~
-          robotsRoutes ~
-          blogEditingRoutes(config.adminCredentials, dependencies.blogStore) ~
-          debugRoutes(config.adminCredentials)
+          adminsOnly(config.adminCredentials) { _ =>
+            metricsRoutes(dependencies.accessRecordStore) ~
+            blogEditingRoutes(dependencies.blogStore) ~
+            debugRoutes
+          }
         }
       }
     }

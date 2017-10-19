@@ -8,7 +8,7 @@ import duesoldi.config.Config
 
 object AdminAuthentication {
 
-  def adminsOnly[T <: server.Route](credentials: Option[Config.Credentials])(block: => T): server.Route = authenticateBasic("admin", authenticatedAdminUser(credentials))(_ => block)
+  def adminsOnly(credentials: Option[Config.Credentials]) = authenticateBasic("admin", authenticatedAdminUser(credentials))
 
   private def authenticatedAdminUser(credentials: Option[Config.Credentials]): Authenticator[String] = {
     case providedPassword@Credentials.Provided(username) if isVerifiedAdmin(username, providedPassword, credentials) =>
