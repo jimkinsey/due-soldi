@@ -5,19 +5,17 @@ import java.time.ZonedDateTime
 import akka.http.scaladsl.model.headers.{Referer, `User-Agent`}
 import akka.http.scaladsl.server.Directive
 import akka.http.scaladsl.server.Directives._
-import duesoldi.controller.AccessRecording.Event.{RecordFailure, RecordSuccess}
+import duesoldi.controller.AccessRecordingDirective.Event.{RecordFailure, RecordSuccess}
 import duesoldi.events.Events
 import duesoldi.storage.AccessRecordStore
 import duesoldi.storage.AccessRecordStore.Access
 
-import scala.concurrent.ExecutionContext
 import scala.util.Failure
 
-trait AccessRecording {
-  implicit def executionContext: ExecutionContext
-
+object AccessRecordingDirective {
   def recordAccess(accessRecordStore: AccessRecordStore, events: Events, enabled: Boolean): Directive[Unit] =
     extractRequestContext.flatMap { ctx =>
+      import ctx.executionContext
       val startTime = System.currentTimeMillis()
       mapResponse { response =>
         if (enabled) {
@@ -41,9 +39,7 @@ trait AccessRecording {
         response
       }
     }
-}
 
-object AccessRecording {
   sealed trait Event extends duesoldi.events.Event
   object Event {
     case class RecordFailure(cause: Throwable) extends Event

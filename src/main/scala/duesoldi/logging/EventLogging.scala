@@ -1,7 +1,7 @@
 package duesoldi.logging
 
 import duesoldi.controller.BlogIndexRoutes.Event.BlogIndexPageNotRendered
-import duesoldi.controller.{AccessRecording, BlogIndexRoutes}
+import duesoldi.controller.{AccessRecordingDirective, BlogIndexRoutes}
 import duesoldi.events.Events
 import duesoldi.page.{EntryPageMaker, IndexPageFailure}
 
@@ -23,8 +23,8 @@ class EventLogging(events: Events, logger: Logger) {
       logger.error(s"Failed to render blog entry - $cause")
   }
 
-  events.respondTo[AccessRecording.Event] {
-    case AccessRecording.Event.RecordFailure(cause) =>
+  events.respondTo[AccessRecordingDirective.Event] {
+    case AccessRecordingDirective.Event.RecordFailure(cause) =>
       logger.error(s"Failed to record access - ${cause.getMessage}")
   }
 

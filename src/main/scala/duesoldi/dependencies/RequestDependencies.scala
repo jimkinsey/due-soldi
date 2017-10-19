@@ -10,13 +10,15 @@ import duesoldi.validation.ValidIdentifier
 import scala.concurrent.ExecutionContext
 
 class RequestDependencies(appDependencies: AppDependencies, context: RequestContext)(implicit executionContext: ExecutionContext) {
-  import appDependencies.{blogStore, renderer, config}
+  import appDependencies.{renderer, config}
   implicit lazy val emit: duesoldi.events.Emit = events emit _
 
   lazy val makeEntryPage: MakeEntryPage = EntryPageMaker.entryPage(ValidIdentifier.apply)(blogStore.entry)(EntryPageModel.pageModel(config))(renderer.render)(executionContext, emit)
   lazy val indexPageMaker: IndexPageMaker = new IndexPageMaker(renderer.render, blogStore, config)
 
   lazy val events = new Events
+  lazy val accessRecordStore = appDependencies.accessRecordStore
+  lazy val blogStore = appDependencies.blogStore
 
   private lazy val logger = new Logger(s"Request ${context.id}")
   new EventLogging(events, logger)

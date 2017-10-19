@@ -4,6 +4,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import duesoldi._
 import duesoldi.config.Config
+import duesoldi.controller.AccessRecordingDirective.recordAccess
 import duesoldi.controller.BlogEditingRoutes.blogEditingRoutes
 import duesoldi.controller.BlogEntryRoutes.blogEntryRoutes
 import duesoldi.controller.BlogIndexRoutes.blogIndexRoutes
@@ -19,19 +20,18 @@ import scala.concurrent.ExecutionContext
 class MasterController(config: Config)
                       (implicit val executionContext: ExecutionContext, val appDependencies: AppDependencies)
   extends Controller
-  with AccessRecording
   with RequestDependenciesDirective
 {
   lazy val routes: Route =
     inContext { implicit requestContext: RequestContext =>
-      withDependencies(requestContext) { requestDependencies =>
-        recordAccess(appDependencies.accessRecordStore, appDependencies.events, config.accessRecordingEnabled) {
+      withDependencies(requestContext) { dependencies =>
+        recordAccess(dependencies.accessRecordStore, dependencies.events, config.accessRecordingEnabled) {
           furnitureRoutes(config) ~
-          blogIndexRoutes(requestDependencies.indexPageMaker, requestDependencies.events) ~
-          blogEntryRoutes(requestDependencies.makeEntryPage) ~
-          metricsRoutes(config.adminCredentials, appDependencies.accessRecordStore) ~
+          blogIndexRoutes(dependencies.indexPageMaker, dependencies.events) ~
+          blogEntryRoutes(dependencies.makeEntryPage) ~
+          metricsRoutes(config.adminCredentials, dependencies.accessRecordStore) ~
           robotsRoutes ~
-          blogEditingRoutes(config.adminCredentials, appDependencies.blogStore) ~
+          blogEditingRoutes(config.adminCredentials, dependencies.blogStore) ~
           debugRoutes(config.adminCredentials)
         }
       }

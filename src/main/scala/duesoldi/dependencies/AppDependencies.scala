@@ -17,5 +17,4 @@ class AppDependencies(val config: Config)(implicit val executionContext: Executi
   lazy val blogStore = new JDBCBlogStore(config.jdbcConnectionDetails, new MarkdownParser)
   lazy val renderer = new Renderer
   lazy val accessRecordStore =  new JDBCAccessRecordStore(config.jdbcConnectionDetails)
-  lazy val indexPageMaker = new IndexPageMaker(renderer.render, blogStore, config)
 }

@@ -7,8 +7,11 @@ import duesoldi.dependencies.{AppDependencies, RequestDependencies}
 import scala.concurrent.ExecutionContext
 
 trait RequestDependenciesDirective {
-  implicit def executionContext: ExecutionContext
   implicit def appDependencies: AppDependencies
 
-  def withDependencies(context: RequestContext): Directive1[RequestDependencies] = extract(_ => new RequestDependencies(appDependencies, context))
+  def withDependencies(context: RequestContext): Directive1[RequestDependencies] =
+    extract { ctx =>
+      import ctx.executionContext
+      new RequestDependencies(appDependencies, context)
+    }
 }
