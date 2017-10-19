@@ -12,6 +12,7 @@ import duesoldi.controller.DebugRoutes.debugRoutes
 import duesoldi.controller.FurnitureRoutes.furnitureRoutes
 import duesoldi.controller.MetricsRoutes.metricsRoutes
 import duesoldi.controller.RequestContextDirective._
+import duesoldi.controller.RequestDependenciesDirective.withDependencies
 import duesoldi.controller.RobotsRoutes.robotsRoutes
 import duesoldi.dependencies.AppDependencies
 
@@ -20,11 +21,10 @@ import scala.concurrent.ExecutionContext
 class MasterController(config: Config)
                       (implicit val executionContext: ExecutionContext, val appDependencies: AppDependencies)
   extends Controller
-  with RequestDependenciesDirective
 {
   lazy val routes: Route =
     inContext { implicit requestContext: RequestContext =>
-      withDependencies(requestContext) { dependencies =>
+      withDependencies { dependencies =>
         recordAccess(dependencies.accessRecordStore, dependencies.events, config.accessRecordingEnabled) {
           furnitureRoutes(config) ~
           blogIndexRoutes(dependencies.indexPageMaker, dependencies.events) ~

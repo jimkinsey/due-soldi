@@ -1,17 +1,15 @@
 package duesoldi.controller
 
-import akka.http.scaladsl.server.Directive1
+import akka.http.scaladsl.server
 import akka.http.scaladsl.server.Directives.extract
+import akka.http.scaladsl.server.Route
 import duesoldi.dependencies.{AppDependencies, RequestDependencies}
 
-import scala.concurrent.ExecutionContext
-
-trait RequestDependenciesDirective {
-  implicit def appDependencies: AppDependencies
-
-  def withDependencies(context: RequestContext): Directive1[RequestDependencies] =
-    extract { ctx =>
+object RequestDependenciesDirective {
+  def withDependencies(block: RequestDependencies => Route)
+                      (implicit context: RequestContext, appDependencies: AppDependencies): Route =
+    extract { (ctx: server.RequestContext) =>
       import ctx.executionContext
       new RequestDependencies(appDependencies, context)
-    }
+    } apply block
 }
