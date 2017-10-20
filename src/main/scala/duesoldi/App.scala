@@ -7,13 +7,15 @@ import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
 import duesoldi.config.EnvironmentalConfig
 import duesoldi.controller.MasterController
-import duesoldi.dependencies.AppDependencies
+import duesoldi.logging.Logger
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 import scala.util.{Failure, Success}
 
 object App {
+  implicit val executionContext: ExecutionContext = concurrent.ExecutionContext.Implicits.global
+
   def main(args: Array[String]) {
     val env: Map[String, String] = System.getenv().asScala.toMap
     start(env)
@@ -21,14 +23,13 @@ object App {
 
   def start(env: Env): Future[Server] = {
     val config = EnvironmentalConfig(env)
-    implicit val executionContext: ExecutionContext = concurrent.ExecutionContext.Implicits.global
-    implicit val appDependencies: AppDependencies = new AppDependencies(config)
+    val logger = new Logger("App", config.loggingEnabled)
     val eventualServer = Server.start(MasterController.routes(config), config.host, config.port)
     eventualServer.onComplete {
       case Success(server) =>
-        appDependencies.logger.info(s"Started server on ${server.host}:${server.port}")
+        logger.info(s"Started server on ${server.host}:${server.port}")
       case Failure(ex) =>
-        appDependencies.logger.error(s"Failed to start server on ${config.host}:${config.port} - ${ex.getMessage}")
+        logger.error(s"Failed to start server on ${config.host}:${config.port} - ${ex.getMessage}")
     }
     eventualServer
   }

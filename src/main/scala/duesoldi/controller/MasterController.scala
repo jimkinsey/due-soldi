@@ -4,6 +4,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import duesoldi.config.Config
 import duesoldi.controller.AccessRecordingDirective.recordAccess
+import duesoldi.controller.AdminAuthentication.adminsOnly
 import duesoldi.controller.BlogEditingRoutes.blogEditingRoutes
 import duesoldi.controller.BlogEntryRoutes.blogEntryRoutes
 import duesoldi.controller.BlogIndexRoutes.blogIndexRoutes
@@ -13,15 +14,14 @@ import duesoldi.controller.MetricsRoutes.metricsRoutes
 import duesoldi.controller.RequestContextDirective._
 import duesoldi.controller.RequestDependenciesDirective.withDependencies
 import duesoldi.controller.RobotsRoutes.robotsRoutes
-import duesoldi.dependencies.AppDependencies
 
 import scala.concurrent.ExecutionContext
-import AdminAuthentication.adminsOnly
+
 object MasterController
 {
-  def routes(config: Config)(implicit executionContext: ExecutionContext, appDependencies: AppDependencies): Route =
+  def routes(config: Config)(implicit executionContext: ExecutionContext): Route =
     inContext { implicit requestContext: RequestContext =>
-      withDependencies { dependencies =>
+      withDependencies(config) { dependencies =>
         recordAccess(dependencies.accessRecordStore, dependencies.events, config.accessRecordingEnabled) {
           robotsRoutes ~
           furnitureRoutes(config) ~
