@@ -15,9 +15,9 @@ import scala.concurrent.ExecutionContext
 
 object FurnitureRoutes {
   def furnitureRoutes(config: Config)(implicit executionContext: ExecutionContext): Route =
-    handleRejections(fileFailure) {
-      path("furniture" / Segment / Remaining) {
-        case (version: String, remaining: String) if version == config.furnitureVersion => {
+    path("furniture" / Segment / Remaining) {
+      case (version: String, remaining: String) if version == config.furnitureVersion => {
+        handleRejections(fileFailure) {
           val maxAge = config.furnitureCacheDuration.toSeconds
           respondWithHeaders(
             RawHeader("Cache-Control", s"max-age=$maxAge"),
@@ -26,9 +26,9 @@ object FurnitureRoutes {
             getFromFile(config.furniturePath + "/" + remaining)
           }
         }
-        case _ => complete {
-          HttpResponse(BadRequest)
-        }
+      }
+      case _ => complete {
+        HttpResponse(BadRequest)
       }
     }
 
