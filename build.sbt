@@ -16,7 +16,7 @@ libraryDependencies ++= Seq(
   "net.databinder.dispatch" %% "dispatch-core" % "0.12.0" % "test",
   "com.h2database" % "h2" % "1.4.193",
   "org.postgresql" % "postgresql" % "9.4.1212",
-  "org.jsoup" % "jsoup" % "1.10.2" % "test",
+  "org.jsoup" % "jsoup" % "1.10.3" % "test",
   "com.github.tototoshi" %% "scala-csv" % "1.3.4" % "test",
   "org.typelevel" %% "cats-core" % "1.0.0-MF",
   "com.vladsch.flexmark" % "flexmark" % "0.27.0",
