@@ -18,7 +18,7 @@ libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "9.4.1212",
   "org.jsoup" % "jsoup" % "1.10.2" % "test",
   "com.github.tototoshi" %% "scala-csv" % "1.3.4" % "test",
-  "org.typelevel" %% "cats" % "0.9.0",
+  "org.typelevel" %% "cats-core" % "1.0.0-MF",
   "com.vladsch.flexmark" % "flexmark" % "0.27.0",
   "com.github.jimkinsey" %% "bhuj" % "0.2-SNAPSHOT",
   "com.lihaoyi" %% "utest" % "0.5.4" % "test"
