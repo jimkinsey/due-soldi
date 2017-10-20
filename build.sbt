@@ -13,7 +13,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http-core" % "10.0.10",
   "com.typesafe.akka" %% "akka-http" % "10.0.10",
   "org.scala-lang.modules" %% "scala-xml" % "1.0.5",
-  "net.databinder.dispatch" %% "dispatch-core" % "0.12.0" % "test",
+  "net.databinder.dispatch" %% "dispatch-core" % "0.13.2" % "test",
   "com.h2database" % "h2" % "1.4.193",
   "org.postgresql" % "postgresql" % "9.4.1212",
   "org.jsoup" % "jsoup" % "1.10.3" % "test",

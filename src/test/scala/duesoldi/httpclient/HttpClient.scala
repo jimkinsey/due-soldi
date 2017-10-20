@@ -2,9 +2,9 @@ package duesoldi.httpclient
 
 import dispatch.{Http, url}
 import duesoldi.Env
+import io.netty.handler.codec.http.HttpHeaders
 
 import scala.collection.JavaConversions._
-import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 
 object HttpClient {
@@ -41,8 +41,11 @@ object HttpClient {
     }
   }
 
-  private def convertHeaders(headers: java.util.Map[String, java.util.List[String]]): Map[String, Seq[String]] = {
-    headers.asScala map { case (key, value) => key -> Seq(value:_*) } toMap
+  private def convertHeaders(headers: HttpHeaders): Map[String, Seq[String]] = {
+    headers.entries().foldLeft(Map[String,Seq[String]]()) {
+      case (acc, entry) if acc.contains(entry.getKey) => acc.updated(entry.getKey, acc(entry.getKey) :+ entry.getValue)
+      case (acc, entry) => acc + (entry.getKey -> Seq(entry.getValue))
+    }
   }
 
 }
