@@ -19,7 +19,7 @@ libraryDependencies ++= Seq(
   "org.jsoup" % "jsoup" % "1.10.2" % "test",
   "com.github.tototoshi" %% "scala-csv" % "1.3.4" % "test",
   "org.typelevel" %% "cats" % "0.9.0",
-  "com.vladsch.flexmark" % "flexmark" % "0.11.1",
+  "com.vladsch.flexmark" % "flexmark" % "0.27.0",
   "com.github.jimkinsey" %% "bhuj" % "0.2-SNAPSHOT",
   "com.lihaoyi" %% "utest" % "0.5.4" % "test"
 )
