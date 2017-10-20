@@ -21,7 +21,7 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "cats" % "0.9.0",
   "com.vladsch.flexmark" % "flexmark" % "0.11.1",
   "com.github.jimkinsey" %% "bhuj" % "0.2-SNAPSHOT",
-  "com.lihaoyi" %% "utest" % "0.4.7" % "test"
+  "com.lihaoyi" %% "utest" % "0.5.4" % "test"
 )
 
 testFrameworks += new TestFramework("utest.runner.Framework")
