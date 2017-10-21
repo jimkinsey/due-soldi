@@ -25,4 +25,6 @@ object EnvironmentalConfig {
       loggingEnabled = env.get("LOGGING_ENABLED").map(_.toBoolean).getOrElse(true)
     )
   }
+
+  lazy val sensitiveVars: Set[String] = Set("ADMIN_CREDENTIALS", "JDBC_DATABASE_USERNAME", "JDBC_DATABASE_PASSWORD")
 }

@@ -7,6 +7,8 @@ import Setup.withSetup
 import utest._
 import AdminSupport._
 
+import scala.concurrent.Future
+
 object DebugTests
   extends TestSuite
 {
@@ -26,5 +28,34 @@ object DebugTests
         }
       }
     }
+    "the config endpoint" - {
+      "return a page containing the env vars" - {
+        withSetup(
+          envVars("ENV_VAR" -> "value"),
+          adminCredentials("admin", "password"),
+          runningApp
+        ) { implicit env =>
+          for {
+            response <- get("/admin/debug/config", headers = BasicAuthorization("admin", "password"))
+          } yield {
+            assert(response.body.lines.toList contains "ENV_VAR=value")
+          }
+        }
+      }
+      "not include sensitive env vars" - {
+        withSetup(
+          adminCredentials("admin", "password"),
+          runningApp
+        ) { implicit env =>
+          for {
+            response <- get("/admin/debug/config", headers = BasicAuthorization("admin", "password"))
+          } yield {
+            assert(!(response.body contains "ADMIN_CREDENTIALS"))
+          }
+        }
+      }
+    }
   }
+
+  private def envVars(vars: (String, String)*): Setup = (env: Env) => Future.successful(vars.toMap)
 }

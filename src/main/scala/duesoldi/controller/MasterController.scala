@@ -2,6 +2,7 @@ package duesoldi.controller
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
+import duesoldi.Env
 import duesoldi.config.Config
 import duesoldi.controller.AccessRecordingDirective.recordAccess
 import duesoldi.controller.AdminAuthentication.adminsOnly
@@ -19,8 +20,8 @@ import scala.concurrent.ExecutionContext
 
 object MasterController
 {
-  def routes(config: Config)(implicit executionContext: ExecutionContext): Route =
-    inContext { implicit requestContext: RequestContext =>
+  def routes(config: Config, env: Env)(implicit executionContext: ExecutionContext): Route =
+    inContext { implicit context: RequestContext =>
       withDependencies(config) { dependencies =>
         recordAccess(dependencies.accessRecordStore, dependencies.events, config.accessRecordingEnabled) {
           robotsRoutes ~
@@ -30,7 +31,7 @@ object MasterController
           adminsOnly(config.adminCredentials) { _ =>
             metricsRoutes(dependencies.accessRecordStore) ~
             blogEditingRoutes(dependencies.blogStore) ~
-            debugRoutes
+            debugRoutes(env)
           }
         }
       }

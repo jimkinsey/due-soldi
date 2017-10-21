@@ -3,7 +3,7 @@ package duesoldi.dependencies
 import duesoldi.config.Config
 import duesoldi.controller.BlogEntryRoutes.MakeEntryPage
 import duesoldi.controller.RequestContext
-import duesoldi.events.{Event, Events}
+import duesoldi.events.Events
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.markdown.MarkdownParser
 import duesoldi.page.{EntryPageMaker, EntryPageModel, IndexPageMaker}
