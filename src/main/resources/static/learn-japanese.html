@@ -1,0 +1,259 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Katakana Test</title>
+  <style>
+    body {
+      background-color: white;
+      color: black;
+      font-family: Verdana;
+    }
+    
+    h1 {
+      text-align: center;
+      font-size: 3em;
+    }
+    
+    #question {
+      text-align: center;
+      font-size: 15em;
+      padding: 0;
+    }
+    
+    #answers {
+      padding: 0;
+      text-align: center;
+    }
+    
+    #options {
+      display: inline-block;
+      padding: 0;
+      margin: 0;
+    }
+    
+    #options li {
+      cursor: pointer;
+      list-style-type: none;
+      font-size: 3em;
+      display: inline-block;
+      min-width: 150px;
+      text-align: center;
+      border: 5px solid black;
+      border-radius: 20px;
+      margin: 10px;
+      padding: 20px;
+    }
+    
+    #options li.wrong {
+      border-color: red;
+      color: red;
+    }
+  </style>  
+</head>
+<body>
+  <h1>Katakana Test</h1>
+  <div id="test"></div>
+  <script language="JavaScript">
+    const testElem = document.getElementById("test");
+    
+    const katakana = {
+      'A': 'ア', 
+      'I': 'イ', 
+      'U': 'ウ', 
+      'E': 'エ',
+      'O': 'オ',
+      'KA': 'カ',
+      'KI': 'キ',
+      'KU': 'ク',
+      'KE': 'ケ',
+      'KO': 'コ',
+      'SA': 'サ',
+      'SHI': 'シ',
+      'SU': 'ス',
+      'SE': 'セ',
+      'SO': 'ソ',
+      'TA': 'タ',
+      'CHI': 'チ',
+      'TSU': 'ツ',
+      'TE': 'テ',
+      'TO': 'ト',
+      'NA': 'ナ',
+      'NI': 'ニ',
+      'NU': 'ヌ',
+      'NE': 'ネ',
+      'NO': 'ノ',
+      'HA': 'ハ',
+      'HI': 'ヒ',
+      'FU': 'フ',
+      'HE': 'ヘ',
+      'HO': 'ホ',
+      'MA': 'マ',
+      'MI': 'ミ',
+      'MU': 'ム',
+      'ME': 'メ',
+      'MO': 'モ',
+      'YA': 'ヤ',
+      'YU': 'ユ',
+      'YO': 'ヨ',
+      'RA': 'ラ',
+      'RI': 'リ',
+      'RU': 'ル',
+      'RE': 'レ',
+      'RO': 'ロ',
+      'WA': 'ワ',
+      'WO': 'ヲ',
+      'N': 'ン'
+    };
+    
+    const dakuten = {
+      'GA': 'ガ',
+      'GI': 'ギ',
+      'GU': 'グ',
+      'GE': 'ゲ',
+      'GO': 'ゴ',
+      'ZA': 'ザ',
+      'JI': 'ジ',
+      'ZU': 'ズ',
+      'ZE': 'ゼ',
+      'ZO': 'ゾ',
+      'DA': 'ダ',
+      'DZI': 'ヂ',
+      'DZU': 'ヅ',
+      'DE': 'デ',
+      'DO': 'ド',
+      'BA': 'バ',
+      'BI': 'ビ',
+      'BU': 'ブ',
+      'BE': 'ベ',
+      'BO': 'ボ',
+      'PA': 'パ',
+      'PI': 'ピ',
+      'PU': 'プ',
+      'PE': 'ペ',
+      'PO': 'ポ'      
+    };
+    
+    const comboKatakana = {
+      'KYA': 'キヤ',
+      'KYU': 'キユ',
+      'KYO': 'キヨ',
+      'SHA': 'シヤ',
+      'SHU': 'シユ',
+      'SHO': 'シヨ',
+      'CHA': 'チヤ',
+      'CHU': 'チユ',
+      'CHO': 'チヨ',
+      'NYA': 'ニヤ',
+      'NYU': 'ニユ',
+      'NYO': 'ニヨ',
+      'HYA': 'ヒヤ',
+      'HYU': 'ヒユ',
+      'HYO': 'ヒヨ',
+      'MYA': 'ミヤ',
+      'MYU': 'ミユ',
+      'MYO': 'ミヨ',
+      'RYA': 'リヤ',
+      'RYU': 'リユ',
+      'RYO': 'リヨ',
+      'GYA': 'ギヤ',
+      'GYU': 'ギユ',
+      'GYO': 'ギヨ',
+      'JYA': 'ジヤ',
+      'JYU': 'ジユ',
+      'JYO': 'ジヨ',
+      'DZYA': 'ヂヤ',
+      'DZYU': 'ヂユ',
+      'DZYO': 'ヂヨ',
+      'BYA': 'ビヤ',
+      'BYU': 'ビユ',
+      'BYO': 'ビヨ',
+      'PYA': 'ピヤ',
+      'PYU': 'ピユ',
+      'PYO': 'ピヨ'
+    };
+    
+    const fullKatakana = Object.assign(katakana, dakuten, comboKatakana);
+    
+    const soundsToChars = fullKatakana;
+    const charsToSounds = invert(fullKatakana);
+    
+    init();
+    
+    function init() {
+      startNewRound();
+      return;
+    }
+    
+    function startNewRound() {
+      const dataSet = randomItem([soundsToChars, charsToSounds]);
+      const answer = randomItem(Object.keys(dataSet));
+      const question = dataSet[answer];
+      const options = shuffle(randomItems(removeItem(Object.keys(dataSet), answer), 3).concat([answer]));
+      testElem.innerHTML = renderTest({ 'question': question, 'options': options, 'answer': answer });
+      return;
+    }
+    
+    function invert(obj) {
+      function iter(acc, [head, ...tail]) {
+        if (!head) {
+          return acc;
+        }
+        return iter(Object.assign(acc, Object.assign({ [obj[head]]: head })), tail);
+      }
+      return iter({}, Object.keys(obj));
+    }
+    
+    function removeItem(items, item) {
+      return items.filter(function(i) { return i !== item; });
+    }
+    
+    function randomItems(items, number) {
+      function iter(acc, remaining) {
+        if (acc.length === number) {
+          return acc;
+        }
+        const item = randomItem(remaining);
+        return iter(acc.concat([item]), removeItem(remaining, item));
+      }
+      return iter([], items);
+    }
+    
+    function randomItem(items) {
+      return items[getRandomInt(0, items.length)];
+    }
+    
+    function getRandomInt(min, max) {
+      const upper = Math.ceil(min);
+      const lower = Math.floor(max);
+      return Math.floor(Math.random() * (upper - lower)) + lower;
+    }
+    
+    function shuffle(items) {
+      return randomItems(items, items.length);
+    }
+    
+    function choose(correctAnswer, choice, id) {
+      if (choice === correctAnswer) {
+        startNewRound();
+      }
+      else {
+        document.getElementById(id).className += ' wrong';
+      }
+      return;
+    }
+    
+    function renderTest(model) {
+      return `<div id="question">${model.question}</div>
+        <div id="answers">
+          <ol id="options">
+            <li id="option1" class="" onclick="return choose('${model.answer}', '${model.options[0]}', 'option1');">${model.options[0]}</li>
+            <li id="option2" class="" onclick="return choose('${model.answer}', '${model.options[1]}', 'option2');">${model.options[1]}</li>
+            <li id="option3" class="" onclick="return choose('${model.answer}', '${model.options[2]}', 'option3');">${model.options[2]}</li>
+            <li id="option4" class="" onclick="return choose('${model.answer}', '${model.options[3]}', 'option4');">${model.options[3]}</li>
+          </ol>
+        </div>`;  
+    }
+  </script>
+</body>
+</html>
