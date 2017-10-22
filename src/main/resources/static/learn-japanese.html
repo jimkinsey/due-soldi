@@ -9,45 +9,64 @@
       color: black;
       font-family: Verdana;
     }
-    
+
     h1 {
       text-align: center;
-      font-size: 3em;
+      font-size: 1em;
+      margin-bottom: 0;
     }
-    
+
     #question {
       text-align: center;
-      font-size: 15em;
+      font-size: 7em;
       padding: 0;
     }
-    
+
     #answers {
       padding: 0;
       text-align: center;
     }
-    
+
     #options {
-      display: inline-block;
+      display: block;
       padding: 0;
       margin: 0;
     }
-    
+
     #options li {
       cursor: pointer;
       list-style-type: none;
-      font-size: 3em;
+      font-size: 1em;
       display: inline-block;
-      min-width: 150px;
+      min-width: 25%;
       text-align: center;
-      border: 5px solid black;
+      border: 3px solid black;
       border-radius: 20px;
-      margin: 10px;
-      padding: 20px;
+      margin: 5px;
+      padding: 5px;
     }
-    
+
     #options li.wrong {
       border-color: red;
       color: red;
+    }
+
+    @media only screen and (min-width: 768px) {
+      h1 {
+        text-align: center;
+        font-size: 3em;
+      }
+
+      #question {
+        font-size: 15em;
+      }
+
+      #options li {
+        font-size: 3em;
+        min-width: 150px;
+        margin: 10px;
+        padding: 20px;
+      }
     }
   </style>  
 </head>
