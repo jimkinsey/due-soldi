@@ -5,7 +5,6 @@ import akka.http.scaladsl.server.Route
 import duesoldi.Env
 import duesoldi.config.Config
 import duesoldi.controller.AccessRecordingDirective.recordAccess
-import duesoldi.controller.AdminAuthentication.adminsOnly
 import duesoldi.controller.BlogEditingRoutes.blogEditingRoutes
 import duesoldi.controller.BlogEntryRoutes.blogEntryRoutes
 import duesoldi.controller.BlogIndexRoutes.blogIndexRoutes
@@ -15,6 +14,7 @@ import duesoldi.controller.MetricsRoutes.metricsRoutes
 import duesoldi.controller.RequestContextDirective._
 import duesoldi.controller.RequestDependenciesDirective.withDependencies
 import duesoldi.controller.RobotsRoutes.robotsRoutes
+import duesoldi.controller.LearnJapaneseRoutes.learnJapaneseRoutes
 
 import scala.concurrent.ExecutionContext
 
@@ -28,11 +28,10 @@ object MasterController
           furnitureRoutes(config) ~
           blogIndexRoutes(dependencies.indexPageMaker, dependencies.events) ~
           blogEntryRoutes(dependencies.makeEntryPage) ~
-          adminsOnly(config.adminCredentials) { _ =>
-            metricsRoutes(dependencies.accessRecordStore) ~
-            blogEditingRoutes(dependencies.blogStore) ~
-            debugRoutes(env)
-          }
+          metricsRoutes(config.adminCredentials, dependencies.accessRecordStore) ~
+          blogEditingRoutes(config.adminCredentials, dependencies.blogStore) ~
+          debugRoutes(config.adminCredentials, env) ~
+          learnJapaneseRoutes
         }
       }
     }
