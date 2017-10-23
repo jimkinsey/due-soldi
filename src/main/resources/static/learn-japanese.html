@@ -11,8 +11,15 @@
     }
 
     h1 {
+      cursor: pointer;
       text-align: center;
       font-size: 1em;
+      margin-bottom: 0;
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 0.67em;
       margin-bottom: 0;
     }
 
@@ -51,10 +58,38 @@
       color: red;
     }
 
+    #menu {
+      padding: 10px;
+      text-align: center;
+    }
+
+    ol#tests {
+      display: block;
+      padding: 0;
+      margin: 0;
+    }
+
+    ol#tests li {
+      cursor: pointer;
+      list-style-type: none;
+      display: inline-block;
+      width: 33%;
+      text-align: center;
+      border: 3px solid black;
+      border-radius: 20px;
+      margin: 5px;
+      padding: 5px;
+    }
+
     @media only screen and (min-width: 768px) {
       h1 {
         text-align: center;
         font-size: 3em;
+      }
+
+      h2 {
+        text-align: center;
+        font-size: 2em;
       }
 
       #question {
@@ -67,14 +102,22 @@
         margin: 10px;
         padding: 20px;
       }
+
+      ol#tests li {
+        font-size: 3em;
+        margin: 10px;
+        padding: 20px;
+      }
     }
   </style>  
 </head>
 <body>
-  <h1>Katakana Test</h1>
-  <div id="test"></div>
+  <div id="page">
+    <h1>Japanese Tests</h1>
+    <div id="content"><noscript>Sorry! This app currently only works with JavaScript enabled.</noscript></div>
+  </div>
   <script language="JavaScript">
-    const testElem = document.getElementById("test");
+    const contentElem = document.getElementById('content');
     
     const katakana = {
       'A': 'ア', 
@@ -193,23 +236,39 @@
     };
     
     const fullKatakana = Object.assign(katakana, dakuten, comboKatakana);
-    
-    const soundsToChars = fullKatakana;
-    const charsToSounds = invert(fullKatakana);
-    
+
+    const hiragana = {
+      'A': 'あ',
+      'I': 'い',
+      'U': 'う',
+      'E': 'え',
+      'O': 'お'
+    };
+
+    const fullHiragana = Object.assign(hiragana);
+
+    const syllabaries = { 'Katakana': fullKatakana, 'Hiragana': fullHiragana };
+
     init();
     
     function init() {
-      startNewRound();
+      document.getElementsByTagName('h1')[0].onclick = function() { return selectTest() };
+      selectTest();
       return;
     }
-    
-    function startNewRound() {
-      const dataSet = randomItem([soundsToChars, charsToSounds]);
+
+    function selectTest() {
+      contentElem.innerHTML = renderTestSelector();
+      return;
+    }
+
+    function startNewRound(syllabaryName) {
+      const syllabary = syllabaries[syllabaryName];
+      const dataSet = randomItem([syllabary, invert(syllabary)]);
       const answer = randomItem(Object.keys(dataSet));
       const question = dataSet[answer];
       const options = shuffle(randomItems(removeItem(Object.keys(dataSet), answer), 3).concat([answer]));
-      testElem.innerHTML = renderTest({ 'question': question, 'options': options, 'answer': answer });
+      contentElem.innerHTML = renderTest({ 'question': question, 'options': options, 'answer': answer, 'syllabaryName' : syllabaryName });
       return;
     }
     
@@ -252,9 +311,9 @@
       return randomItems(items, items.length);
     }
     
-    function choose(correctAnswer, choice, id) {
+    function choose(correctAnswer, choice, syllabaryName, id) {
       if (choice === correctAnswer) {
-        startNewRound();
+        startNewRound(syllabaryName);
       }
       else {
         document.getElementById(id).className += ' wrong';
@@ -262,16 +321,27 @@
       return;
     }
     
-    function renderTest(model) {
-      return `<div id="question">${model.question}</div>
+    function renderTest({question, answer, options, syllabaryName}) {
+      return `<h2>${syllabaryName} test</h2>
+        <div id="question">${question}</div>
         <div id="answers">
           <ol id="options">
-            <li id="option1" class="" onclick="return choose('${model.answer}', '${model.options[0]}', 'option1');">${model.options[0]}</li>
-            <li id="option2" class="" onclick="return choose('${model.answer}', '${model.options[1]}', 'option2');">${model.options[1]}</li>
-            <li id="option3" class="" onclick="return choose('${model.answer}', '${model.options[2]}', 'option3');">${model.options[2]}</li>
-            <li id="option4" class="" onclick="return choose('${model.answer}', '${model.options[3]}', 'option4');">${model.options[3]}</li>
+            <li id="option1" class="" onclick="return choose('${answer}', '${options[0]}', '${syllabaryName}', 'option1');">${options[0]}</li>
+            <li id="option2" class="" onclick="return choose('${answer}', '${options[1]}', '${syllabaryName}', 'option2');">${options[1]}</li>
+            <li id="option3" class="" onclick="return choose('${answer}', '${options[2]}', '${syllabaryName}', 'option3');">${options[2]}</li>
+            <li id="option4" class="" onclick="return choose('${answer}', '${options[3]}', '${syllabaryName}', 'option4');">${options[3]}</li>
           </ol>
         </div>`;  
+    }
+
+    function renderTestSelector() {
+      return `<h2>Select a test</h2>
+        <div id="menu">
+          <ol id="tests">
+            <li onclick="return startNewRound('Katakana');">Katakana</li>
+            <li onclick="return startNewRound('Hiragana');">Hiragana</li>
+          </ol>
+        </div>`;
     }
   </script>
 </body>
