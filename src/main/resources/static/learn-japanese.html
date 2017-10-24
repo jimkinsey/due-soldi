@@ -184,7 +184,7 @@
       'N': 'ン'
     };
     
-    const dakuten = {
+    const dakutenKatakana = {
       'GA': 'ガ',
       'GI': 'ギ',
       'GU': 'グ',
@@ -251,7 +251,7 @@
       'PYO': 'ピヨ'
     };
     
-    const fullKatakana = Object.assign(katakana, dakuten, comboKatakana);
+    const fullKatakana = Object.assign(katakana, dakutenKatakana, comboKatakana);
 
     const hiragana = {
       'A': 'あ',
@@ -302,7 +302,35 @@
       'N': 'ん'
     };
 
-    const fullHiragana = Object.assign(hiragana);
+    const dakutenHiragana = {
+      'GA': 'が',
+      'GI': 'ぎ',
+      'GU': 'ぐ',
+      'GE': 'げ',
+      'GO': 'ご',
+      'ZA': 'ざ',
+      'JI': 'じ',
+      'ZU': 'ず',
+      'ZE': 'ぜ',
+      'ZO': 'ぞ',
+      'DA': 'だ',
+      'DZI': 'ぢ',
+      'DZU': 'づ',
+      'DE': 'で',
+      'DO': 'ど',
+      'BA': 'ば',
+      'BI': 'び',
+      'BU': 'ぶ',
+      'BE': 'べ',
+      'BO': 'ぼ',
+      'PA': 'ぱ',
+      'PI': 'ぴ',
+      'PU': 'ぷ',
+      'PE': 'ぺ',
+      'PO': 'ぽ'
+    };
+
+    const fullHiragana = Object.assign(hiragana, dakutenHiragana);
 
     const syllabaries = { 'Katakana': fullKatakana, 'Hiragana': fullHiragana };
 
