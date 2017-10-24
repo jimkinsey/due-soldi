@@ -1,14 +1,19 @@
 package duesoldi.controller
 
-import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.model.StatusCodes.MovedPermanently
+import akka.http.scaladsl.server.Directives.{path, _}
 import akka.http.scaladsl.server.Route
 
 object LearnJapaneseRoutes {
   val learnJapaneseRoutes: Route =
-    path("learn-japanese" /) {
-      getFromFile(s"src/main/resources/static/learn-japanese/index.html")
-    } ~
-    path("learn-japanese" / Remaining) { path =>
-      getFromFile(s"src/main/resources/static/learn-japanese/$path")
+    pathPrefix("learn-japanese") {
+      pathEndOrSingleSlash {
+        redirectToTrailingSlashIfMissing(MovedPermanently) {
+          getFromFile(s"src/main/resources/static/learn-japanese/index.html")
+        }
+      } ~
+      path(Remaining) { path =>
+        getFromFile(s"src/main/resources/static/learn-japanese/$path")
+      }
     }
 }
