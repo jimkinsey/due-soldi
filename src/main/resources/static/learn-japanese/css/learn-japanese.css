@@ -1,0 +1,121 @@
+body {
+  background-color: white;
+  color: black;
+  font-family: Verdana;
+}
+
+h1 {
+  cursor: pointer;
+  text-align: center;
+  font-size: 1em;
+  margin-bottom: 0;
+}
+
+h2 {
+  display: none;
+  text-align: center;
+  font-size: 0.67em;
+  margin-bottom: 0;
+}
+
+#question {
+  text-align: center;
+  font-size: 140px;
+  padding: 0;
+  min-height: 160px;
+}
+
+#answers {
+  padding: 0;
+  text-align: center;
+}
+
+#options {
+  display: block;
+  padding: 0;
+  margin: 0;
+}
+
+#options li {
+  cursor: pointer;
+  list-style-type: none;
+  font-size: 30px;
+  display: inline-block;
+  width: 40%;
+  text-align: center;
+  border: 3px solid black;
+  border-radius: 20px;
+  margin: 5px;
+  margin-right: 2px;
+  margin-left: 2px;
+  padding: 5px;
+  font-weight: bold;
+}
+
+#options li.wrong {
+  border-color: red;
+  color: red;
+}
+
+#menu {
+  padding: 10px;
+  text-align: center;
+  text-align: center;
+  border: 3px solid black;
+  border-radius: 20px;
+  margin: 10px;
+  padding: 10px;
+}
+
+ol#tests {
+  padding: 0;
+  margin: 0;
+}
+
+ol#tests li {
+  cursor: pointer;
+  list-style-type: none;
+  display: inline-block;
+  min-width: 80%;
+  text-align: center;
+  border: 3px solid black;
+  border-radius: 20px;
+  margin: 5px;
+  padding: 5px;
+}
+
+@media only screen and (min-width: 768px) {
+  h1 {
+    text-align: center;
+    font-size: 3em;
+  }
+
+  h2 {
+    display: block;
+    text-align: center;
+    font-size: 2em;
+  }
+
+  #question {
+    font-size: 15em;
+  }
+
+  #options li {
+    font-size: 3em;
+    min-width: 150px;
+    margin: 10px;
+    padding: 20px;
+  }
+
+  #menu {
+    width: 60%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  ol#tests li {
+    font-size: 3em;
+    margin: 10px;
+    padding: 20px;
+  }
+}
