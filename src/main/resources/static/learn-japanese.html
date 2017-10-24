@@ -330,7 +330,46 @@
       'PO': 'ぽ'
     };
 
-    const fullHiragana = Object.assign(hiragana, dakutenHiragana);
+  const comboHiragana = {
+      'KYA': 'きや',
+      'KYU': 'きゆ',
+      'KYO': 'きよ',
+      'SHA': 'しや',
+      'SHU': 'しゆ',
+      'SHO': 'しよ',
+      'CHA': 'ちや',
+      'CHU': 'ちゆ',
+      'CHO': 'ちよ',
+      'NYA': 'にや',
+      'NYU': 'にゆ',
+      'NYO': 'によ',
+      'HYA': 'ひや',
+      'HYU': 'ひゆ',
+      'HYO': 'ひよ',
+      'MYA': 'みや',
+      'MYU': 'みゆ',
+      'MYO': 'みよ',
+      'RYA': 'りや',
+      'RYU': 'りゆ',
+      'RYO': 'りよ',
+      'GYA': 'ぎや',
+      'GYU': 'ぎゆ',
+      'GYO': 'ぎよ',
+      'JYA': 'じや',
+      'JYU': 'じゆ',
+      'JYO': 'じよ',
+      'DZYA': 'ぢや',
+      'DZYU': 'ぢゆ',
+      'DZYO': 'ぢよ',
+      'BYA': 'びや',
+      'BYU': 'びゆ',
+      'BYO': 'びよ',
+      'PYA': 'ぴや',
+      'PYU': 'ぴゆ',
+      'PYO': 'ぴよ'
+    };
+
+    const fullHiragana = Object.assign(hiragana, dakutenHiragana, comboHiragana);
 
     const syllabaries = { 'Katakana': fullKatakana, 'Hiragana': fullHiragana };
 
