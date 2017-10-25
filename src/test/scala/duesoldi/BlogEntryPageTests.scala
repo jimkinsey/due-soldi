@@ -6,9 +6,10 @@ import duesoldi.storage.BlogStorage._
 import duesoldi.storage.Database._
 import duesoldi.testapp.ServerRequests._
 import duesoldi.testapp.TestApp.runningApp
+import duesoldi.test.matchers.CustomMatchers._
 import utest._
 
-class BlogEntryPageTests 
+object BlogEntryPageTests
   extends TestSuite 
 {
   implicit val executionContext = utest.framework.ExecutionContext.RunNow
@@ -24,21 +25,6 @@ class BlogEntryPageTests
             res <- get("/blog/what-i-had-for-breakfast")
           } yield {
             assert(res.status == 404)
-          }
-        }
-      }
-    }
-    "getting an invalid blog entry" - {
-      "responds with a 500" - {
-        withSetup(
-          database,
-          runningApp,
-          blogEntries("no-title" -> "boom")
-        ) { implicit env =>
-          for {
-            res <- get("/blog/no-title")
-          } yield {
-            assert(res.status == 500)
           }
         }
       }
@@ -130,6 +116,7 @@ class BlogEntryPageTests
       "may include images" - {
         withSetup(
           database,
+          runningApp,
           blogEntries("has-image" ->
             """# A cat!
               |
@@ -165,13 +152,13 @@ class BlogEntryPageTests
         withSetup(
           database,
           runningApp,
-          blogEntries(("2010-10-12T17:05:00Z", "dated", "# Dated!"))
+          blogEntries("dated" -> "# Dated!")
         ) { implicit env =>
           for {
             response <- get("/blog/dated")
+            date = new BlogEntryPage(response.body).date
           } yield {
-            val page = new BlogEntryPage(response.body)
-            assert(page.date == "Tuesday, 12 October 2010")
+            assert(date hasDateFormat "EEEE, dd MMMM yyyy")
           }
         }
       }

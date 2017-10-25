@@ -1,7 +1,5 @@
 package duesoldi
 
-import java.time.format.DateTimeFormatter
-
 import duesoldi.Setup.withSetup
 import duesoldi.pages.BlogIndexPage
 import duesoldi.storage.BlogStorage._

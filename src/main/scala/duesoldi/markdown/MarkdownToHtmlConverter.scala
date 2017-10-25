@@ -11,7 +11,7 @@ object MarkdownToHtmlConverter {
       case Text(content)                => content
       case Emphasis(content)            => s"<i>$content</i>"
       case Strong(content)              => s"<b>$content</b>"
-      case InlineLink(text, url, title) => s"<a href=$url title=${title.getOrElse("")}>$text</a>"
+      case InlineLink(text, url, title) => s"""<a href="$url" title="${title.getOrElse("")}">$text</a>"""
       case Code(content)                => s"<pre><code>$content</code></pre>"
       case InlineCode(content)          => s"<code>$content</code>"
       case UnorderedList(items)         => s"<ul>${items map { itemNodes => s"<li>${html(itemNodes)}</li>"}}</ul>"
@@ -19,7 +19,7 @@ object MarkdownToHtmlConverter {
       case LineBreak                    => s"<br/>"
       case BlockQuote(content)          => s"<blockquote>${html(content)}</blockquote>"
       case HorizontalRule               => "<hr/>"
-      case Image(alt, src, title)       => s"<img src=$src alt=$alt title=${title.getOrElse("")} />"
+      case Image(alt, src, title)       => s"""<img src="$src" alt="$alt" title="${title.getOrElse("")}" />"""
     } mkString
   }
 
