@@ -6,6 +6,7 @@ import duesoldi.storage.BlogStorage._
 import duesoldi.storage.Database._
 import duesoldi.testapp.TestApp.runningApp
 import duesoldi.testapp.ServerRequests._
+import AdminSupport.adminCredentials
 import utest._
 
 object BlogIndexPageTests
@@ -17,8 +18,9 @@ object BlogIndexPageTests
       "redirects to the version with the trailing slash" - {
         withSetup(
           database,
+          adminCredentials("admin", "12345"),
           runningApp,
-          blogEntries("id" -> "# Content!")
+          httpBlogEntries("id" -> "# Content!")
         ) { implicit env =>
           for {
             response <- get("/blog")

@@ -3,6 +3,8 @@ package duesoldi.storage
 import java.sql.{DriverManager, Timestamp}
 import java.time.ZonedDateTime
 
+import duesoldi.httpclient.BasicAuthorization
+import duesoldi.testapp.ServerRequests
 import duesoldi.{Env, Setup}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -41,6 +43,19 @@ trait BlogStorage {
         Map.empty
       }
     }
+  }
+
+  def httpBlogEntries(entries: EntryBuilder*)(implicit executionContext: ExecutionContext) = new Setup {
+    override def setup(env: Env): Future[Env] = {
+      implicit val e: Env = env
+      val creds = env("ADMIN_CREDENTIALS").split(":")
+      val user = creds.head
+      val password = creds.tail.head // FIXME there is a better way to do this!
+      Future.sequence(
+        entries.map(entry => ServerRequests.put(s"/admin/blog/${entry.id}", entry.content, BasicAuthorization(user, password)))
+      ) map ( _ => Map.empty )
+    }
+    // TODO teardown with delete?
   }
 
 }
