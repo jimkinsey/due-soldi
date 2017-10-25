@@ -1,12 +1,14 @@
 package duesoldi
 
+import java.time.format.DateTimeFormatter
+
 import duesoldi.Setup.withSetup
 import duesoldi.pages.BlogIndexPage
 import duesoldi.storage.BlogStorage._
 import duesoldi.storage.Database._
-import duesoldi.testapp.TestApp.runningApp
+import duesoldi.test.matchers.CustomMatchers._
 import duesoldi.testapp.ServerRequests._
-import AdminSupport.adminCredentials
+import duesoldi.testapp.TestApp.runningApp
 import utest._
 
 object BlogIndexPageTests
@@ -18,9 +20,8 @@ object BlogIndexPageTests
       "redirects to the version with the trailing slash" - {
         withSetup(
           database,
-          adminCredentials("admin", "12345"),
           runningApp,
-          httpBlogEntries("id" -> "# Content!")
+          blogEntries("id" -> "# Content!")
         ) { implicit env =>
           for {
             response <- get("/blog")
@@ -44,29 +45,6 @@ object BlogIndexPageTests
             response <- get("/blog/")
           } yield {
             assert(response.status == 404)
-          }
-        }
-      }
-    }
-    "when there are blog entries without titles" - {
-      "renders the title as '-untitled-'" - {
-        withSetup(
-          database,
-          blogEntries(
-            "sans-title" -> "boom"
-          ),
-          runningApp
-        ) { implicit env =>
-          for {
-            response <- get("/blog/")
-          } yield {
-            lazy val page = new BlogIndexPage(response.body)
-            assert(
-              response.status == 200,
-              page.blogEntries.size == 1,
-              page.blogEntries.head.link == "/blog/sans-title",
-              page.blogEntries.head.title == "-untitled-"
-            )
           }
         }
       }
@@ -132,11 +110,9 @@ object BlogIndexPageTests
         withSetup(
           database,
           runningApp,
-          blogEntries(
-            ("2010-10-12T17:05:00Z", "first-post", "# First"),
-            ("2012-12-03T09:34:00Z", "tricky-second-post", "# Second"),
-            ("2016-04-01T09:45:00Z", "sorry-for-lack-of-updates", "# Third")
-          )
+          blogEntry("first-post" -> "# First"),
+          blogEntry("tricky-second-post" -> "# Second"),
+          blogEntry("sorry-for-lack-of-updates" -> "# Third")
         ) { implicit env =>
           for {
             response <- get("/blog/")
@@ -150,13 +126,13 @@ object BlogIndexPageTests
         withSetup(
           database,
           runningApp,
-          blogEntries(("2010-10-12T17:05:00Z", "dated", "# Dated!"))
+          blogEntry("dated" -> "# Dated!")
         ) { implicit env =>
           for {
             response <- get("/blog/")
+            date = new BlogIndexPage(response.body).blogEntries.head.date
           } yield {
-            val page = new BlogIndexPage(response.body)
-            assert(page.blogEntries.head.date == "Tuesday, 12 October 2010")
+            assert(date hasDateFormat "EEEE, dd MMMM yyyy")
           }
         }
       }

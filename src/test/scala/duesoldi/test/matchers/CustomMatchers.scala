@@ -8,6 +8,7 @@ object CustomMatchers {
 
   implicit class StringParsableAs(in: String) {
     def hasDateFormat(format: DateTimeFormatter): Boolean = Try(format.parse(in)).isSuccess
+    def hasDateFormat(pattern: String): Boolean = Try(DateTimeFormatter.ofPattern(pattern).parse(in)).isSuccess
     def isAValidLong: Boolean = Try(in.toLong).isSuccess
   }
 

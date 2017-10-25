@@ -20,7 +20,6 @@ libraryDependencies ++= Seq(
   "com.github.jimkinsey" %% "bhuj" % "0.2-SNAPSHOT",
   "net.databinder.dispatch" %% "dispatch-core" % "0.13.2" % "test",
   "org.jsoup" % "jsoup" % "1.10.3" % "test",
-  "com.github.tototoshi" %% "scala-csv" % "1.3.4" % "test",
   "com.lihaoyi" %% "utest" % "0.5.4" % "test"
 )
 

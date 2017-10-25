@@ -21,7 +21,7 @@ object Setup {
     lazy val tearDown = Future.sequence(steps.map(_.tearDown))
 
     for {
-      env <- setup(Map.empty, steps)
+      env <- setup(Map("ADMIN_CREDENTIALS" -> "user:password"), steps)
       res <- block(env)
       _   <- tearDown
     } yield {
