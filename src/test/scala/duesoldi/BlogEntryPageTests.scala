@@ -121,8 +121,8 @@ class BlogEntryPageTests
             val page = new BlogEntryPage(response.body)
             assert(
               page.h1.text == "Content Galore!",
-              page.content.paragraphs.head == <p>This is an <b>amazing</b> page of <i>content</i>.</p>,
-              page.content.paragraphs.last == <p>Don't knock it.</p>
+              page.content.paragraphs.head == "<p>This is an <b>amazing</b> page of <i>content</i>.</p>",
+              page.content.paragraphs.last == "<p>Don't knock it.</p>"
             )
           }
         }

@@ -12,7 +12,7 @@ object EntryPageModel {
                (entry: BlogEntry): BlogEntryPageModel = BlogEntryPageModel(
     title = MarkdownDocument.title(entry.content).getOrElse("-untitled-"),
     lastModified = entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy")),
-    contentHtml = MarkdownToHtmlConverter.html(entry.content.nodes).mkString,
+    contentHtml = MarkdownToHtmlConverter.html(entry.content.nodes),
     furnitureVersion = config.furnitureVersion
   )
 }

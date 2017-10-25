@@ -4,7 +4,6 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
 import scala.collection.JavaConversions._
-import scala.xml.{Elem, XML}
 
 class BlogEntryPage(html: String) extends Page with PageFooter {
   lazy val dom = Jsoup.parse(html)
@@ -16,9 +15,7 @@ class BlogEntryPage(html: String) extends Page with PageFooter {
   lazy val navigation = new Navigation(dom.select("nav").head)
 
   class Content(elem: Element) {
-    lazy val paragraphs: Seq[Elem] = {
-      elem.select("p").toSeq.map { p => XML.loadString(p.outerHtml()) }
-    }
+    lazy val paragraphs: Seq[String] = elem.select("p").toSeq.map { _.outerHtml() }
     lazy val images = dom.select("img").toSeq.map { i => new Image(i) }
   }
 
