@@ -31,14 +31,14 @@ object DebugTests
     "the config endpoint" - {
       "return a page containing the env vars" - {
         withSetup(
-          envVars("ENV_VAR" -> "value"),
+          envVars("IMAGE_BASE_URL" -> "http://somewhere"),
           adminCredentials("admin", "password"),
           runningApp
         ) { implicit env =>
           for {
             response <- get("/admin/debug/config", headers = BasicAuthorization("admin", "password"))
           } yield {
-            assert(response.body.lines.toList contains "ENV_VAR=value")
+            assert(response.body.lines.toList contains "IMAGE_BASE_URL=http://somewhere")
           }
         }
       }
