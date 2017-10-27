@@ -240,14 +240,49 @@ const syllabaries = { 'Katakana': fullKatakana, 'Hiragana': fullHiragana };
 
 init();
 
+function getParams(query) {
+  if (!query) {
+    return { };
+  }
+
+  return (/^[?#]/.test(query) ? query.slice(1) : query)
+    .split('&')
+    .reduce(function (params, param) {
+      let [ key, value ] = param.split('=');
+      params[key] = value ? decodeURIComponent(value.replace(/\+/g, ' ')) : '';
+      return params;
+    }, { });
+}
+
 function init() {
-  document.getElementsByTagName('h1')[0].onclick = function() { return selectTest() };
-  selectTest();
+  document.getElementsByTagName('h1')[0].onclick = function() {
+    if (history.pushState) {
+      var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+      window.history.pushState({path:newurl},'',newurl);
+    }
+    return promptForTest()
+  };
+  const syllabaryName = getParams(window.location.search).syllabaryName;
+  if (syllabaryName && Object.keys(syllabaries).indexOf(syllabaryName) > -1) {
+    startNewRound(syllabaryName);
+  }
+  else {
+    promptForTest();
+  }
   return;
 }
 
-function selectTest() {
+function promptForTest() {
   contentElem.innerHTML = renderTestSelector();
+  return;
+}
+
+function chooseTest(syllabaryName) {
+  if (history.pushState) {
+    var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?syllabaryName=' + syllabaryName;
+    window.history.pushState({path:newurl},'',newurl);
+  }
+  startNewRound(syllabaryName);
   return;
 }
 
@@ -327,8 +362,8 @@ function renderTestSelector() {
   return `<h2>Select a test</h2>
     <div id="menu">
       <ol id="tests">
-        <li onclick="return startNewRound('Katakana');">Katakana</li>
-        <li onclick="return startNewRound('Hiragana');">Hiragana</li>
+        <li onclick="return chooseTest('Katakana');">Katakana</li>
+        <li onclick="return chooseTest('Hiragana');">Hiragana</li>
       </ol>
     </div>`;
 }
