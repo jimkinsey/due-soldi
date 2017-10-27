@@ -311,7 +311,7 @@ function choose(correctAnswer, choice, syllabaryName, id) {
 }
 
 function renderTest({question, answer, options, syllabaryName}) {
-  return `<h2>${syllabaryName} test</h2>
+  return `<h2>${syllabaryName}</h2>
     <div id="question">${question}</div>
     <div id="answers">
       <ol id="options">
