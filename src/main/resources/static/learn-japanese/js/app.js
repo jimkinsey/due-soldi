@@ -256,44 +256,62 @@ function getParams(query) {
 
 function init() {
   document.getElementsByTagName('h1')[0].onclick = function() {
-    if (history.pushState) {
-      var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-      window.history.pushState({path:newurl},'',newurl);
-    }
+    setQuery({});
     return promptForTest()
   };
-  const syllabaryName = getParams(window.location.search).syllabaryName;
-  if (syllabaryName && Object.keys(syllabaries).indexOf(syllabaryName) > -1) {
+  const params = getParams(window.location.search);
+  if (params.syllabaryName && params.question && params.answer && params.options) {
+    poseQuestion(questionFromParams(params));
+  }
+  else if (params.syllabaryName) {
     startNewRound(syllabaryName);
   }
   else {
     promptForTest();
   }
-  return;
+}
+
+function questionFromParams(params) {
+  return Object.assign(params, { options: params.options.split(',') });
+}
+
+function setQuery(query) {
+  if (query && history.pushState) {
+    const queryString = Object.keys(query).reduce(function (acc, key, index) {
+      const prefix = (index === 0) ? '?' : '&';
+      const value = encodeURIComponent(query[key]);
+      return acc + `${prefix}${key}=${value}`;
+    }, '');
+    const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + queryString;
+    window.history.pushState({path:newurl},'',newurl);
+  }
 }
 
 function promptForTest() {
   contentElem.innerHTML = renderTestSelector();
-  return;
 }
 
 function chooseTest(syllabaryName) {
-  if (history.pushState) {
-    var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?syllabaryName=' + syllabaryName;
-    window.history.pushState({path:newurl},'',newurl);
-  }
+  setQuery({ syllabaryName: syllabaryName });
   startNewRound(syllabaryName);
-  return;
 }
 
-function startNewRound(syllabaryName) {
+function newQuestion(syllabaryName) {
   const syllabary = syllabaries[syllabaryName];
   const dataSet = randomItem([syllabary, invert(syllabary)]);
   const answer = randomItem(Object.keys(dataSet));
   const question = dataSet[answer];
   const options = shuffle(randomItems(removeItem(Object.keys(dataSet), answer), 3).concat([answer]));
-  contentElem.innerHTML = renderTest({ 'question': question, 'options': options, 'answer': answer, 'syllabaryName' : syllabaryName });
-  return;
+  return { question: question, options: options, answer: answer, syllabaryName: syllabaryName };
+}
+
+function startNewRound(syllabaryName) {
+  poseQuestion(newQuestion(syllabaryName));
+}
+
+function poseQuestion(question) {
+  setQuery(question);
+  contentElem.innerHTML = renderTest(question);
 }
 
 function invert(obj) {
@@ -342,7 +360,6 @@ function choose(correctAnswer, choice, syllabaryName, id) {
   else {
     document.getElementById(id).className += ' wrong';
   }
-  return;
 }
 
 function renderTest({question, answer, options, syllabaryName}) {
