@@ -248,7 +248,7 @@ function getParams(query) {
   return (/^[?#]/.test(query) ? query.slice(1) : query)
     .split('&')
     .reduce(function (params, param) {
-      let [ key, value ] = param.split('=');
+      var [ key, value ] = param.split('=');
       params[key] = value ? decodeURIComponent(value.replace(/\+/g, ' ')) : '';
       return params;
     }, { });
@@ -261,10 +261,10 @@ function init() {
   };
   const params = getParams(window.location.search);
   if (params.syllabaryName && params.question && params.answer && params.options) {
-    poseQuestion(questionFromParams(params));
+    poseQuestion(questionFromParams(params), { correct: 0, total: 0 });
   }
   else if (params.syllabaryName) {
-    startNewRound(syllabaryName);
+    startNewRound(syllabaryName, { correct: 0, total: 0 });
   }
   else {
     promptForTest();
@@ -293,7 +293,7 @@ function promptForTest() {
 
 function chooseTest(syllabaryName) {
   setQuery({ syllabaryName: syllabaryName });
-  startNewRound(syllabaryName);
+  startNewRound(syllabaryName, { correct: 0, total: 0 });
 }
 
 function newQuestion(syllabaryName) {
@@ -305,13 +305,13 @@ function newQuestion(syllabaryName) {
   return { question: question, options: options, answer: answer, syllabaryName: syllabaryName };
 }
 
-function startNewRound(syllabaryName) {
-  poseQuestion(newQuestion(syllabaryName));
+function startNewRound(syllabaryName, score) {
+  poseQuestion(newQuestion(syllabaryName), score);
 }
 
-function poseQuestion(question) {
+function poseQuestion(question, score) {
   setQuery(question);
-  contentElem.innerHTML = renderTest(question);
+  contentElem.innerHTML = renderTest(question, score);
 }
 
 function invert(obj) {
@@ -350,27 +350,33 @@ function shuffle(items) {
   return randomItems(items, items.length);
 }
 
-function choose(correctAnswer, choice, syllabaryName) {
+function choose(correctAnswer, choice, syllabaryName, score) {
+  var newScore = {};
   if (choice !== correctAnswer) {
     document.getElementById(choice).className += ' wrong';
+    newScore = { correct: score.correct, total: score.total + 1};
+  }
+  else {
+    newScore = {correct: score.correct + 1, total: score.total + 1};
   }
   document.getElementById(correctAnswer).className += ' right';
   const options = document.getElementsByClassName("option");
   for (i = 0; i < options.length; i++) {
     options[i].onclick = null;
-  };
-  setTimeout(function() { startNewRound(syllabaryName)}, 2000);
+  }
+  setTimeout(function() { startNewRound(syllabaryName, newScore)}, 2000);
 }
 
-function renderTest({question, answer, options, syllabaryName}) {
+function renderTest({question, answer, options, syllabaryName}, score) {
   return `<h2>${syllabaryName}</h2>
+    <div id="score">${(score.total) ? `${Math.floor(100 * (score.correct / score.total))}%` : '~'}</div>
     <div id="question">${question}</div>
     <div id="answers">
       <ol id="options">
-        <li id="${options[0]}" class="option" onclick="return choose('${answer}', '${options[0]}', '${syllabaryName}');">${options[0]}</li>
-        <li id="${options[1]}" class="option" onclick="return choose('${answer}', '${options[1]}', '${syllabaryName}');">${options[1]}</li>
-        <li id="${options[2]}" class="option" onclick="return choose('${answer}', '${options[2]}', '${syllabaryName}');">${options[2]}</li>
-        <li id="${options[3]}" class="option" onclick="return choose('${answer}', '${options[3]}', '${syllabaryName}');">${options[3]}</li>
+        <li id="${options[0]}" class="option" onclick="return choose('${answer}', '${options[0]}', '${syllabaryName}', { correct: ${score.correct}, total: ${score.total} });">${options[0]}</li>
+        <li id="${options[1]}" class="option" onclick="return choose('${answer}', '${options[1]}', '${syllabaryName}', { correct: ${score.correct}, total: ${score.total} });">${options[1]}</li>
+        <li id="${options[2]}" class="option" onclick="return choose('${answer}', '${options[2]}', '${syllabaryName}', { correct: ${score.correct}, total: ${score.total} });">${options[2]}</li>
+        <li id="${options[3]}" class="option" onclick="return choose('${answer}', '${options[3]}', '${syllabaryName}', { correct: ${score.correct}, total: ${score.total} });">${options[3]}</li>
       </ol>
     </div>`;
 }

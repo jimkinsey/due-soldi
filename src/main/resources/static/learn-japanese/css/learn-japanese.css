@@ -91,6 +91,21 @@ ol#tests li {
   padding: 0.5em;
 }
 
+#score {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4em;
+  height: 4em;
+  font-weight: bold;
+  text-align: center;
+  font-size: 2em;
+  border: 0.2em solid black;
+  border-radius: 1em;
+  margin: 0.5em;
+  padding: 0;
+}
+
 @media only screen and (min-width: 1280px) {
   #question {
     font-size: 15em;
