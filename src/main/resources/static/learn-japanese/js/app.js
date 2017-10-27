@@ -350,13 +350,16 @@ function shuffle(items) {
   return randomItems(items, items.length);
 }
 
-function choose(correctAnswer, choice, syllabaryName, id) {
-  if (choice === correctAnswer) {
-    startNewRound(syllabaryName);
+function choose(correctAnswer, choice, syllabaryName) {
+  if (choice !== correctAnswer) {
+    document.getElementById(choice).className += ' wrong';
   }
-  else {
-    document.getElementById(id).className += ' wrong';
-  }
+  document.getElementById(correctAnswer).className += ' right';
+  const options = document.getElementsByClassName("option");
+  for (i = 0; i < options.length; i++) {
+    options[i].onclick = null;
+  };
+  setTimeout(function() { startNewRound(syllabaryName)}, 2000);
 }
 
 function renderTest({question, answer, options, syllabaryName}) {
@@ -364,10 +367,10 @@ function renderTest({question, answer, options, syllabaryName}) {
     <div id="question">${question}</div>
     <div id="answers">
       <ol id="options">
-        <li id="option1" class="" onclick="return choose('${answer}', '${options[0]}', '${syllabaryName}', 'option1');">${options[0]}</li>
-        <li id="option2" class="" onclick="return choose('${answer}', '${options[1]}', '${syllabaryName}', 'option2');">${options[1]}</li>
-        <li id="option3" class="" onclick="return choose('${answer}', '${options[2]}', '${syllabaryName}', 'option3');">${options[2]}</li>
-        <li id="option4" class="" onclick="return choose('${answer}', '${options[3]}', '${syllabaryName}', 'option4');">${options[3]}</li>
+        <li id="${options[0]}" class="option" onclick="return choose('${answer}', '${options[0]}', '${syllabaryName}');">${options[0]}</li>
+        <li id="${options[1]}" class="option" onclick="return choose('${answer}', '${options[1]}', '${syllabaryName}');">${options[1]}</li>
+        <li id="${options[2]}" class="option" onclick="return choose('${answer}', '${options[2]}', '${syllabaryName}');">${options[2]}</li>
+        <li id="${options[3]}" class="option" onclick="return choose('${answer}', '${options[3]}', '${syllabaryName}');">${options[3]}</li>
       </ol>
     </div>`;
 }

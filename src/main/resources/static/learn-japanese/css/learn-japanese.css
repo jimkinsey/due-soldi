@@ -58,6 +58,11 @@ h2 {
   color: red;
 }
 
+#options li.right {
+  border-color: green;
+  color: green;
+}
+
 #menu {
   padding: 10px;
   text-align: center;
