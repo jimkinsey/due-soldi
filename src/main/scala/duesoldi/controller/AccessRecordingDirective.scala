@@ -5,22 +5,22 @@ import java.time.ZonedDateTime
 import akka.http.scaladsl.model.headers.{Referer, `User-Agent`}
 import akka.http.scaladsl.server.Directive
 import akka.http.scaladsl.server.Directives._
+import duesoldi.config.Config
 import duesoldi.controller.AccessRecordingDirective.Event.{RecordFailure, RecordSuccess}
 import duesoldi.controller.RequestDependenciesDirective.withDependencies
-import duesoldi.events.Events
-import duesoldi.storage.AccessRecordStore
 import duesoldi.storage.AccessRecordStore.Access
 
 import scala.util.Failure
 
-object AccessRecordingDirective {
-  def recordAccess(context: RequestContext): Directive[Unit] =
-    withDependencies(context).flatMap { deps =>
+object AccessRecordingDirective
+{
+  def recordAccess(config: Config): Directive[Unit] =
+    withDependencies(config).flatMap { deps =>
       extractRequestContext.flatMap { ctx =>
         import ctx.executionContext
         val startTime = System.currentTimeMillis()
         mapResponse { response =>
-          if (context.config.accessRecordingEnabled) {
+          if (config.accessRecordingEnabled) {
             val duration = System.currentTimeMillis() - startTime
             deps.accessRecordStore.record(Access(
               time = ZonedDateTime.now(),

@@ -2,13 +2,14 @@ package duesoldi.controller
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
+import duesoldi.config.Config
 import duesoldi.config.EnvironmentalConfig.{nonSensitive, toEnv}
 import duesoldi.controller.AdminAuthentication.adminsOnly
 
 object DebugRoutes
 {
-  def debugRoutes(implicit requestContext: RequestContext): Route = pathPrefix("admin" / "debug") {
-    adminsOnly(requestContext.config.adminCredentials) { _ =>
+  def debugRoutes(implicit config: Config): Route = pathPrefix("admin" / "debug") {
+    adminsOnly(config.adminCredentials) { _ =>
       pathPrefix("headers") {
         extractRequest { req =>
           complete {
@@ -17,7 +18,7 @@ object DebugRoutes
         }
       } ~ pathPrefix("config") {
         complete {
-          nonSensitive(toEnv(requestContext.config)).map { case (key, value) => s"$key=$value" } mkString "\n"
+          nonSensitive(toEnv(config)).map { case (key, value) => s"$key=$value" } mkString "\n"
         }
       }
     }

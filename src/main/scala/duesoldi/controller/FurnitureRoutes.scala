@@ -13,12 +13,12 @@ import duesoldi.config.Config
 
 import scala.concurrent.ExecutionContext
 
-object FurnitureRoutes {
-  def furnitureRoutes(implicit executionContext: ExecutionContext, requestContext: RequestContext): Route =
+object FurnitureRoutes
+{
+  def furnitureRoutes(implicit executionContext: ExecutionContext, config: Config): Route =
     path("furniture" / Segment / Remaining) {
-      case (version: String, remaining: String) if version == requestContext.config.furnitureVersion => {
+      case (version: String, remaining: String) if version == config.furnitureVersion => {
         handleRejections(fileFailure) {
-          val config = requestContext.config
           val maxAge = config.furnitureCacheDuration.toSeconds
           respondWithHeaders(
             RawHeader("Cache-Control", s"max-age=$maxAge"),

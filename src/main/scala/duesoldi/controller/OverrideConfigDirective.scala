@@ -6,9 +6,9 @@ import akka.http.scaladsl.server.Directives.extract
 import duesoldi.config.EnvironmentalConfig.{nonSensitive, toEnv}
 import duesoldi.config.{Config, EnvironmentalConfig}
 
-object WithConfigDirective
+object OverrideConfigDirective
 {
-  def withConfig(appConfig: Config): Directive1[Config] = extract { implicit ctx =>
+  def overrideConfig(appConfig: Config): Directive1[Config] = extract { implicit ctx =>
     (headerValue("Config-Override"), headerValue("Secret-Key")) match {
       case (Some(overrides), Some(key)) if appConfig.secretKey == key =>
         EnvironmentalConfig(toEnv(appConfig) ++ nonSensitive(parse(overrides)))

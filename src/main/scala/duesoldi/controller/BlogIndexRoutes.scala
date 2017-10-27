@@ -6,6 +6,7 @@ import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
+import duesoldi.config.Config
 import duesoldi.controller.BlogIndexRoutes.Event.{BlogIndexPageNotRendered, BlogIndexPageRendered}
 import duesoldi.controller.RequestDependenciesDirective.withDependencies
 import duesoldi.events.Events
@@ -15,11 +16,11 @@ import scala.concurrent.ExecutionContext
 
 object BlogIndexRoutes
 {
-  def blogIndexRoutes(implicit executionContext: ExecutionContext, requestContext: RequestContext): Route =
+  def blogIndexRoutes(implicit executionContext: ExecutionContext, config: Config): Route =
     pathPrefix("blog") {
       pathEndOrSingleSlash {
         redirectToTrailingSlashIfMissing(MovedPermanently) {
-          withDependencies(requestContext) { dependencies =>
+          withDependencies(config) { dependencies =>
             complete {
               val indexPageMaker: IndexPageMaker = dependencies.indexPageMaker
               val events: Events = dependencies.events
