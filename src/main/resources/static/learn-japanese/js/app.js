@@ -283,7 +283,7 @@ function setQuery(query) {
       return acc + `${prefix}${key}=${value}`;
     }, '');
     const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + queryString;
-    window.history.pushState({path:newurl},'',newurl);
+    window.history.pushState({ path: newurl }, '', newurl);
   }
 }
 
@@ -315,13 +315,9 @@ function poseQuestion(question) {
 }
 
 function invert(obj) {
-  function iter(acc, [head, ...tail]) {
-    if (!head) {
-      return acc;
-    }
-    return iter(Object.assign(acc, Object.assign({ [obj[head]]: head })), tail);
-  }
-  return iter({}, Object.keys(obj));
+  return Object.keys(obj).reduce(function (inverted, key) {
+    return Object.assign(inverted, { [obj[key]]: key });
+  }, {});
 }
 
 function removeItem(items, item) {
@@ -329,14 +325,15 @@ function removeItem(items, item) {
 }
 
 function randomItems(items, number) {
-  function iter(acc, remaining) {
-    if (acc.length === number) {
-      return acc;
-    }
-    const item = randomItem(remaining);
-    return iter(acc.concat([item]), removeItem(remaining, item));
-  }
-  return iter([], items);
+  return items.reduce(function (acc) {
+    return acc.concat([randomItem(diff(items, acc))]);
+  }, []).slice(0, number);
+}
+
+function diff(as, bs) {
+  return as.filter(function (a) {
+    return bs.indexOf(a) < 0;
+  });
 }
 
 function randomItem(items) {
