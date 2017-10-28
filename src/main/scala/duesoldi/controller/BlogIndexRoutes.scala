@@ -45,7 +45,7 @@ object BlogIndexRoutes
       }
     }
 
-  sealed trait Event extends duesoldi.events.Event
+  sealed trait Event
   object Event
   {
     case class BlogIndexPageRendered(html: String) extends Event

@@ -2,7 +2,7 @@ package duesoldi.page
 
 import bhuj.TemplateNotFound
 import duesoldi.controller.BlogEntryRoutes.MakeEntryPage
-import duesoldi.events.{Emit, Event}
+import duesoldi.events.Emit
 import duesoldi.markdown.MarkdownDocument
 import duesoldi.model.BlogEntry
 import duesoldi.page.EntryPageMaker.Failure.{EntryNotFound, InvalidId}
@@ -102,7 +102,7 @@ object EntryPageMakerTests
 }
 
 class EventRecorder {
-  def emit(event: Event) = events.append(event)
-  def received(event: Event) = events.contains(event)
-  private lazy val events: mutable.Buffer[Event] = mutable.Buffer.empty
+  def emit(event: Any) = events.append(event)
+  def received(event: Any) = events.contains(event)
+  private lazy val events: mutable.Buffer[Any] = mutable.Buffer.empty
 }

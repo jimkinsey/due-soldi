@@ -35,7 +35,7 @@ object EntryPageMaker {
     case class RenderFailure(failure: bhuj.Failure) extends Failure
   }
 
-  sealed trait Event extends duesoldi.events.Event
+  sealed trait Event
   object Event {
     case class MadePage(html: String) extends Event
     case class FailedToMakePage(failure: Failure) extends Event
