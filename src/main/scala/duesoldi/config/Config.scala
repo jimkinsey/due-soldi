@@ -17,6 +17,7 @@ case class Config(
   jdbcConnectionDetails: JDBCConnection.ConnectionDetails,
   imageBaseUrl: String,
   loggingEnabled: Boolean,
+  loggerName: String,
   secretKey: String 
 )
 

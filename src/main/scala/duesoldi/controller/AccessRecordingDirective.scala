@@ -7,14 +7,14 @@ import akka.http.scaladsl.server.Directive
 import akka.http.scaladsl.server.Directives._
 import duesoldi.config.Config
 import duesoldi.controller.AccessRecordingDirective.Event.{RecordFailure, RecordSuccess}
-import duesoldi.controller.RequestDependenciesDirective.withDependencies
+import duesoldi.controller.DependenciesDirective.withDependencies
 import duesoldi.storage.AccessRecordStore.Access
 
 import scala.util.Failure
 
 object AccessRecordingDirective
 {
-  def recordAccess(config: Config): Directive[Unit] =
+  def recordAccess(implicit config: Config): Directive[Unit] =
     withDependencies(config).flatMap { deps =>
       extractRequestContext.flatMap { ctx =>
         import ctx.executionContext

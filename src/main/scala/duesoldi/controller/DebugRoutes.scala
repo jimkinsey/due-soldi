@@ -5,6 +5,7 @@ import akka.http.scaladsl.server.Route
 import duesoldi.config.Config
 import duesoldi.config.EnvironmentalConfig.{nonSensitive, toEnv}
 import duesoldi.controller.AdminAuthentication.adminsOnly
+import duesoldi.controller.RequestConfigDirective.requestConfig
 
 object DebugRoutes
 {
@@ -17,8 +18,10 @@ object DebugRoutes
           }
         }
       } ~ pathPrefix("config") {
-        complete {
-          nonSensitive(toEnv(config)).map { case (key, value) => s"$key=$value" } mkString "\n"
+        requestConfig(config) { reqConfig =>
+          complete {
+            nonSensitive(toEnv(reqConfig)).map { case (key, value) => s"$key=$value" } mkString "\n"
+          }
         }
       }
     }

@@ -1,21 +1,27 @@
 package duesoldi.controller
 
+import akka.http.javadsl.server.RequestContext
 import akka.http.scaladsl.server
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives.extract
 import duesoldi.config.EnvironmentalConfig.{nonSensitive, toEnv}
 import duesoldi.config.{Config, EnvironmentalConfig}
 
-object OverrideConfigDirective
+object RequestConfigDirective
 {
-  def overrideConfig(appConfig: Config): Directive1[Config] = extract { implicit ctx =>
+  def requestConfig(appConfig: Config): Directive1[Config] = extract { implicit ctx =>
     (headerValue("Config-Override"), headerValue("Secret-Key")) match {
       case (Some(overrides), Some(key)) if appConfig.secretKey == key =>
-        EnvironmentalConfig(toEnv(appConfig) ++ nonSensitive(parse(overrides)))
+        EnvironmentalConfig(toEnv(appConfig) ++ loggerName ++ nonSensitive(parse(overrides)))
       case _ =>
         appConfig
     }
   }
+
+  private def loggerName(implicit ctx: RequestContext) =
+    headerValue("Request-ID")
+      .map(id => Map("LOGGER_NAME" -> s"Request $id"))
+      .getOrElse(Map.empty)
 
   private def parse(str: String): Map[String, String] = {
     str.split(' ').map { case EnvVar(name, value) => name -> value } toMap

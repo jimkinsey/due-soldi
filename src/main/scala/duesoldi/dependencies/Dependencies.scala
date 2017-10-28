@@ -12,7 +12,7 @@ import duesoldi.validation.ValidIdentifier
 
 import scala.concurrent.ExecutionContext
 
-class RequestDependencies(config: Config, requestId: String)(implicit executionContext: ExecutionContext)
+class Dependencies(config: Config)(implicit executionContext: ExecutionContext)
 {
   implicit lazy val emit: duesoldi.events.Emit = events emit _
   lazy val events = new Events
@@ -22,7 +22,7 @@ class RequestDependencies(config: Config, requestId: String)(implicit executionC
   lazy val accessRecordStore =  new JDBCAccessRecordStore(config.jdbcConnectionDetails)
   lazy val makeEntryPage: MakeEntryPage = EntryPageMaker.entryPage(ValidIdentifier.apply)(blogStore.entry)(EntryPageModel.pageModel(config))(renderer.render)(executionContext, emit)
   lazy val indexPageMaker: IndexPageMaker = new IndexPageMaker(renderer.render, blogStore, config)
-  lazy val logger = new Logger(s"Request $requestId")
+  lazy val logger = new Logger(config.loggerName)
 
   new EventLogging(events, logger)
 }

@@ -22,9 +22,9 @@ object App {
   }
 
   def start(env: Env): Future[Server] = {
-    val config = EnvironmentalConfig(env)
+    implicit val config = EnvironmentalConfig(env)
     val logger = new Logger("App", config.loggingEnabled)
-    val eventualServer = Server.start(MasterController.routes(config), config.host, config.port)
+    val eventualServer = Server.start(MasterController.routes, config.host, config.port)
     eventualServer.onComplete {
       case Success(server) =>
         logger.info(s"Started server on ${server.host}:${server.port}")

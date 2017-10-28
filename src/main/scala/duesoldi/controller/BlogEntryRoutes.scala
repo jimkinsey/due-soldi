@@ -7,7 +7,7 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import duesoldi.config.Config
-import duesoldi.controller.RequestDependenciesDirective.withDependencies
+import duesoldi.controller.RequestDependenciesDirective.withRequestDependencies
 import duesoldi.page.EntryPageMaker
 import duesoldi.page.EntryPageMaker.Failure
 
@@ -19,7 +19,7 @@ object BlogEntryRoutes
 
   def blogEntryRoutes(implicit executionContext: ExecutionContext, config: Config): Route =
     path("blog" / Segment) { entryId =>
-      withDependencies(config) { dependencies =>
+      withRequestDependencies(config) { dependencies =>
         complete {
           dependencies.makeEntryPage(entryId) map {
             case Right(html) =>

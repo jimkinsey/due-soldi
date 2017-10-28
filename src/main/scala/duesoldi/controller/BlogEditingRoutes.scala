@@ -7,7 +7,8 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import duesoldi.config.Config
 import duesoldi.controller.AdminAuthentication.adminsOnly
-import duesoldi.controller.RequestDependenciesDirective.withDependencies
+import duesoldi.controller.DependenciesDirective.withDependencies
+import duesoldi.controller.RequestDependenciesDirective.withRequestDependencies
 import duesoldi.storage.BlogStore.{Created, Invalid}
 
 import scala.concurrent.ExecutionContext
@@ -17,9 +18,8 @@ object BlogEditingRoutes
   def blogEditingRoutes(implicit executionContext: ExecutionContext,
                         config: Config): Route =
     path("admin" / "blog" / Remaining) { remaining =>
-      val adminCredentials = config.adminCredentials
-      adminsOnly(adminCredentials) { _ =>
-        withDependencies(config) { dependencies =>
+      adminsOnly(config.adminCredentials) { _ =>
+        withRequestDependencies(config) { dependencies =>
           lazy val blogStore = dependencies.blogStore
           put {
             entity(as[String]) { content =>

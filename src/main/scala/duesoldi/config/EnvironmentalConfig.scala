@@ -23,6 +23,7 @@ object EnvironmentalConfig {
       ),
       imageBaseUrl = env.getOrElse("IMAGE_BASE_URL", ""),
       loggingEnabled = env.get("LOGGING_ENABLED").map(_.toBoolean).getOrElse(true),
+      loggerName = env.getOrElse("LOGGER_NAME", ""),
       secretKey = env.getOrElse("SECRET_KEY", "")
     )
   }
@@ -41,6 +42,7 @@ object EnvironmentalConfig {
       "JDBC_DATABASE_USERNAME" -> config.jdbcConnectionDetails.username,
       "IMAGE_BASE_URL" -> config.imageBaseUrl,
       "LOGGING_ENABLED" -> config.loggingEnabled.toString,
+      "LOGGER_NAME" -> config.loggerName,
       "SECRET_KEY" -> config.secretKey
     )
   }

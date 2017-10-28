@@ -8,7 +8,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import duesoldi.config.Config
 import duesoldi.controller.BlogIndexRoutes.Event.{BlogIndexPageNotRendered, BlogIndexPageRendered}
-import duesoldi.controller.RequestDependenciesDirective.withDependencies
+import duesoldi.controller.RequestDependenciesDirective.withRequestDependencies
 import duesoldi.events.Events
 import duesoldi.page.{IndexPageFailure, IndexPageMaker}
 
@@ -20,7 +20,7 @@ object BlogIndexRoutes
     pathPrefix("blog") {
       pathEndOrSingleSlash {
         redirectToTrailingSlashIfMissing(MovedPermanently) {
-          withDependencies(config) { dependencies =>
+          withRequestDependencies(config) { dependencies =>
             complete {
               val indexPageMaker: IndexPageMaker = dependencies.indexPageMaker
               val events: Events = dependencies.events
