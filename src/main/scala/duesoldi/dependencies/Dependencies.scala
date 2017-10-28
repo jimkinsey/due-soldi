@@ -21,9 +21,11 @@ class Dependencies(config: Config)(implicit executionContext: ExecutionContext)
   lazy val accessRecordStore =  new JDBCAccessRecordStore(config.jdbcConnectionDetails)
   lazy val makeEntryPage: MakeEntryPage = EntryPageMaker.entryPage(ValidIdentifier.apply)(blogStore.entry)(EntryPageModel.pageModel(config))(renderer.render)(executionContext, emit)
   lazy val indexPageMaker: IndexPageMaker = new IndexPageMaker(renderer.render, blogStore, config)
-  lazy val logger = new Logger(config.loggerName, config.loggingEnabled)
+  lazy val logger = new Logger(config.loggerName)
 
-  new EventLogging(events, logger)
+  if (config.loggingEnabled) {
+    EventLogging.enable(events, logger)
+  }
 
   if (config.accessRecordingEnabled) {
     AccessRecordStorage.enable(events, accessRecordStore)
