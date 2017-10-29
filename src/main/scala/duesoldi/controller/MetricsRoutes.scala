@@ -16,7 +16,7 @@ object MetricsRoutes
 {
   def metricsRoutes(implicit executionContext: ExecutionContext, config: Config): Route =
     path("admin" / "metrics" / "access.csv") {
-      adminsOnly(config.adminCredentials) { _ =>
+      adminsOnly(config.adminCredentials) {
         withRequestDependencies(config) { dependencies =>
           lazy val accessRecordStore = dependencies.accessRecordStore
           complete {

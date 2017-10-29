@@ -1,5 +1,6 @@
 package duesoldi.controller
 
+import akka.http.scaladsl.server.Directive
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.directives.{AuthenticationDirective, Credentials}
 import akka.http.scaladsl.server.directives.Credentials.Provided
@@ -7,8 +8,8 @@ import duesoldi.config.Config
 
 object AdminAuthentication
 {
-  def adminsOnly(credentials: Option[Config.Credentials]): AuthenticationDirective[String] = {
-    authenticateBasic("admin", authenticatedAdminUser(credentials))
+  def adminsOnly(credentials: Option[Config.Credentials]) = {
+    authenticateBasic("admin", authenticatedAdminUser(credentials)).flatMap(_=> Directive.Empty)
   }
 
   private def authenticatedAdminUser(credentials: Option[Config.Credentials]): Authenticator[String] = {

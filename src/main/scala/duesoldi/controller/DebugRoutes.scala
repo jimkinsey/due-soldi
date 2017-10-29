@@ -10,7 +10,7 @@ import duesoldi.controller.RequestConfigDirective.requestConfig
 object DebugRoutes
 {
   def debugRoutes(implicit config: Config): Route = pathPrefix("admin" / "debug") {
-    adminsOnly(config.adminCredentials) { _ =>
+    adminsOnly(config.adminCredentials) {
       pathPrefix("headers") {
         extractRequest { req =>
           complete {

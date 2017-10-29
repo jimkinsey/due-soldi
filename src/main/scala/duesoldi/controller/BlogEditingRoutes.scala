@@ -18,7 +18,7 @@ object BlogEditingRoutes
   def blogEditingRoutes(implicit executionContext: ExecutionContext,
                         config: Config): Route =
     path("admin" / "blog" / Remaining) { remaining =>
-      adminsOnly(config.adminCredentials) { _ =>
+      adminsOnly(config.adminCredentials) {
         withRequestDependencies(config) { dependencies =>
           lazy val blogStore = dependencies.blogStore
           put {
