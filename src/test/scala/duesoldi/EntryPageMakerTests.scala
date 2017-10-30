@@ -28,8 +28,8 @@ object EntryPageMakerTests
     rendered: Rendered = renders("some html")
   )(block: (MakeEntryPage, EventRecorder) => T): T = {
     val recorder = new EventRecorder
-    implicit val emit: Emit = recorder.emit
-    block(entryPage(validIdentifier)(entry)(model)(rendered), recorder)
+    val emit: Emit = recorder.emit
+    block(entryPage(validIdentifier, entry, model, rendered, emit), recorder)
   }
 
   val tests = this {

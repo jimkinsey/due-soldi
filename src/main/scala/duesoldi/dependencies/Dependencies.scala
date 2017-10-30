@@ -15,13 +15,12 @@ import scala.concurrent.ExecutionContext
 class Dependencies(config: Config)(implicit executionContext: ExecutionContext)
 {
   implicit lazy val emit: duesoldi.events.Emit = events emit _
-  lazy val events = new Events
-  lazy val blogStore = new JDBCBlogStore(config.jdbcConnectionDetails, new MarkdownParser)
-  lazy val renderer = new Renderer
-  lazy val accessRecordStore =  new JDBCAccessRecordStore(config.jdbcConnectionDetails)
-  lazy val makeEntryPage: MakeEntryPage = EntryPageMaker.entryPage(ValidIdentifier.apply)(blogStore.entry)(EntryPageModel.pageModel(config))(renderer.render)(executionContext, emit)
-  lazy val indexPageMaker: IndexPageMaker = new IndexPageMaker(renderer.render, blogStore, config)
-  lazy val logger = new Logger(config.loggerName)
+  implicit lazy val events = new Events
+  implicit lazy val blogStore = new JDBCBlogStore(config.jdbcConnectionDetails, new MarkdownParser)
+  implicit lazy val renderer = new Renderer
+  implicit lazy val accessRecordStore =  new JDBCAccessRecordStore(config.jdbcConnectionDetails)
+  implicit lazy val indexPageMaker: IndexPageMaker = new IndexPageMaker(renderer.render, blogStore, config)
+  implicit lazy val logger = new Logger(config.loggerName)
 
   if (config.loggingEnabled) {
     EventLogging.enable(events, logger)

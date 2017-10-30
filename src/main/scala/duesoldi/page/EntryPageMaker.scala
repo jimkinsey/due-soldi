@@ -11,11 +11,12 @@ object EntryPageMaker {
   import cats.instances.all._
   import duesoldi.transformers.TransformerOps._
 
-  def entryPage(validId: duesoldi.validation.ValidIdentifier)
-               (entry: duesoldi.storage.blog.Entry)
-               (pageModel: Model)
-               (rendered: duesoldi.rendering.Rendered)
-               (implicit executionContext: ExecutionContext, emit: duesoldi.events.Emit = duesoldi.events.noopEmit): MakeEntryPage = { entryId: String =>
+  def entryPage(validId: duesoldi.validation.ValidIdentifier,
+               entry: duesoldi.storage.blog.Entry,
+               pageModel: Model,
+               rendered: duesoldi.rendering.Rendered,
+               emit: duesoldi.events.Emit = duesoldi.events.noopEmit)
+               (implicit executionContext: ExecutionContext): MakeEntryPage = { entryId: String =>
     (for {
       _ <- validId(entryId).failWith({ InvalidId(entryId) })
       entry <- entry(entryId).failWith({ EntryNotFound(entryId) })
