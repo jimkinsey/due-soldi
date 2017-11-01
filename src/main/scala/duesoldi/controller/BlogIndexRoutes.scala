@@ -20,23 +20,21 @@ object BlogIndexRoutes
     pathPrefix("blog") {
       pathEndOrSingleSlash {
         redirectToTrailingSlashIfMissing(MovedPermanently) {
-          inject.dependency[Emit] into { emit =>
-            inject.dependency[IndexPageMaker] into { indexPageMaker =>
-              complete {
-                for {
-                  page <- indexPageMaker.indexPage
-                } yield {
-                  page match {
-                    case Right(html) =>
-                      emit(BlogIndexPageRendered(html))
-                      HttpResponse(OK, entity = HttpEntity(ContentType(`text/html`, `UTF-8`), html))
-                    case Left(failure: IndexPageFailure.BlogStoreEmpty.type) =>
-                      emit(BlogIndexPageNotRendered(failure))
-                      HttpResponse(NotFound)
-                    case Left(failure) =>
-                      emit(BlogIndexPageNotRendered(failure))
-                      HttpResponse(InternalServerError)
-                  }
+          inject.dependencies[Emit, IndexPageMaker] into { case (emit, indexPageMaker) =>
+            complete {
+              for {
+                page <- indexPageMaker.indexPage
+              } yield {
+                page match {
+                  case Right(html) =>
+                    emit(BlogIndexPageRendered(html))
+                    HttpResponse(OK, entity = HttpEntity(ContentType(`text/html`, `UTF-8`), html))
+                  case Left(failure: IndexPageFailure.BlogStoreEmpty.type) =>
+                    emit(BlogIndexPageNotRendered(failure))
+                    HttpResponse(NotFound)
+                  case Left(failure) =>
+                    emit(BlogIndexPageNotRendered(failure))
+                    HttpResponse(InternalServerError)
                 }
               }
             }

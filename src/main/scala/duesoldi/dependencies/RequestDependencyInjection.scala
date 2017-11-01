@@ -15,6 +15,9 @@ object RequestDependencyInjection
   class RequestDependencyInjector(implicit appConfig: Config)
   {
     def dependency[DEP](implicit dep: Inject[DEP]): Into[DEP] = new Into
+    def dependencies[DEP1,DEP2](implicit dep1: Inject[DEP1], dep2: Inject[DEP2]): Into[(DEP1,DEP2)] = {
+      dependency((ctx) => (dep1(ctx),dep2(ctx)))
+    }
   }
   def inject(implicit appConfig: Config): RequestDependencyInjector = new RequestDependencyInjector
 }
