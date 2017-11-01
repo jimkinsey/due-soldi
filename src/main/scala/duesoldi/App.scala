@@ -5,8 +5,9 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
-import duesoldi.config.EnvironmentalConfig
+import duesoldi.config.{Config, EnvironmentalConfig}
 import duesoldi.controller.MasterController
+import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
 import duesoldi.logging.Logger
 
 import scala.collection.JavaConverters._
@@ -22,7 +23,8 @@ object App {
   }
 
   def start(env: Env): Future[Server] = {
-    implicit val config = EnvironmentalConfig(env)
+    implicit val config: Config = EnvironmentalConfig(env)
+    implicit val inject: RequestDependencyInjector = new RequestDependencyInjector
     val logger = new Logger("App", config.loggingEnabled)
     val eventualServer = Server.start(MasterController.routes, config.host, config.port)
     eventualServer.onComplete {

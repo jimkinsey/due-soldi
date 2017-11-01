@@ -3,23 +3,24 @@ package duesoldi.controller
 import java.time.ZonedDateTime
 
 import akka.http.scaladsl.model.HttpResponse
-import akka.http.scaladsl.server.RequestContext
 import akka.http.scaladsl.model.headers.{Referer, `User-Agent`}
-import akka.http.scaladsl.server.Directive
 import akka.http.scaladsl.server.Directives._
-import duesoldi.config.Config
-import duesoldi.controller.DependenciesDirective.withDependencies
+import akka.http.scaladsl.server.{Directive, RequestContext}
+import duesoldi.dependencies.DueSoldiDependencies._
+import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
+import duesoldi.events.Emit
 import duesoldi.storage.AccessRecordStore.Access
 
 object AccessRecordingDirective
 {
-  def recordAccess(implicit config: Config): Directive[Unit] =
-    withDependencies(config).flatMap { deps =>
-      extractRequestContext.flatMap { implicit ctx =>
+  def recordAccess(implicit inject: RequestDependencyInjector): Directive[Unit] =
+    extractRequestContext.flatMap { implicit ctx =>
+      import ctx.executionContext
+      inject.dependency[Emit].into.flatMap { emit =>
         val startTime = System.currentTimeMillis()
         mapResponse { response =>
           val duration = System.currentTimeMillis() - startTime
-          deps.events.emit(access(ctx, response, duration))
+          emit(access(ctx, response, duration))
           response
         }
       }

@@ -9,7 +9,7 @@ import scala.util.Failure
 
 object AccessRecordStorage
 {
-  def enable(events: Events, store: JDBCAccessRecordStore)(implicit executionContext: ExecutionContext) {
+  def enable(events: Events, store: AccessRecordStore)(implicit executionContext: ExecutionContext) {
     events.respondTo {
       case access: Access => store.record(access).onComplete {
         case Failure(ex) =>

@@ -7,18 +7,19 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import duesoldi.config.Config
 import duesoldi.controller.AdminAuthentication.adminsOnly
-import duesoldi.controller.RequestDependenciesDirective.withRequestDependencies
+import duesoldi.dependencies.DueSoldiDependencies._
+import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
+import duesoldi.storage.AccessRecordStore
 import duesoldi.storage.AccessRecordStore.Access
 
 import scala.concurrent.ExecutionContext
 
 object MetricsRoutes
 {
-  def metricsRoutes(implicit executionContext: ExecutionContext, config: Config): Route =
+  def metricsRoutes(implicit executionContext: ExecutionContext, inject: RequestDependencyInjector, config: Config): Route =
     path("admin" / "metrics" / "access.csv") {
       adminsOnly(config.adminCredentials) {
-        withRequestDependencies(config) { dependencies =>
-          lazy val accessRecordStore = dependencies.accessRecordStore
+        inject.dependency[AccessRecordStore] into { accessRecordStore =>
           complete {
             accessRecordStore.allRecords.map(
               { accesses =>

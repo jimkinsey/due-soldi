@@ -13,14 +13,15 @@ import duesoldi.controller.LearnJapaneseRoutes.learnJapaneseRoutes
 import duesoldi.controller.MetricsRoutes.metricsRoutes
 import duesoldi.controller.RobotsRoutes.robotsRoutes
 import duesoldi.controller.TaggedRequestDirective._
+import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
 
 import scala.concurrent.ExecutionContext
 
 object MasterController
 {
-  def routes(implicit executionContext: ExecutionContext, appConfig: Config): Route =
+  def routes(implicit executionContext: ExecutionContext, inject: RequestDependencyInjector, appConfig: Config): Route = {
     tagRequest {
-      recordAccess(appConfig) {
+      recordAccess(inject) {
         robotsRoutes ~
         furnitureRoutes ~
         blogIndexRoutes ~
@@ -31,4 +32,5 @@ object MasterController
         learnJapaneseRoutes
       }
     }
+  }
 }
