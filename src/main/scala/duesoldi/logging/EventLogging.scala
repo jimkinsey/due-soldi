@@ -2,7 +2,7 @@ package duesoldi.logging
 
 import duesoldi.controller.BlogIndexRoutes.Event.BlogIndexPageNotRendered
 import duesoldi.events.Events
-import duesoldi.page.{EntryPageMaker, IndexPageFailure}
+import duesoldi.page.{EntryPageMaker, IndexPageMaker}
 import duesoldi.storage.AccessRecordStorage
 
 object EventLogging
@@ -10,9 +10,9 @@ object EventLogging
   def enable(events: Events, logger: Logger) {
 
     events.respondTo {
-      case BlogIndexPageNotRendered(IndexPageFailure.BlogStoreEmpty) =>
+      case BlogIndexPageNotRendered(IndexPageMaker.Failure.BlogStoreEmpty) =>
         logger.error("No blog entries were found to render the index page")
-      case BlogIndexPageNotRendered(IndexPageFailure.RenderFailure(cause)) =>
+      case BlogIndexPageNotRendered(IndexPageMaker.Failure.RenderFailure(cause)) =>
         logger.error(s"The index page failed to render - $cause")
     }
 

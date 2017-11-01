@@ -1,55 +1,43 @@
 package duesoldi.page
 
-import java.time.format.DateTimeFormatter
-
-import duesoldi.config.Config
-import duesoldi.markdown.MarkdownDocument
 import duesoldi.model.BlogEntry
-import duesoldi.page.IndexPageFailure.RenderFailure
 import duesoldi.rendering.{BlogIndexPageModel, Rendered}
 import duesoldi.storage.BlogStore
 import duesoldi.validation.ValidIdentifier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-sealed trait IndexPageFailure
-object IndexPageFailure {
-  case object BlogStoreEmpty extends IndexPageFailure
-  case class RenderFailure(failure: bhuj.Failure) extends IndexPageFailure
-}
-
-class IndexPageMaker(rendered: Rendered, blogStore: BlogStore, config: Config)(implicit executionContext: ExecutionContext) {
+object IndexPageMaker{
+  import Failure._
   import cats.instances.all._
   import duesoldi.transformers.TransformerOps._
 
-  def indexPage: Future[Either[IndexPageFailure, String]] = {
+  def makeIndexPage(pageModel: Model, rendered: Rendered, blogStore: BlogStore)
+                   (implicit executionContext: ExecutionContext): () => Result = { () =>
     for {
-      entries <- blogEntries.propagate[IndexPageFailure]
+      entries <- blogEntries(blogStore).propagate[Failure]
       model = pageModel(entries)
-      html <- rendered("blog-index", model).failWith[IndexPageFailure](RenderFailure)
+      html <- rendered("blog-index", model).failWith[Failure](RenderFailure)
     } yield {
       html
     }
   }
 
-  private def blogEntries: Future[Either[IndexPageFailure.BlogStoreEmpty.type, Seq[BlogEntry]]] =
+  private def blogEntries(blogStore: BlogStore)(implicit executionContext: ExecutionContext): Future[Either[Failure.BlogStoreEmpty.type, Seq[BlogEntry]]] =
     blogStore.entries.map { entries =>
       entries.filter(entry => ValidIdentifier(entry.id).nonEmpty) match {
-        case Nil => Left(IndexPageFailure.BlogStoreEmpty)
+        case Nil => Left(Failure.BlogStoreEmpty)
         case other => Right(other)
       }
     }
 
-  private def pageModel(entries: Seq[BlogEntry]) = BlogIndexPageModel(
-    entries = entries.sortBy(_.lastModified.toEpochSecond()).reverse.map {
-      case BlogEntry(id, content, lastModified) =>
-        BlogIndexPageModel.Entry(
-          lastModified = lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy")),
-          title = MarkdownDocument.title(content).getOrElse("-untitled-"),
-          id = id
-        )
-    },
-    furnitureVersion = config.furnitureVersion
-  )
+  sealed trait Failure
+  object Failure {
+    case object BlogStoreEmpty extends Failure
+    case class RenderFailure(failure: bhuj.Failure) extends Failure
+  }
 
+  type Result = Future[Either[Failure, String]]
+
+  type Model = Seq[BlogEntry] => BlogIndexPageModel
 }

@@ -3,7 +3,7 @@ package duesoldi.dependencies
 import duesoldi.controller.BlogEntryRoutes.MakeEntryPage
 import duesoldi.events.Events
 import duesoldi.markdown.MarkdownParser
-import duesoldi.page.{EntryPageMaker, EntryPageModel, IndexPageMaker}
+import duesoldi.page.{EntryPageMaker, EntryPageModel, IndexPageMaker, IndexPageModel}
 import duesoldi.rendering.Renderer
 import duesoldi.storage.{AccessRecordStorage, AccessRecordStore, JDBCAccessRecordStore, JDBCBlogStore}
 import duesoldi.validation.ValidIdentifier
@@ -13,6 +13,7 @@ import Injection._
 import com.sun.corba.se.impl.orb.ORBConfiguratorImpl.ConfigParser
 import duesoldi.config.Config
 import duesoldi.config.Config.Credentials
+import duesoldi.controller.BlogIndexRoutes.MakeIndexPage
 import duesoldi.controller.DebugRoutes.{MakeConfigPage, MakeHeadersPage}
 import duesoldi.controller.{ConfigPageMaker, HeadersPageMaker}
 import duesoldi.logging.{EventLogging, Logger}
@@ -59,15 +60,16 @@ object DueSoldiDependencies
 
   implicit val validIdentifier: Inject[duesoldi.validation.ValidIdentifier] = _ => ValidIdentifier.apply
 
-  implicit val entryPageModel: Inject[EntryPageMaker.Model] = config => EntryPageModel.pageModel(config)
+  implicit val entryPageModel: Inject[EntryPageMaker.Model] = EntryPageModel.pageModel
 
   implicit def makeEntryPage(implicit executionContext: ExecutionContext): Inject[MakeEntryPage] = {
     inject(EntryPageMaker.entryPage _)
   }
 
-  implicit def indexPageMaker(implicit executionContext: ExecutionContext): Inject[IndexPageMaker] = {
-    config =>
-      new IndexPageMaker(render(executionContext)(config), blogStore(executionContext)(config), config)
+  implicit val indexPageModel:  Inject[IndexPageMaker.Model] = IndexPageModel.pageModel
+
+  implicit def makeIndexPage(implicit executionContext: ExecutionContext): Inject[MakeIndexPage] = {
+    inject(IndexPageMaker.makeIndexPage _)
   }
 
   implicit def makeHeadersPage: Inject[MakeHeadersPage] = _ => HeadersPageMaker.makeHeadersPage
@@ -76,5 +78,5 @@ object DueSoldiDependencies
 
   implicit val adminCredentials: Inject[Credentials] = _.adminCredentials
 
-  implicit val config: Inject[Config] = config => config
+  implicit lazy val config: Inject[Config] = config => config
 }

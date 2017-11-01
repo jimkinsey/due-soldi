@@ -10,26 +10,28 @@ import duesoldi.controller.BlogIndexRoutes.Event.{BlogIndexPageNotRendered, Blog
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
 import duesoldi.events.Emit
-import duesoldi.page.{IndexPageFailure, IndexPageMaker}
+import duesoldi.page.IndexPageMaker
 
 import scala.concurrent.ExecutionContext
 
 object BlogIndexRoutes
 {
+  type MakeIndexPage = () => IndexPageMaker.Result
+
   def blogIndexRoutes(implicit executionContext: ExecutionContext, inject: RequestDependencyInjector): Route =
     pathPrefix("blog") {
       pathEndOrSingleSlash {
         redirectToTrailingSlashIfMissing(MovedPermanently) {
-          inject.dependencies[Emit, IndexPageMaker] into { case (emit, indexPageMaker) =>
+          inject.dependencies[Emit, MakeIndexPage] into { case (emit, makeIndexPage) =>
             complete {
               for {
-                page <- indexPageMaker.indexPage
+                page <- makeIndexPage()
               } yield {
                 page match {
                   case Right(html) =>
                     emit(BlogIndexPageRendered(html))
                     HttpResponse(OK, entity = HttpEntity(ContentType(`text/html`, `UTF-8`), html))
-                  case Left(failure: IndexPageFailure.BlogStoreEmpty.type) =>
+                  case Left(failure: IndexPageMaker.Failure.BlogStoreEmpty.type) =>
                     emit(BlogIndexPageNotRendered(failure))
                     HttpResponse(NotFound)
                   case Left(failure) =>
@@ -47,7 +49,7 @@ object BlogIndexRoutes
   object Event
   {
     case class BlogIndexPageRendered(html: String) extends Event
-    case class BlogIndexPageNotRendered(reason: IndexPageFailure) extends Event
+    case class BlogIndexPageNotRendered(reason: IndexPageMaker.Failure) extends Event
   }
 }
 
