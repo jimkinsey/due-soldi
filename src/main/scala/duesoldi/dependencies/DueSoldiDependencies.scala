@@ -43,8 +43,7 @@ object DueSoldiDependencies
   }
 
   implicit def render(implicit executionContext: ExecutionContext): Inject[duesoldi.rendering.Rendered] = {
-    val renderer = new Renderer
-    _ => renderer.render
+    _ => Renderer.render
   }
 
   implicit def entry(implicit executionContext: ExecutionContext): Inject[duesoldi.storage.blog.Entry] = {

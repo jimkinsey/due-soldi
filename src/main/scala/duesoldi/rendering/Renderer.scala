@@ -1,15 +1,15 @@
 package duesoldi.rendering
 
 import bhuj.MustacheBuilder.mustacheRenderer
+import bhuj.Result
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class Renderer(implicit ec: ExecutionContext) {
+object Renderer
+{
   import bhuj.context.ContextImplicits._
 
-  def render(viewName: String, model: PageModel): Future[Either[bhuj.Failure, String]] = {
-    mustache.renderTemplate(viewName, model)
-  }
+  def render(implicit ec: ExecutionContext): (String, PageModel) => Future[Result] = mustache.renderTemplate
 
   private lazy val mustache = mustacheRenderer.withTemplatePath("src/main/resources/templates").withoutCache
 }
