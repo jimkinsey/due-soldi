@@ -2,7 +2,6 @@ package duesoldi.controller
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import duesoldi.config.Config
 import duesoldi.controller.AccessRecordingDirective.recordAccess
 import duesoldi.controller.BlogEditingRoutes.blogEditingRoutes
 import duesoldi.controller.BlogEntryRoutes.blogEntryRoutes
@@ -19,7 +18,7 @@ import scala.concurrent.ExecutionContext
 
 object MasterController
 {
-  def routes(implicit executionContext: ExecutionContext, inject: RequestDependencyInjector, appConfig: Config): Route = {
+  def routes(implicit executionContext: ExecutionContext, inject: RequestDependencyInjector): Route = {
     tagRequest {
       recordAccess(inject) {
         robotsRoutes ~

@@ -6,6 +6,7 @@ import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import duesoldi.config.Config
+import duesoldi.config.Config.Credentials
 import duesoldi.controller.AdminAuthentication.adminsOnly
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
@@ -16,10 +17,10 @@ import scala.concurrent.ExecutionContext
 
 object MetricsRoutes
 {
-  def metricsRoutes(implicit executionContext: ExecutionContext, inject: RequestDependencyInjector, config: Config): Route =
+  def metricsRoutes(implicit executionContext: ExecutionContext, inject: RequestDependencyInjector): Route =
     path("admin" / "metrics" / "access.csv") {
-      adminsOnly(config.adminCredentials) {
-        inject.dependency[AccessRecordStore] into { accessRecordStore =>
+      inject.dependencies[AccessRecordStore, Credentials] into { case (accessRecordStore, adminCredentials) =>
+        adminsOnly(adminCredentials) {
           complete {
             accessRecordStore.allRecords.map(
               { accesses =>
