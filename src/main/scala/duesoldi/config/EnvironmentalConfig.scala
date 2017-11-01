@@ -14,7 +14,7 @@ object EnvironmentalConfig {
       furnitureVersion = env.getOrElse("FURNITURE_VERSION", "LOCAL"),
       furniturePath = env.getOrElse("FURNITURE_PATH", "src/main/resources/furniture"),
       furnitureCacheDuration = env.get("FURNITURE_CACHE_DURATION").flatMap(s => Try(Duration(s)).toOption).getOrElse(Duration.Zero),
-      adminCredentials = env.get("ADMIN_CREDENTIALS").flatMap(Config.Credentials.parsed(_).toOption),
+      adminCredentials = Config.Credentials.parsed(env("ADMIN_CREDENTIALS")).right.get,
       accessRecordingEnabled = env.get("ACCESS_RECORDING_ENABLED").map(_.toBoolean).getOrElse(false),
       jdbcConnectionDetails = JDBCConnection.ConnectionDetails(
         url = env.getOrElse("JDBC_DATABASE_URL", ""),
@@ -35,7 +35,7 @@ object EnvironmentalConfig {
       "FURNITURE_VERSION" -> config.furnitureVersion,
       "FURNITURE_PATH" -> config.furniturePath,
       "FURNITURE_CACHE_DURATION" -> s"${config.furnitureCacheDuration.length} ${config.furnitureCacheDuration.unit.name}",
-      "ADMIN_CREDENTIALS" -> config.adminCredentials.map(creds => s"${creds.username}:${creds.password}").getOrElse(""),
+      "ADMIN_CREDENTIALS" -> s"${config.adminCredentials.username}:${config.adminCredentials.password}",
       "ACCESS_RECORDING_ENABLED" -> config.accessRecordingEnabled.toString,
       "JDBC_DATABASE_URL" -> config.jdbcConnectionDetails.url,
       "JDBC_DATABASE_PASSWORD" -> config.jdbcConnectionDetails.password,

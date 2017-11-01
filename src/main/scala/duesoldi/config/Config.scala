@@ -12,7 +12,7 @@ case class Config(
   furnitureVersion: String,
   furniturePath: String,
   furnitureCacheDuration: Duration,
-  adminCredentials: Option[Credentials],
+  adminCredentials: Credentials,
   accessRecordingEnabled: Boolean,
   jdbcConnectionDetails: JDBCConnection.ConnectionDetails,
   imageBaseUrl: String,
