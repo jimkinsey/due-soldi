@@ -4,7 +4,7 @@ import java.time.ZonedDateTime
 
 import duesoldi.httpclient.BasicAuthorization
 import duesoldi.testapp.ServerRequests
-import duesoldi.{Env, Setup}
+import duesoldi.{AsyncSetup, Env, Setup}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -22,7 +22,7 @@ trait BlogStorage {
 
   def blogEntry(entry: EntryBuilder)(implicit executionContext: ExecutionContext) = blogEntries(entry)
 
-  def blogEntries(entries: EntryBuilder*)(implicit executionContext: ExecutionContext) = new Setup {
+  def blogEntries(entries: EntryBuilder*)(implicit executionContext: ExecutionContext) = new AsyncSetup {
     override def setup(env: Env): Future[Env] = {
       implicit val e: Env = env
       val creds = env("ADMIN_CREDENTIALS").split(":")

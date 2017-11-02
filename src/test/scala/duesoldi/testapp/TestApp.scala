@@ -45,9 +45,9 @@ object TestApp
       }
   }
 
-  def runningApp(implicit executionContext: ExecutionContext) = new Setup {
-    override def setup(env: Env): Future[Env] = {
-      Future.successful(Map("PORT" -> app.port.toString, "HOST" -> app.host))
+  def runningApp(implicit executionContext: ExecutionContext) = new SyncSetup {
+    override def setup(env: Env): Env = {
+      Map("PORT" -> app.port.toString, "HOST" -> app.host)
     }
   }
 }

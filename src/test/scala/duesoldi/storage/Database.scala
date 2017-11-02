@@ -5,23 +5,21 @@ import java.sql.Connection
 import java.util.UUID
 import javax.sql.DataSource
 
-import duesoldi.{ScriptRunner, Setup, _}
+import duesoldi.{ScriptRunner, _}
 import org.h2.jdbcx.JdbcConnectionPool
 
-import scala.concurrent.{ExecutionContext, Future}
-
-trait Database {
-
-  lazy val noDatabase = new Setup {
-    override def setup(env: Env): Future[Env] = Future.successful(Map.empty)
-    override def tearDown: Future[Unit] = Future.successful({})
+object Database
+{
+  lazy val noDatabase = new SyncSetup {
+    override def setup(env: Env) = Map.empty
+    override def tearDown = {}
   }
 
-  def database(implicit executionContext: ExecutionContext) = new Setup {
+  def database = new SyncSetup {
     private val id = UUID.randomUUID().toString.take(8)
     private var connection: Connection = _
 
-    override def setup(env: Env): Future[Env] = Future {
+    override def setup(env: Env) = {
       val ds: DataSource = JdbcConnectionPool.create(s"jdbc:h2:mem:test-$id;DB_CLOSE_DELAY=-1", "user", "password")
       connection = ds.getConnection()
       new ScriptRunner(connection, true, true).runScript(new InputStreamReader(AccessRecordStore.getClass.getResourceAsStream("/database/init.sql")))
@@ -32,12 +30,8 @@ trait Database {
       )
     }
 
-    override def tearDown: Future[Unit] = {
-      Future.successful(connection.close())
+    override def tearDown = {
+      connection.close()
     }
-
   }
-
 }
-
-object Database extends Database

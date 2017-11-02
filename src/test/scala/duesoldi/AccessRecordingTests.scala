@@ -110,11 +110,11 @@ object AccessRecordingTests
     }
   }
 
-  private lazy val accessRecordingEnabled = new Setup {
-    override def setup(env: Env): Future[Env] = Future successful Map("ACCESS_RECORDING_ENABLED" -> "true")
+  private lazy val accessRecordingEnabled = new SyncSetup {
+    override def setup(env: Env) = Map("ACCESS_RECORDING_ENABLED" -> "true")
   }
 
-  private lazy val accessRecordingDisabled = new Setup {
-    override def setup(env: Env): Future[Env] = Future successful Map("ACCESS_RECORDING_ENABLED" -> "false")
+  private lazy val accessRecordingDisabled = new SyncSetup {
+    override def setup(env: Env) = Map("ACCESS_RECORDING_ENABLED" -> "false")
   }
 }

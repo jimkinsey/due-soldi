@@ -68,5 +68,5 @@ object ConfigOverrideTests
     }
   }
 
-  private def envVars(vars: (String, String)*): Setup = (env: Env) => Future.successful(vars.toMap)
+  private def envVars(vars: (String, String)*): SyncSetup = _ => vars.toMap
 }

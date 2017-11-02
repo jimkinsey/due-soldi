@@ -73,7 +73,7 @@ object FurnitureTests
     }
   }
 
-  def furniture(version: String, cacheDuration: Option[String] = None)(files: (String, String)*) = new Setup {
+  def furniture(version: String, cacheDuration: Option[String] = None)(files: (String, String)*) = new SyncSetup {
     lazy val path = s"/tmp/furniture/${UUID.randomUUID().toString.take(6)}"
 
     override def setup(env: Env) = {
@@ -85,11 +85,11 @@ object FurnitureTests
         writer.write(content)
         writer.close()
       }
-      Future.successful(Map("FURNITURE_PATH" -> path) + ("FURNITURE_VERSION" -> version) + ("FURNITURE_CACHE_DURATION" -> cacheDuration.getOrElse("0")))
+      Map("FURNITURE_PATH" -> path) + ("FURNITURE_VERSION" -> version) + ("FURNITURE_CACHE_DURATION" -> cacheDuration.getOrElse("0"))
     }
 
-    override def tearDown: Future[Unit] = {
-      Future.successful(DeleteDir(new File(path).toPath))
+    override def tearDown = {
+      DeleteDir(new File(path).toPath)
     }
   }
 }
