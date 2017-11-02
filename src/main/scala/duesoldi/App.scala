@@ -39,7 +39,7 @@ object App {
 
 object Server {
   def start(route: Route, host: String, port: Int): Future[Server] = {
-    implicit val system: ActorSystem = ActorSystem("my-system")
+    implicit val system: ActorSystem = ActorSystem("my-system", classLoader = Some(Server.getClass.getClassLoader))
     implicit val materializer: ActorMaterializer = ActorMaterializer()
     implicit val executionContext: ExecutionContextExecutor = system.dispatcher
     Http().bindAndHandle(route, host, port) map { binding => new Server(binding) }

@@ -57,11 +57,11 @@ object FurnitureTests
       }
       "include cache headers when furniture caching is enabled" - {
         withSetup(
-          furniture(version = "1.0.0", cacheDuration = Some("1 hour"))("cupboard.txt" -> "bare"),
+          furniture(version = "3.0.0", cacheDuration = Some("1hour"))("cupboard.txt" -> "bare"),
           runningApp
         ) { implicit env =>
           for {
-            response <- get("/furniture/1.0.0/cupboard.txt")
+            response <- get("/furniture/3.0.0/cupboard.txt")
           } yield {
             assert(
               response.headers.toSeq.contains("Cache-Control" -> Seq("max-age=3600")),
@@ -85,7 +85,7 @@ object FurnitureTests
         writer.write(content)
         writer.close()
       }
-      Future.successful(Map("FURNITURE_PATH" -> path) + ("FURNITURE_VERSION" -> version) + ("FURNITURE_CACHE_DURATION" -> cacheDuration.getOrElse("")))
+      Future.successful(Map("FURNITURE_PATH" -> path) + ("FURNITURE_VERSION" -> version) + ("FURNITURE_CACHE_DURATION" -> cacheDuration.getOrElse("0")))
     }
 
     override def tearDown: Future[Unit] = {

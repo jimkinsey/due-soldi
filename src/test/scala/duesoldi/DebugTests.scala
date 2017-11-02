@@ -17,11 +17,11 @@ object DebugTests
     "the headers endpoint" - {
       "return a page with the received request headers" - {
         withSetup(
-          adminCredentials("admin", "password"),
+          adminCredentials("user", "password"),
           runningApp
         ) { implicit env =>
           for {
-            response <- get("/admin/debug/headers", headers = BasicAuthorization("admin", "password"), "Key" -> "Value")
+            response <- get("/admin/debug/headers", headers = BasicAuthorization("user", "password"), "Key" -> "Value")
           } yield {
             assert(response.body.lines.toList contains "Key: Value")
           }
@@ -32,11 +32,11 @@ object DebugTests
       "return a page containing the env vars" - {
         withSetup(
           envVars("IMAGE_BASE_URL" -> "http://somewhere"),
-          adminCredentials("admin", "password"),
+          adminCredentials("user", "password"),
           runningApp
         ) { implicit env =>
           for {
-            response <- get("/admin/debug/config", headers = BasicAuthorization("admin", "password"))
+            response <- get("/admin/debug/config", headers = BasicAuthorization("user", "password"))
           } yield {
             assert(response.body.lines.toList contains "IMAGE_BASE_URL=http://somewhere")
           }
@@ -44,11 +44,11 @@ object DebugTests
       }
       "not include sensitive env vars" - {
         withSetup(
-          adminCredentials("admin", "password"),
+          adminCredentials("user", "password"),
           runningApp
         ) { implicit env =>
           for {
-            response <- get("/admin/debug/config", headers = BasicAuthorization("admin", "password"))
+            response <- get("/admin/debug/config", headers = BasicAuthorization("user", "password"))
           } yield {
             assert(!(response.body contains "ADMIN_CREDENTIALS"))
           }

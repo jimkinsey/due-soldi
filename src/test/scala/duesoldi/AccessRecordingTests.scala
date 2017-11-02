@@ -20,7 +20,7 @@ object AccessRecordingTests
     "the access CSV endpoint" - {
       "returns a 401 for unauthorised access" - {
         withSetup(
-          adminCredentials("admin", "password"),
+          adminCredentials("user", "password"),
           runningApp
         ) { implicit env =>
           for {
@@ -34,11 +34,11 @@ object AccessRecordingTests
       "serves a CSV file with a header when there are no metrics recorded" - {
         withSetup(
           database,
-          adminCredentials("admin", "password"),
+          adminCredentials("user", "password"),
           runningApp
         ) { implicit env =>
           for {
-            response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
+            response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("user", "password"))
           } yield {
             assert(
               response.status == 200,
@@ -52,14 +52,14 @@ object AccessRecordingTests
       "serves a CSV file containing a row for each blog entry page request" - {
         withSetup(
           database,
-          adminCredentials("admin", "password"),
+          adminCredentials("user", "password"),
           accessRecordingEnabled,
           runningApp,
           blogEntries("id" -> "# Content!")
         ) { implicit env =>
           for {
             _ <- get("/blog/id")
-            response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
+            response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("user", "password"))
           } yield {
             assert(
               response.body.lines exists(_.contains("/blog/id"))
@@ -71,7 +71,7 @@ object AccessRecordingTests
       "serves a CSV file containing a row for each blog index page request" - {
         withSetup(
           database,
-          adminCredentials("admin", "password"),
+          adminCredentials("user", "password"),
           accessRecordingEnabled,
           runningApp,
           blogEntry("id" -> "# Content!")
@@ -83,7 +83,7 @@ object AccessRecordingTests
               "Cf-Connecting-Ip" -> "1.2.3.4",
               "Cf-Ipcountry" -> "IS"
             )
-            response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
+            response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("user", "password"))
           } yield {
             assert(response.body.lines exists(_.contains("/blog/")))
           }
@@ -93,7 +93,7 @@ object AccessRecordingTests
       "has no records for periods when access recording is disabled" - {
         withSetup(
           database,
-          adminCredentials("admin", "password"),
+          adminCredentials("user", "password"),
           accessRecordingDisabled,
           runningApp,
           blogEntries("id" -> "# Content!")
@@ -101,7 +101,7 @@ object AccessRecordingTests
           for {
             _ <- get("/blog/")
             _ <- get("/blog/id")
-            response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "password"))
+            response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("user", "password"))
           } yield {
             assert(response.body.lines.toList.tail.isEmpty)
           }

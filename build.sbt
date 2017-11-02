@@ -22,7 +22,7 @@ libraryDependencies ++= Seq(
   "com.lihaoyi" %% "utest" % "0.5.4" % "test"
 )
 
-testFrameworks += new TestFramework("utest.runner.Framework")
+testFrameworks += new TestFramework("duesoldi.testapp.TestAppFramework")
 
 cancelable in Global := true
 
