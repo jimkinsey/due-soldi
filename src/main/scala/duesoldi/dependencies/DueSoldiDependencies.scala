@@ -1,22 +1,21 @@
 package duesoldi.dependencies
 
+import duesoldi.config.Config
+import duesoldi.config.Config.Credentials
 import duesoldi.controller.BlogEntryRoutes.MakeEntryPage
+import duesoldi.controller.BlogIndexRoutes.MakeIndexPage
+import duesoldi.controller.DebugRoutes.{MakeConfigPage, MakeHeadersPage}
+import duesoldi.controller.{ConfigPageMaker, HeadersPageMaker}
+import duesoldi.dependencies.Injection._
 import duesoldi.events.Events
+import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.markdown.MarkdownParser
 import duesoldi.page.{EntryPageMaker, EntryPageModel, IndexPageMaker, IndexPageModel}
 import duesoldi.rendering.Renderer
 import duesoldi.storage.{AccessRecordStorage, AccessRecordStore, JDBCAccessRecordStore, JDBCBlogStore}
 import duesoldi.validation.ValidIdentifier
 
-import scala.concurrent.{ExecutionContext, Future}
-import Injection._
-import com.sun.corba.se.impl.orb.ORBConfiguratorImpl.ConfigParser
-import duesoldi.config.Config
-import duesoldi.config.Config.Credentials
-import duesoldi.controller.BlogIndexRoutes.MakeIndexPage
-import duesoldi.controller.DebugRoutes.{MakeConfigPage, MakeHeadersPage}
-import duesoldi.controller.{ConfigPageMaker, HeadersPageMaker}
-import duesoldi.logging.{EventLogging, Logger}
+import scala.concurrent.ExecutionContext
 
 object DueSoldiDependencies
 {
