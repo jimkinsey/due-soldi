@@ -9,7 +9,8 @@ import akka.http.scaladsl.server.Directives._
 object TaggedRequestDirective
 {
   def tagRequest: Directive0 = {
-    val requestId = RawHeader("Request-ID", UUID.randomUUID().toString)
-    mapRequest(_.addHeader(requestId)) & mapResponse(_.addHeader(requestId))
+    extract(_ => RawHeader("Request-ID", UUID.randomUUID().toString)).flatMap { requestId =>
+      mapRequest(_.addHeader(requestId)) & mapResponse(_.addHeader(requestId))
+    }
   }
 }
