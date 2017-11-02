@@ -1,6 +1,7 @@
 package duesoldi.testapp
 
 import duesoldi._
+import duesoldi.httpclient.BasicAuthorization
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,6 +34,8 @@ object TestApp
   )
 
   private var running: Server = _
+
+  val adminAuth = BasicAuthorization("user", "password")
 
   def app: Server = running
 

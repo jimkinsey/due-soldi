@@ -1,13 +1,10 @@
 package duesoldi
 
-import duesoldi.httpclient.BasicAuthorization
-import duesoldi.testapp.TestApp.runningApp
+import duesoldi.Setup.withSetup
 import duesoldi.testapp.ServerRequests._
-import Setup.withSetup
+import duesoldi.testapp.TestApp
+import duesoldi.testapp.TestApp.runningApp
 import utest._
-import AdminSupport._
-
-import scala.concurrent.Future
 
 object DebugTests
   extends TestSuite
@@ -17,11 +14,10 @@ object DebugTests
     "the headers endpoint" - {
       "return a page with the received request headers" - {
         withSetup(
-          adminCredentials("user", "password"),
           runningApp
         ) { implicit env =>
           for {
-            response <- get("/admin/debug/headers", headers = BasicAuthorization("user", "password"), "Key" -> "Value")
+            response <- get("/admin/debug/headers", headers = TestApp.adminAuth, "Key" -> "Value")
           } yield {
             assert(response.body.lines.toList contains "Key: Value")
           }
@@ -32,11 +28,10 @@ object DebugTests
       "return a page containing the env vars" - {
         withSetup(
           envVars("IMAGE_BASE_URL" -> "http://somewhere"),
-          adminCredentials("user", "password"),
           runningApp
         ) { implicit env =>
           for {
-            response <- get("/admin/debug/config", headers = BasicAuthorization("user", "password"))
+            response <- get("/admin/debug/config", headers = TestApp.adminAuth)
           } yield {
             assert(response.body.lines.toList contains "IMAGE_BASE_URL=http://somewhere")
           }
@@ -44,11 +39,10 @@ object DebugTests
       }
       "not include sensitive env vars" - {
         withSetup(
-          adminCredentials("user", "password"),
           runningApp
         ) { implicit env =>
           for {
-            response <- get("/admin/debug/config", headers = BasicAuthorization("user", "password"))
+            response <- get("/admin/debug/config", headers = TestApp.adminAuth)
           } yield {
             assert(!(response.body contains "ADMIN_CREDENTIALS"))
           }

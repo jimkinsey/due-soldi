@@ -1,12 +1,12 @@
 package duesoldi
 
+import duesoldi.Setup.withSetup
 import duesoldi.httpclient.BasicAuthorization
 import duesoldi.storage.BlogStorage._
-import duesoldi.testapp.TestApp.runningApp
-import duesoldi.testapp.ServerRequests._
 import duesoldi.storage.Database._
-import AdminSupport._
-import Setup.withSetup
+import duesoldi.testapp.ServerRequests._
+import duesoldi.testapp.TestApp
+import duesoldi.testapp.TestApp.runningApp
 import utest._
 
 object BlogEditingTests 
@@ -18,11 +18,10 @@ object BlogEditingTests
       "create a blog entry at the specified ID where none already exists" - {
         withSetup(
           database,
-          adminCredentials("user", "password"),
           runningApp
         ) { implicit env =>
           for {
-            createResponse <- put("/admin/blog/new-entry", body = "# New entry!", headers = BasicAuthorization("user", "password"))
+            createResponse <- put("/admin/blog/new-entry", body = "# New entry!", headers = TestApp.adminAuth)
             entryResponse <- get("/blog/new-entry")
           } yield {
             assert(createResponse.status == 201)
@@ -34,11 +33,10 @@ object BlogEditingTests
       "return a bad request response when the id is invalid" - {
         withSetup(
           database,
-          adminCredentials("user", "password"),
           runningApp
         ) { implicit env =>
           for {
-            createResponse <- put("/admin/blog/';+DROP+TABLE+blog_entry;", body = "# Attack!", headers = BasicAuthorization("user", "password"))
+            createResponse <- put("/admin/blog/';+DROP+TABLE+blog_entry;", body = "# Attack!", headers = TestApp.adminAuth)
           } yield {
             assert(createResponse.status == 400)
           }
@@ -47,11 +45,10 @@ object BlogEditingTests
       "return a bad request response when the document does not have a level 1 header" - {
         withSetup(
           database,
-          adminCredentials("user", "password"),
           runningApp
         ) { implicit env =>
           for {
-            createResponse <- put("/admin/blog/untitled", body = "_Intentionally left blank_", headers = BasicAuthorization("user", "password"))
+            createResponse <- put("/admin/blog/untitled", body = "_Intentionally left blank_", headers = TestApp.adminAuth)
           } yield {
             assert(createResponse.status == 400)
           }
@@ -60,7 +57,6 @@ object BlogEditingTests
       "not allow creation where no credentials are supplied" - {
         withSetup(
           database,
-          adminCredentials("user", "password"),
           runningApp
         ) { implicit env =>
           for {
@@ -73,7 +69,6 @@ object BlogEditingTests
       "not allow creation where the wrong credentials are supplied" - {
         withSetup(
           database,
-          adminCredentials("user", "password"),
           runningApp
         ) { implicit env =>
           for {
@@ -88,12 +83,11 @@ object BlogEditingTests
       "delete the blog entry at the specified ID where it already exists" - {
         withSetup(
           database,
-          adminCredentials("user", "password"),
           runningApp,
           blogEntries("existing" -> "# Existing!")
         ) { implicit env =>
           for {
-            createResponse <- delete("/admin/blog/existing", headers = BasicAuthorization("user", "password"))
+            createResponse <- delete("/admin/blog/existing", headers = TestApp.adminAuth)
             entryResponse <- get("/blog/existing")
           } yield {
             assert(createResponse.status == 204)
@@ -104,7 +98,6 @@ object BlogEditingTests
       "require admin priviliges" - {
         withSetup(
           database,
-          adminCredentials("user", "password"),
           runningApp,
           blogEntries("any-entry" -> "# Title")
         ) { implicit env =>
@@ -120,12 +113,11 @@ object BlogEditingTests
       "return a 404 when the blog entry does not exist" - {
         withSetup(
           database,
-          adminCredentials("user", "password"),
           runningApp,
           blogEntries()
         ) { implicit env =>
           for {
-            getResponse <- get("/admin/blog/does-not-exist", headers = BasicAuthorization("user", "password"))
+            getResponse <- get("/admin/blog/does-not-exist", headers = TestApp.adminAuth)
           } yield {
             assert(getResponse.status == 404)
           }
@@ -134,12 +126,11 @@ object BlogEditingTests
       "return the blog entry markdown doc when it does exist" - {
         withSetup(
           database,
-          adminCredentials("user", "password"),
           runningApp,
           blogEntries("does-exist" -> "# Title")
         ) { implicit env =>
           for {
-            getResponse <- get("/admin/blog/does-exist", headers = BasicAuthorization("user", "password"))
+            getResponse <- get("/admin/blog/does-exist", headers = TestApp.adminAuth)
           } yield {
             assert(getResponse.status == 200)
             assert(getResponse.body == "# Title")
@@ -149,7 +140,6 @@ object BlogEditingTests
       "require admin privileges" - {
         withSetup(
           database,
-          adminCredentials("user", "password"),
           runningApp,
           blogEntries()
         ) { implicit env =>

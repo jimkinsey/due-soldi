@@ -1,15 +1,13 @@
 package duesoldi
 
-import duesoldi.AdminSupport._
 import duesoldi.Setup.withSetup
 import duesoldi.httpclient.BasicAuthorization
 import duesoldi.storage.BlogStorage._
 import duesoldi.storage.Database._
 import duesoldi.testapp.ServerRequests._
+import duesoldi.testapp.TestApp
 import duesoldi.testapp.TestApp.runningApp
 import utest._
-
-import scala.concurrent.Future
 
 object AccessRecordingTests
   extends TestSuite 
@@ -20,7 +18,6 @@ object AccessRecordingTests
     "the access CSV endpoint" - {
       "returns a 401 for unauthorised access" - {
         withSetup(
-          adminCredentials("user", "password"),
           runningApp
         ) { implicit env =>
           for {
@@ -34,11 +31,10 @@ object AccessRecordingTests
       "serves a CSV file with a header when there are no metrics recorded" - {
         withSetup(
           database,
-          adminCredentials("user", "password"),
           runningApp
         ) { implicit env =>
           for {
-            response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("user", "password"))
+            response <- get("/admin/metrics/access.csv", headers = TestApp.adminAuth)
           } yield {
             assert(
               response.status == 200,
@@ -52,14 +48,13 @@ object AccessRecordingTests
       "serves a CSV file containing a row for each blog entry page request" - {
         withSetup(
           database,
-          adminCredentials("user", "password"),
           accessRecordingEnabled,
           runningApp,
           blogEntries("id" -> "# Content!")
         ) { implicit env =>
           for {
             _ <- get("/blog/id")
-            response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("user", "password"))
+            response <- get("/admin/metrics/access.csv", headers = TestApp.adminAuth)
           } yield {
             assert(
               response.body.lines exists(_.contains("/blog/id"))
@@ -71,7 +66,6 @@ object AccessRecordingTests
       "serves a CSV file containing a row for each blog index page request" - {
         withSetup(
           database,
-          adminCredentials("user", "password"),
           accessRecordingEnabled,
           runningApp,
           blogEntry("id" -> "# Content!")
@@ -83,7 +77,7 @@ object AccessRecordingTests
               "Cf-Connecting-Ip" -> "1.2.3.4",
               "Cf-Ipcountry" -> "IS"
             )
-            response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("user", "password"))
+            response <- get("/admin/metrics/access.csv", headers = TestApp.adminAuth)
           } yield {
             assert(response.body.lines exists(_.contains("/blog/")))
           }
@@ -93,7 +87,6 @@ object AccessRecordingTests
       "has no records for periods when access recording is disabled" - {
         withSetup(
           database,
-          adminCredentials("user", "password"),
           accessRecordingDisabled,
           runningApp,
           blogEntries("id" -> "# Content!")
@@ -101,7 +94,7 @@ object AccessRecordingTests
           for {
             _ <- get("/blog/")
             _ <- get("/blog/id")
-            response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("user", "password"))
+            response <- get("/admin/metrics/access.csv", headers = TestApp.adminAuth)
           } yield {
             assert(response.body.lines.toList.tail.isEmpty)
           }
