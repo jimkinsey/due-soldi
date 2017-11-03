@@ -24,5 +24,6 @@ object TransformerOps {
 
   implicit class OptionTOps[T](val transformer: OptionT[Future, T])(implicit executionContext: ExecutionContext) {
     def failWith[L](ifNone: => L): EitherT[Future, L, T] = transformer.toRight(ifNone)
+    def failOnSomeWith[L](ifSome: T => L): EitherT[Future, L, Unit] = transformer.map(ifSome).toRight({}).swap
   }
 }

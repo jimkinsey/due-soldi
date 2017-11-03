@@ -32,14 +32,16 @@ object TestApp
     "ADMIN_CREDENTIALS" -> "user:password"
   )
 
-  private var app: Server = _
+  private var running: Server = _
 
-  def attemptStop() = app.stop()
+  def app: Server = running
 
-  def attemptStart(implicit executionContext: ExecutionContext) = {
+  def attemptStop(): Future[Unit] = running.stop()
+
+  def attemptStart(implicit executionContext: ExecutionContext): Unit = {
     App.start(testEnv)
       .foreach { s =>
-        app = s
+        running = s
       }
   }
 

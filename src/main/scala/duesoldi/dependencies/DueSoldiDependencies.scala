@@ -77,4 +77,6 @@ object DueSoldiDependencies
   implicit val adminCredentials: Inject[Credentials] = _.adminCredentials
 
   implicit lazy val config: Inject[Config] = config => config
+
+  implicit val markdownParser: Inject[MarkdownParser] = _ => new MarkdownParser
 }
