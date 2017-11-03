@@ -33,9 +33,9 @@ object TestApp
     "ADMIN_CREDENTIALS" -> "user:password"
   )
 
-  private var running: Server = _
-
   val adminAuth = BasicAuthorization("user", "password")
+
+  private var running: Server = _
 
   def app: Server = running
 
