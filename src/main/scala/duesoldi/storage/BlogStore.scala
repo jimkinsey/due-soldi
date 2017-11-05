@@ -1,74 +1,55 @@
 package duesoldi.storage
 
-import java.sql.Timestamp
-import java.time.{ZoneId, ZonedDateTime}
+import java.sql.{ResultSet, Timestamp}
+import java.time.ZoneId
 
-import duesoldi.markdown.{MarkdownDocument, MarkdownParser}
+import duesoldi.markdown.MarkdownParser
 import duesoldi.model.BlogEntry
-import duesoldi.storage.BlogStore.{Created, Failure}
-import duesoldi.storage.JDBCConnection.ConnectionDetails
-import duesoldi.validation.ValidIdentifier
+import duesoldi.storage.JDBCConnection.{PerformQuery, PerformUpdate}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
-trait BlogStore {
-  def entry(name: String): Future[Option[BlogEntry]]
-  def entries: Future[Seq[BlogEntry]]
-  def store(entry: BlogEntry): Future[Either[Failure.type, Created.type]]
-  def delete(name: String): Future[Unit]
-}
-
-object BlogStore {
-  sealed trait StoreResult
-  case object Created extends StoreResult
-  case object Failure extends StoreResult
-}
-
-class JDBCBlogStore(val connectionDetails: ConnectionDetails, parser: MarkdownParser)(implicit executionContext: ExecutionContext) extends BlogStore with JDBCConnection {
-
-  override def entry(name: String): Future[Option[BlogEntry]] = Future.fromTry {
-    withConnection { implicit connection =>
-      queryResults("SELECT id, published, content FROM blog_entry WHERE id = ?", name).map { row =>
-        blogEntry(
-          id = row.getString(1),
-          content = row.getString(3),
-          published = row.getTimestamp(2).toInstant.atZone(ZoneId.of("UTC+1"))
-        )
-      }.toList.headOption
-    }
+object BlogStore
+{
+  sealed trait PutResult
+  object PutResult {
+    case object Created extends PutResult
+    case object Failure extends PutResult
   }
 
-  override def entries: Future[Seq[BlogEntry]] = Future.fromTry {
-    withConnection { implicit connection =>
-      queryResults("SELECT id, published, content FROM blog_entry").map { row =>
-        blogEntry(
-          id = row.getString(1),
-          content = row.getString(3),
-          published = row.getTimestamp(2).toInstant.atZone(ZoneId.of("UTC+1"))
-        )
-      }.toList
-    }
-  }
-
-  override def store(entry: BlogEntry): Future[Either[Failure.type , Created.type]] = Future.fromTry {
-    withConnection { implicit connection =>
-      updateResults("INSERT INTO blog_entry ( id, published, content ) VALUES ( ?, ?, ? )", entry.id, Timestamp.from(entry.lastModified.toInstant), entry.content.raw)
-      Right(Created)
-    }
-  }
-
-  override def delete(name: String): Future[Unit] = Future.fromTry {
-    withConnection { implicit connection =>
-      updateResults("DELETE FROM blog_entry WHERE id = ?", name)
-    }
-  }
-
-  private def blogEntry(id: String, published: ZonedDateTime, content: String): BlogEntry = {
+  def toBlogEntry(markdownParser: MarkdownParser): (ResultSet => BlogEntry) = { row =>
     BlogEntry(
-      id = id,
-      content = parser.markdown(content),
-      lastModified = published
+      id = row.getString("id"),
+      lastModified = row.getTimestamp("published").toInstant.atZone(ZoneId.of("UTC+1")),
+      content = markdownParser.markdown(row.getString("content"))
     )
   }
 
+  def getOne(performQuery: PerformQuery[BlogEntry])(name: String): Future[Option[BlogEntry]] = Future.fromTry {
+    performQuery("SELECT id, published, content FROM blog_entry WHERE id = ?", Seq(name)).map {
+      _.headOption
+    }
+  }
+
+  def getAll(performQuery: PerformQuery[BlogEntry]): () => Future[List[BlogEntry]] = () => Future.fromTry {
+    performQuery("SELECT id, published, content FROM blog_entry", Seq.empty)
+  }
+
+  def put(performUpdate: PerformUpdate)(entry: BlogEntry): Future[Either[PutResult.Failure.type,PutResult.Created.type]] = Future.successful {
+    performUpdate("INSERT INTO blog_entry ( id, published, content ) VALUES ( ?, ?, ? )",
+      Seq(
+        entry.id,
+        Timestamp.from(entry.lastModified.toInstant),
+        entry.content.raw
+      )
+    ) match {
+      case Success(_) => Right(PutResult.Created)
+      case Failure(_) => Left(PutResult.Failure)
+    }
+  }
+
+  def delete(performUpdate: PerformUpdate)(name: String): Future[Unit] = Future.fromTry {
+    performUpdate("DELETE FROM blog_entry WHERE id = ?", Seq(name)) map (_ => {})
+  }
 }

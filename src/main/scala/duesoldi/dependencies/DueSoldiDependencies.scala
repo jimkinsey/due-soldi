@@ -1,7 +1,10 @@
 package duesoldi.dependencies
 
+import java.sql.ResultSet
+
 import duesoldi.config.Config
 import duesoldi.config.Config.Credentials
+import duesoldi.controller.BlogEditingRoutes.{DeleteBlogEntry, GetBlogEntry, PutBlogEntry}
 import duesoldi.controller.BlogEntryRoutes.MakeEntryPage
 import duesoldi.controller.BlogIndexRoutes.MakeIndexPage
 import duesoldi.controller.DebugRoutes.{MakeConfigPage, MakeHeadersPage}
@@ -10,9 +13,12 @@ import duesoldi.dependencies.Injection._
 import duesoldi.events.Events
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.markdown.MarkdownParser
+import duesoldi.model.BlogEntry
+import duesoldi.page.IndexPageMaker.GetAllBlogEntries
 import duesoldi.page.{EntryPageMaker, EntryPageModel, IndexPageMaker, IndexPageModel}
 import duesoldi.rendering.Renderer
-import duesoldi.storage.{AccessRecordStorage, AccessRecordStore, JDBCAccessRecordStore, JDBCBlogStore}
+import duesoldi.storage.JDBCConnection.{ConnectionDetails, PerformQuery, PerformUpdate}
+import duesoldi.storage._
 import duesoldi.validation.ValidIdentifier
 
 import scala.concurrent.ExecutionContext
@@ -45,17 +51,6 @@ object DueSoldiDependencies
     _ => Renderer.render
   }
 
-  implicit def entry(implicit executionContext: ExecutionContext): Inject[duesoldi.storage.blog.Entry] = {
-    config =>
-      val blogStore = new JDBCBlogStore(config.jdbcConnectionDetails, new MarkdownParser)
-      blogStore.entry
-  }
-
-  implicit def blogStore(implicit executionContext: ExecutionContext): Inject[duesoldi.storage.BlogStore] = {
-    config =>
-      new JDBCBlogStore(config.jdbcConnectionDetails, new MarkdownParser)
-  }
-
   implicit val validIdentifier: Inject[duesoldi.validation.ValidIdentifier] = _ => ValidIdentifier.apply
 
   implicit val entryPageModel: Inject[EntryPageMaker.Model] = EntryPageModel.pageModel
@@ -79,4 +74,35 @@ object DueSoldiDependencies
   implicit lazy val config: Inject[Config] = config => config
 
   implicit val markdownParser: Inject[MarkdownParser] = _ => new MarkdownParser
+
+  implicit val jdbcConnectionDetails: Inject[ConnectionDetails] = _.jdbcConnectionDetails
+
+  implicit val jdbcPerformUpdate: Inject[PerformUpdate] = { config =>
+    JDBCConnection.performUpdate(
+      JDBCConnection.openConnection(config.jdbcConnectionDetails),
+      JDBCConnection.prepareStatement,
+      JDBCConnection.executeUpdate
+    )
+  }
+
+  implicit def jdbcPerformQuery[T](implicit translate: ResultSet => T): Inject[PerformQuery[T]] = { config =>
+    JDBCConnection.performQuery(
+      JDBCConnection.openConnection(config.jdbcConnectionDetails),
+      JDBCConnection.prepareStatement,
+      JDBCConnection.executeQuery
+    )
+  }
+
+  implicit val getBlogEntry: Inject[GetBlogEntry] = { config =>
+    BlogStore.getOne(jdbcPerformQuery[BlogEntry](BlogStore.toBlogEntry(markdownParser(config)))(config))
+  }
+
+  implicit val getAllBlogEntries: Inject[GetAllBlogEntries] = { config =>
+    BlogStore.getAll(jdbcPerformQuery[BlogEntry](BlogStore.toBlogEntry(markdownParser(config)))(config))
+  }
+
+  implicit val putBlogEntry: Inject[PutBlogEntry] = inject(BlogStore.put _)
+
+  implicit val deleteBlogEntry: Inject[DeleteBlogEntry] = inject(BlogStore.delete _)
+
 }
