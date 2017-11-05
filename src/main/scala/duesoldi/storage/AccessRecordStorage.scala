@@ -4,14 +4,16 @@ import duesoldi.events.Events
 import duesoldi.storage.AccessRecordStorage.Event.{RecordFailure, RecordSuccess}
 import duesoldi.storage.AccessRecordStore.Access
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Failure
 
 object AccessRecordStorage
 {
-  def enable(events: Events, store: AccessRecordStore)(implicit executionContext: ExecutionContext) {
+  type StoreAccessRecord = (Access) => Future[Unit]
+
+  def enable(events: Events, store: StoreAccessRecord)(implicit executionContext: ExecutionContext) {
     events.respondTo {
-      case access: Access => store.record(access).onComplete {
+      case access: Access => store(access).onComplete {
         case Failure(ex) =>
           events.emit(RecordFailure(ex))
         case _ =>

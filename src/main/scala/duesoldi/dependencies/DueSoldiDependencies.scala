@@ -8,6 +8,7 @@ import duesoldi.controller.BlogEditingRoutes.{DeleteBlogEntry, GetBlogEntry, Put
 import duesoldi.controller.BlogEntryRoutes.MakeEntryPage
 import duesoldi.controller.BlogIndexRoutes.MakeIndexPage
 import duesoldi.controller.DebugRoutes.{MakeConfigPage, MakeHeadersPage}
+import duesoldi.controller.MetricsRoutes.GetAccessRecords
 import duesoldi.controller.{ConfigPageMaker, HeadersPageMaker}
 import duesoldi.dependencies.Injection._
 import duesoldi.events.Events
@@ -17,6 +18,7 @@ import duesoldi.model.BlogEntry
 import duesoldi.page.IndexPageMaker.GetAllBlogEntries
 import duesoldi.page.{EntryPageMaker, EntryPageModel, IndexPageMaker, IndexPageModel}
 import duesoldi.rendering.Renderer
+import duesoldi.storage.AccessRecordStore.Access
 import duesoldi.storage.JDBCConnection.{ConnectionDetails, PerformQuery, PerformUpdate}
 import duesoldi.storage._
 import duesoldi.validation.ValidIdentifier
@@ -37,14 +39,13 @@ object DueSoldiDependencies
         EventLogging.enable(events, logger(config))
       }
       if (config.accessRecordingEnabled) {
-        AccessRecordStorage.enable(events, accessRecordStore(executionContext)(config))
+        AccessRecordStorage.enable(events, AccessRecordStore.put(jdbcPerformUpdate(config)))
       }
       events emit _
   }
 
-  implicit def accessRecordStore(implicit executionContext: ExecutionContext): Inject[AccessRecordStore] = {
-    config =>
-      new JDBCAccessRecordStore(config.jdbcConnectionDetails)
+  implicit val getAccessRecords: Inject[GetAccessRecords] = { config =>
+    AccessRecordStore.getAll(jdbcPerformQuery[Access](AccessRecordStore.toAccess)(config))
   }
 
   implicit def render(implicit executionContext: ExecutionContext): Inject[duesoldi.rendering.Rendered] = {
