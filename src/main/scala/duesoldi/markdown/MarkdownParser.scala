@@ -10,25 +10,11 @@ import duesoldi.markdown.MarkdownDocument._
 import scala.collection.JavaConverters._
 import scala.language.implicitConversions
 
-private object Flexmark {
-  type Heading = ast.Heading
-  type Paragraph = ast.Paragraph
-  type Text = ast.Text
-  type Emphasis = ast.Emphasis
-  type Strong = ast.StrongEmphasis
-  type Code = ast.IndentedCodeBlock
-  type InlineCode = ast.Code
-  type Link = ast.Link
-  type BulletList = ast.BulletList
-  type OrderedList = ast.OrderedList
-  type BlockQuote = ast.BlockQuote
-  type LineBreak = ast.SoftLineBreak
-  type HorizontalRule = ast.ThematicBreak
-  type Image = ast.Image
-}
+object MarkdownParser
+{
+  type ParseMarkdown = (String) => MarkdownDocument
 
-class MarkdownParser {
-  def markdown(raw: String): MarkdownDocument = {
+  def parseMarkdown(raw: String): MarkdownDocument = {
     val parser: IParse = Parser.builder().build()
     val document: Node = parser.parse(raw)
     MarkdownDocument(translated(document.getChildren), raw)
@@ -67,4 +53,21 @@ class MarkdownParser {
     case _                         => nodes
   }
 
+  private object Flexmark
+  {
+    type Heading = ast.Heading
+    type Paragraph = ast.Paragraph
+    type Text = ast.Text
+    type Emphasis = ast.Emphasis
+    type Strong = ast.StrongEmphasis
+    type Code = ast.IndentedCodeBlock
+    type InlineCode = ast.Code
+    type Link = ast.Link
+    type BulletList = ast.BulletList
+    type OrderedList = ast.OrderedList
+    type BlockQuote = ast.BlockQuote
+    type LineBreak = ast.SoftLineBreak
+    type HorizontalRule = ast.ThematicBreak
+    type Image = ast.Image
+  }
 }

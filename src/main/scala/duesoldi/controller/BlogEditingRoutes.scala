@@ -7,7 +7,7 @@ import duesoldi.config.Config.Credentials
 import duesoldi.controller.AdminAuthentication.adminsOnly
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
-import duesoldi.markdown.MarkdownParser
+import duesoldi.markdown.MarkdownParser.ParseMarkdown
 import duesoldi.model.BlogEntry
 import duesoldi.storage.BlogStore
 import duesoldi.validation.{ValidBlogContent, ValidIdentifier}
@@ -26,7 +26,7 @@ object BlogEditingRoutes
   def blogEditingRoutes(implicit executionContext: ExecutionContext,
                         inject: RequestDependencyInjector): Route =
     path("admin" / "blog" / Remaining) { id =>
-      inject.dependencies[Credentials, MarkdownParser] into { case (credentials, contentParser) =>
+      inject.dependencies[Credentials, ParseMarkdown] into { case (credentials, parseMarkdown) =>
         adminsOnly(credentials) {
           put {
             entity(as[String]) { content =>
@@ -36,7 +36,7 @@ object BlogEditingRoutes
                     _ <- ValidIdentifier(id).failWith({
                       s"Identifier invalid: '$id'"
                     })
-                    document = contentParser.markdown(content)
+                    document = parseMarkdown(content)
                     _ <- ValidBlogContent(document).failOnSomeWith(reason => s"Content invalid: $reason")
                     result <- putBlogEntry(BlogEntry(id, document)).failWith(_ => "Failed to store entry")
                   } yield {

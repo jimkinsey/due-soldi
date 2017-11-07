@@ -14,6 +14,7 @@ import duesoldi.events.Events
 import duesoldi.furniture.{CurrentFurniturePath, Furniture}
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.markdown.MarkdownParser
+import duesoldi.markdown.MarkdownParser.ParseMarkdown
 import duesoldi.model.BlogEntry
 import duesoldi.page.IndexPageMaker.GetAllBlogEntries
 import duesoldi.page.{ConfigPageMaker, _}
@@ -93,18 +94,18 @@ object DueSoldiDependencies
   }
 
   implicit val getBlogEntry: Inject[GetBlogEntry] = { config =>
-    BlogStore.getOne(jdbcPerformQuery[BlogEntry](BlogStore.toBlogEntry(markdownParser(config)))(config))
+    BlogStore.getOne(jdbcPerformQuery[BlogEntry](BlogStore.toBlogEntry(parseMarkdown(config)))(config))
   }
 
   implicit val getAllBlogEntries: Inject[GetAllBlogEntries] = { config =>
-    BlogStore.getAll(jdbcPerformQuery[BlogEntry](BlogStore.toBlogEntry(markdownParser(config)))(config))
+    BlogStore.getAll(jdbcPerformQuery[BlogEntry](BlogStore.toBlogEntry(parseMarkdown(config)))(config))
   }
 
   implicit val putBlogEntry: Inject[PutBlogEntry] = inject(BlogStore.put _)
 
   implicit val deleteBlogEntry: Inject[DeleteBlogEntry] = inject(BlogStore.delete _)
 
-  implicit lazy val markdownParser: Inject[MarkdownParser] = _ => new MarkdownParser
+  implicit lazy val parseMarkdown: Inject[ParseMarkdown] = _ => MarkdownParser.parseMarkdown
 
   implicit lazy val currentFurniturePath: Inject[CurrentFurniturePath] = config => Furniture.currentPath(config.furniturePath)
 }

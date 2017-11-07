@@ -3,6 +3,7 @@ package duesoldi.test.unit
 import duesoldi.markdown.MarkdownDocument._
 import duesoldi.markdown.MarkdownParser
 import utest._
+import MarkdownParser.parseMarkdown
 
 object MarkdownParserTests
 extends TestSuite
@@ -12,37 +13,37 @@ extends TestSuite
     'level_headings
     {
       (1 to 6).foreach { level =>
-        assert(parser.markdown(s"${"#" * level} Title").nodes == Seq(Heading(Seq(Text("Title")), level)))
+        assert(parseMarkdown(s"${"#" * level} Title").nodes == Seq(Heading(Seq(Text("Title")), level)))
       }
     }
     'heading_emphasis
     {
-      assert(parser.markdown(s"## _emphasising_ things").nodes == Seq(Heading(Seq(Emphasis("emphasising"), Text(" things")), 2)))
+      assert(parseMarkdown(s"## _emphasising_ things").nodes == Seq(Heading(Seq(Emphasis("emphasising"), Text(" things")), 2)))
     }
     'emphasis
     {
-      assert(parser.markdown("_emphasised_").nodes == Seq(Paragraph(Seq(Emphasis("emphasised")))))
+      assert(parseMarkdown("_emphasised_").nodes == Seq(Paragraph(Seq(Emphasis("emphasised")))))
     }
     'strong_emphasis
     {
-      assert(parser.markdown("**emphasised**").nodes == Seq(Paragraph(Seq(Strong("emphasised")))))
+      assert(parseMarkdown("**emphasised**").nodes == Seq(Paragraph(Seq(Strong("emphasised")))))
     }
     'paragraph_text
     {
-      assert(parser.markdown("some text").nodes == Seq(Paragraph(Seq(Text("some text")))))
+      assert(parseMarkdown("some text").nodes == Seq(Paragraph(Seq(Text("some text")))))
     }
     'code_blocks
     {
-      assert(parser.markdown("    parser.markdown(").nodes == Seq(Code("parser.markdown(")))
+      assert(parseMarkdown("    markdown(").nodes == Seq(Code("markdown(")))
     }
     'inline_code
     {
-      assert(parser.markdown("`markdown(str: String)`").nodes == Seq(Paragraph(Seq(InlineCode("markdown(str: String)")))))
+      assert(parseMarkdown("`markdown(str: String)`").nodes == Seq(Paragraph(Seq(InlineCode("markdown(str: String)")))))
     }
     'inline_links
     {
       assert(
-        parser.markdown("This is [an example](http://example.com/ \"Title\") inline link.").nodes == {
+        parseMarkdown("This is [an example](http://example.com/ \"Title\") inline link.").nodes == {
           Seq(Paragraph(Seq(Text("This is "), InlineLink("an example", "http://example.com/", Some("Title")), Text(" inline link."))))
         }
       )
@@ -50,7 +51,7 @@ extends TestSuite
     'unordered_lists
     {
       assert(
-        parser.markdown(
+        parseMarkdown(
           """ * one
             | * two
             | * three
@@ -67,7 +68,7 @@ extends TestSuite
     'ordered_lists
     {
       assert(
-        parser.markdown(
+        parseMarkdown(
           """ 1. A
             | 2. B
             | 3. C
@@ -83,7 +84,7 @@ extends TestSuite
     'block_quotes
     {
       assert(
-        parser.markdown(
+        parseMarkdown(
           """> Good morning.
             |>
             |> In less than an hour, aircraft from here will join others from around the world. And you will be launching the largest aerial battle in the history of mankind.
@@ -102,7 +103,7 @@ extends TestSuite
     'line_breaks
     {
       assert(
-        parser.markdown(
+        parseMarkdown(
           """10: PRINT "Hello"
             |20: GOTO 10""".stripMargin).nodes == {
           Seq(Paragraph(Seq(Text("""10: PRINT "Hello""""), LineBreak, Text("""20: GOTO 10"""))))
@@ -111,21 +112,19 @@ extends TestSuite
     }
     'horizontal_rules
     {
-      assert(parser.markdown("***").nodes == Seq(HorizontalRule))
+      assert(parseMarkdown("***").nodes == Seq(HorizontalRule))
     }
     'images
     {
       assert(
-        parser.markdown("![Alt text](/path/to/img.jpg \"Optional title\")").nodes == {
+        parseMarkdown("![Alt text](/path/to/img.jpg \"Optional title\")").nodes == {
           Seq(Paragraph(Seq(Image(alt = "Alt text", src = "/path/to/img.jpg", title = Some("Optional title")))))
         }
       )
     }
     'include_raw_source
     {
-      assert(parser.markdown("# here me raw").raw == "# here me raw")
+      assert(parseMarkdown("# here me raw").raw == "# here me raw")
     }
   }
-
-  private lazy val parser = new MarkdownParser
 }
