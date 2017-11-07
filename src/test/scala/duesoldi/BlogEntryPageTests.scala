@@ -176,6 +176,23 @@ object BlogEntryPageTests
           }
         }
       }
+      "has a linked CSS file to provide styling" - {
+        withSetup(
+          database,
+          runningApp,
+          blogEntries("title" -> "# Title")
+        ) { implicit env =>
+          for {
+            response <- get("/blog/title")
+            page = new BlogEntryPage(response.body)
+            cssResponse <- get(page.cssUrl)
+          } yield {
+            assert(
+              cssResponse.status == 200
+            )
+          }
+        }
+      }
     }
   }
 }

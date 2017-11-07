@@ -19,7 +19,7 @@ object FurnitureRoutes
     path("furniture" / LongNumber / Remaining) { case (version, path) =>
       inject.dependency[CurrentFurniturePath] into { currentVersion =>
         currentVersion(path) match {
-          case Right((currentPath, file)) if currentPath == s"/$version/$path" =>
+          case Right((currentPath, file)) if currentPath == s"/furniture/$version/$path" =>
             respondWithHeaders(
               RawHeader("Cache-Control", "max-age=3600"),
               RawHeader("Expires", ZonedDateTime.now().plusHours(1).format(RFC_1123_DATE_TIME))
