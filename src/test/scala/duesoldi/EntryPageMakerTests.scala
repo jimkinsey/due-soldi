@@ -7,7 +7,7 @@ import duesoldi.markdown.MarkdownDocument
 import duesoldi.model.BlogEntry
 import duesoldi.page.EntryPageMaker.Failure.{EntryNotFound, InvalidId}
 import duesoldi.page.EntryPageMaker.{Failure, Model, entryPage}
-import duesoldi.rendering.{BlogEntryPageModel, Rendered}
+import duesoldi.rendering.{BlogEntryPageModel, Render}
 import duesoldi.storage.blog.Entry
 import duesoldi.test.matchers.CustomMatchers._
 import duesoldi.validation.ValidIdentifier
@@ -25,7 +25,7 @@ object EntryPageMakerTests
     validIdentifier: ValidIdentifier = validatesIdentifier,
     entry: Entry = returnsEntry("test"),
     model: Model = returnsModel(),
-    rendered: Rendered = renders("some html")
+    rendered: Render = renders("some html")
   )(block: (MakeEntryPage, EventRecorder) => T): T = {
     val recorder = new EventRecorder
     val emit: Emit = recorder.emit
@@ -93,10 +93,10 @@ object EntryPageMakerTests
 
   private lazy val validatesIdentifier: duesoldi.validation.ValidIdentifier = Option.apply
   private lazy val invalidIdentifier: duesoldi.validation.ValidIdentifier = _ => None
-  private def returnsModel(): Model = _ => BlogEntryPageModel("title", "yesterday", "hello", "1")
-  private lazy val rendersNothing: Rendered = (_, _) => Future.successful(Right(""))
-  private lazy val failsToRender: Rendered = (_, _) => Future.successful(Left(bhuj.TemplateNotFound("foo")))
-  private def renders(result: String): Rendered = (_, _) => Future.successful(Right(result))
+  private def returnsModel(): Model = _ => BlogEntryPageModel("title", "yesterday", "hello")
+  private lazy val rendersNothing: Render = (_, _) => Future.successful(Right(""))
+  private lazy val failsToRender: Render = (_, _) => Future.successful(Left(bhuj.TemplateNotFound("foo")))
+  private def renders(result: String): Render = (_, _) => Future.successful(Right(result))
   private lazy val noEntry: Entry = _ => Future.successful(None)
   private def returnsEntry(name: String): Entry = _ => Future.successful(Some(BlogEntry("hello", MarkdownDocument.empty)))
 }

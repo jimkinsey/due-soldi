@@ -12,6 +12,7 @@ import duesoldi.controller.MetricsRoutes.GetAccessRecords
 import duesoldi.controller.{ConfigPageMaker, HeadersPageMaker}
 import duesoldi.dependencies.Injection._
 import duesoldi.events.Events
+import duesoldi.furniture.{CurrentFurniturePath, Furniture}
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.markdown.MarkdownParser
 import duesoldi.model.BlogEntry
@@ -48,19 +49,19 @@ object DueSoldiDependencies
     AccessRecordStore.getAll(jdbcPerformQuery[Access](AccessRecordStore.toAccess)(config))
   }
 
-  implicit def render(implicit executionContext: ExecutionContext): Inject[duesoldi.rendering.Rendered] = {
-    _ => Renderer.render
+  implicit def render(implicit executionContext: ExecutionContext): Inject[duesoldi.rendering.Render] = {
+    inject(Renderer.render _)
   }
 
   implicit val validIdentifier: Inject[duesoldi.validation.ValidIdentifier] = _ => ValidIdentifier.apply
 
-  implicit val entryPageModel: Inject[EntryPageMaker.Model] = EntryPageModel.pageModel
+  implicit val entryPageModel: Inject[EntryPageMaker.Model] = _ => EntryPageModel.pageModel
 
   implicit def makeEntryPage(implicit executionContext: ExecutionContext): Inject[MakeEntryPage] = {
     inject(EntryPageMaker.entryPage _)
   }
 
-  implicit val indexPageModel:  Inject[IndexPageMaker.Model] = IndexPageModel.pageModel
+  implicit val indexPageModel:  Inject[IndexPageMaker.Model] = _ => IndexPageModel.pageModel
 
   implicit def makeIndexPage(implicit executionContext: ExecutionContext): Inject[MakeIndexPage] = {
     inject(IndexPageMaker.makeIndexPage _)
@@ -73,8 +74,6 @@ object DueSoldiDependencies
   implicit val adminCredentials: Inject[Credentials] = _.adminCredentials
 
   implicit lazy val config: Inject[Config] = config => config
-
-  implicit val markdownParser: Inject[MarkdownParser] = _ => new MarkdownParser
 
   implicit val jdbcConnectionDetails: Inject[ConnectionDetails] = _.jdbcConnectionDetails
 
@@ -106,4 +105,7 @@ object DueSoldiDependencies
 
   implicit val deleteBlogEntry: Inject[DeleteBlogEntry] = inject(BlogStore.delete _)
 
+  implicit lazy val markdownParser: Inject[MarkdownParser] = _ => new MarkdownParser
+
+  implicit lazy val currentFurniturePath: Inject[CurrentFurniturePath] = config => Furniture.currentPath(config.furniturePath)
 }

@@ -9,9 +9,7 @@ import scala.concurrent.duration.Duration
 case class Config(
   host: String,
   port: Int,
-  furnitureVersion: String,
   furniturePath: String,
-  furnitureCacheDuration: Duration,
   adminCredentials: Credentials,
   accessRecordingEnabled: Boolean,
   jdbcConnectionDetails: JDBCConnection.ConnectionDetails,

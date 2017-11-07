@@ -1,44 +1,36 @@
 package duesoldi.controller
 
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
 
-import akka.http.scaladsl.server.RejectionHandler
-import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.StatusCodes.{BadRequest, NotFound}
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import duesoldi.config.Config
+import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
+import duesoldi.furniture.CurrentFurniturePath
 
 import scala.concurrent.ExecutionContext
 
 object FurnitureRoutes
 {
   def furnitureRoutes(implicit executionContext: ExecutionContext, inject: RequestDependencyInjector): Route =
-    path("furniture" / Segment / Remaining) { case (version, remaining) =>
-      inject.dependency[Config] into { config =>
-        if (version == config.furnitureVersion) {
-          handleRejections(fileFailure) {
-            val maxAge = config.furnitureCacheDuration.toSeconds
+    path("furniture" / LongNumber / Remaining) { case (version, path) =>
+      inject.dependency[CurrentFurniturePath] into { currentVersion =>
+        currentVersion(path) match {
+          case Right((currentPath, file)) if currentPath == s"/$version/$path" =>
             respondWithHeaders(
-              RawHeader("Cache-Control", s"max-age=$maxAge"),
-              RawHeader("Expires", ZonedDateTime.now().plusSeconds(maxAge).format(DateTimeFormatter.RFC_1123_DATE_TIME))
+              RawHeader("Cache-Control", "max-age=3600"),
+              RawHeader("Expires", ZonedDateTime.now().plusHours(1).format(RFC_1123_DATE_TIME))
             ) {
-              getFromFile(config.furniturePath + "/" + remaining)
+              getFromFile(file)
             }
-          }
-        }
-        else {
-          complete {
-            HttpResponse(BadRequest)
-          }
+          case Right(_) =>
+            complete { BadRequest -> "Invalid path" }
+          case _ =>
+            complete { NotFound -> "File not found" }
         }
       }
     }
-
-  private lazy val fileFailure = RejectionHandler.newBuilder
-    .handleNotFound( complete(HttpResponse(NotFound)) )
-    .result()
 }

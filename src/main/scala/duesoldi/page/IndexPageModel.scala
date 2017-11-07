@@ -2,15 +2,13 @@ package duesoldi.page
 
 import java.time.format.DateTimeFormatter
 
-import duesoldi.config.Config
 import duesoldi.markdown.MarkdownDocument
 import duesoldi.model.BlogEntry
 import duesoldi.rendering.BlogIndexPageModel
 
 object IndexPageModel
 {
-  def pageModel(config: Config)
-               (entries: Seq[BlogEntry]) = BlogIndexPageModel(
+  def pageModel(entries: Seq[BlogEntry]) = BlogIndexPageModel(
     entries = entries.sortBy(_.lastModified.toEpochSecond()).reverse.map {
       case BlogEntry(id, content, lastModified) =>
         BlogIndexPageModel.Entry(
@@ -18,7 +16,6 @@ object IndexPageModel
           title = MarkdownDocument.title(content).getOrElse("-untitled-"),
           id = id
         )
-    },
-    furnitureVersion = config.furnitureVersion
+    }
   )
 }

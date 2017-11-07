@@ -1,7 +1,7 @@
 package duesoldi.page
 
 import duesoldi.model.BlogEntry
-import duesoldi.rendering.{BlogIndexPageModel, Rendered}
+import duesoldi.rendering.{BlogIndexPageModel, Render}
 import duesoldi.validation.ValidIdentifier
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -14,7 +14,7 @@ object IndexPageMaker
 
   type GetAllBlogEntries = () => Future[List[BlogEntry]]
 
-  def makeIndexPage(pageModel: Model, rendered: Rendered, getEntries: GetAllBlogEntries)
+  def makeIndexPage(pageModel: Model, rendered: Render, getEntries: GetAllBlogEntries)
                    (implicit executionContext: ExecutionContext): () => Result = { () =>
     for {
       entries <- blogEntries(getEntries).propagate[Failure]

@@ -12,10 +12,10 @@ object EntryPageMaker {
   import duesoldi.transformers.TransformerOps._
 
   def entryPage(validId: duesoldi.validation.ValidIdentifier,
-               entry: duesoldi.storage.blog.Entry,
-               pageModel: Model,
-               rendered: duesoldi.rendering.Rendered,
-               emit: duesoldi.events.Emit = duesoldi.events.noopEmit)
+                entry: duesoldi.storage.blog.Entry,
+                pageModel: Model,
+                rendered: duesoldi.rendering.Render,
+                emit: duesoldi.events.Emit = duesoldi.events.noopEmit)
                (implicit executionContext: ExecutionContext): MakeEntryPage = { entryId: String =>
     (for {
       _ <- validId(entryId).failWith({ InvalidId(entryId) })

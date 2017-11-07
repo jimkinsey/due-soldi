@@ -21,11 +21,12 @@ object FurnitureTests
     "furniture requests" - {
       "serve the file from the furniture directory" - {
         withSetup(
-          furniture(version = "1.0.0")("chair.txt" -> "four legs, a seat and a back"),
+          furniture("chair.txt" -> "four legs, a seat and a back"),
           runningApp
         ) { implicit env =>
           for {
-            response <- get("/furniture/1.0.0/chair.txt")
+            file <- furnitureFile("chair.txt")
+            response <- get(s"/furniture/${file.lastModified()}/chair.txt")
           } yield {
             assert(response.status == 200)
           }
@@ -33,7 +34,7 @@ object FurnitureTests
       }
       "404 for a non-existent furniture file" - {
         withSetup(
-          furniture(version = "1.0.0")(),
+          furniture(),
           runningApp
         ) { implicit env =>
           for {
@@ -45,11 +46,12 @@ object FurnitureTests
       }
       "400 for an existing furniture file with the wrong version in the path" - {
         withSetup(
-          furniture(version = "5.0.0")("sofa.txt" -> "aaaaahhh..."),
+          furniture("sofa.txt" -> "aaaaahhh..."),
           runningApp
         ) { implicit env =>
           for {
-            response <- get("/furniture/4.0.0/sofa.txt")
+            file <- furnitureFile("sofa.txt")
+            response <- get(s"/furniture/${file.lastModified() + 1}/sofa.txt")
           } yield {
             assert(response.status == 400)
           }
@@ -57,11 +59,12 @@ object FurnitureTests
       }
       "include cache headers when furniture caching is enabled" - {
         withSetup(
-          furniture(version = "3.0.0", cacheDuration = Some("1hour"))("cupboard.txt" -> "bare"),
+          furniture("cupboard.txt" -> "bare"),
           runningApp
         ) { implicit env =>
           for {
-            response <- get("/furniture/3.0.0/cupboard.txt")
+            file <- furnitureFile("cupboard.txt")
+            response <- get(s"/furniture/${file.lastModified()}/cupboard.txt")
           } yield {
             assert(
               response.headers.toSeq.contains("Cache-Control" -> Seq("max-age=3600")),
@@ -73,7 +76,7 @@ object FurnitureTests
     }
   }
 
-  def furniture(version: String, cacheDuration: Option[String] = None)(files: (String, String)*) = new SyncSetup {
+  def furniture(files: (String, String)*) = new SyncSetup {
     lazy val path = s"/tmp/furniture/${UUID.randomUUID().toString.take(6)}"
 
     override def setup(env: Env) = {
@@ -85,11 +88,15 @@ object FurnitureTests
         writer.write(content)
         writer.close()
       }
-      Map("FURNITURE_PATH" -> path) + ("FURNITURE_VERSION" -> version) + ("FURNITURE_CACHE_DURATION" -> cacheDuration.getOrElse("0"))
+      Map("FURNITURE_PATH" -> path)
     }
 
     override def tearDown = {
       DeleteDir(new File(path).toPath)
     }
+  }
+
+  def furnitureFile(name: String)(implicit env: Env): Future[File] = {
+    Future.successful(new File(s"${env("FURNITURE_PATH")}/$name"))
   }
 }
