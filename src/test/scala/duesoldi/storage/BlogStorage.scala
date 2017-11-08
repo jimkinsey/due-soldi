@@ -8,8 +8,8 @@ import duesoldi.{AsyncSetup, Env, Setup}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait BlogStorage {
-
+object BlogStorage
+{
   case class EntryBuilder(id: String = "id", content: String = "# Title", lastModified: ZonedDateTime = ZonedDateTime.now())
 
   implicit def tupleToBuilder(tuple: (String, String)): EntryBuilder = tuple match {
@@ -25,15 +25,10 @@ trait BlogStorage {
   def blogEntries(entries: EntryBuilder*)(implicit executionContext: ExecutionContext) = new AsyncSetup {
     override def setup(env: Env): Future[Env] = {
       implicit val e: Env = env
-      val creds = env("ADMIN_CREDENTIALS").split(":")
-      val user = creds.head
-      val password = creds.tail.head // FIXME there is a better way to do this!
+      val user :: password :: Nil = env("ADMIN_CREDENTIALS").split(":").toList
       Future.sequence(
         entries.map(entry => ServerRequests.put(s"/admin/blog/${entry.id}", entry.content, BasicAuthorization(user, password)))
       ) map ( _ => Map.empty )
     }
   }
-
 }
-
-object BlogStorage extends BlogStorage
