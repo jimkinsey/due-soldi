@@ -3,11 +3,8 @@ package duesoldi.controller
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import duesoldi.config.Config
 import duesoldi.config.Config.Credentials
-import duesoldi.config.EnvironmentalConfig.{nonSensitive, toEnv}
 import duesoldi.controller.AdminAuthentication.adminsOnly
-import duesoldi.controller.DebugRoutes.{MakeConfigPage, MakeHeadersPage}
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
 
@@ -34,17 +31,3 @@ object DebugRoutes
     }
   }
 }
-
-object HeadersPageMaker
-{
-  def makeHeadersPage: MakeHeadersPage =
-    _.headers.map { header => s"${header.name}: ${header.value}" } mkString "\n"
-}
-
-object ConfigPageMaker
-{
-  def makeConfigPage(config: Config): MakeConfigPage = { () =>
-    nonSensitive(toEnv(config)).map { case (key, value) => s"$key=$value" } mkString "\n"
-  }
-}
-
