@@ -2,15 +2,16 @@ package duesoldi.pages
 
 import org.jsoup.nodes.Document
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
-trait Page {
+trait Page
+{
   def dom: Document
   final def cssUrl: String = {
     dom
       .head()
       .select("""link[rel="stylesheet"]""")
-      .toSeq
+      .asScala
       .collect { case link if link.attr("href").startsWith("/") => link.attr("href") }
       .head
   }

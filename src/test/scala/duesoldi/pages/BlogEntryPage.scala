@@ -3,7 +3,7 @@ package duesoldi.pages
 import org.jsoup.Jsoup
 import org.jsoup.nodes.{Document, Element}
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 class BlogEntryPage(html: String)
 extends Page
@@ -14,12 +14,12 @@ with PageFooter
   lazy val h1: Element = dom.select("h1").first()
   lazy val content: Content = new Content(dom.select("#content").first())
   lazy val date: String = dom.select("header time").text()
-  lazy val navigation: Navigation = new Navigation(dom.select("nav").head)
+  lazy val navigation: Navigation = new Navigation(dom.select("nav").asScala.head)
 }
 
 class Navigation(elem: Element)
 {
-  lazy val items: Seq[Item] = elem.select("ol > li").map(li => new Item(li))
+  lazy val items: Seq[Item] = elem.select("ol > li").asScala.map(li => new Item(li))
 }
 
 class Item(element: Element)
@@ -29,8 +29,8 @@ class Item(element: Element)
 
 class Content(elem: Element)
 {
-  lazy val paragraphs: Seq[String] = elem.select("p").toSeq.map { _.outerHtml() }
-  lazy val images: Seq[Image] = elem.select("img").toSeq.map { i => new Image(i) }
+  lazy val paragraphs: Seq[String] = elem.select("p").asScala.map { _.outerHtml() }
+  lazy val images: Seq[Image] = elem.select("img").asScala.map { i => new Image(i) }
 }
 
 class Image(elem: Element)

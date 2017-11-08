@@ -4,7 +4,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.{Document, Element}
 import org.jsoup.select.Elements
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 class BlogIndexPage(html: String)
   extends Page
@@ -13,8 +13,8 @@ class BlogIndexPage(html: String)
   lazy val dom: Document = Jsoup.parse(html)
   lazy val title: String = dom.title()
   lazy val heading: String = dom.select("h1").text()
-  lazy val blogEntries: Seq[BlogEntry] = dom.select("#blog-index article").map(new BlogEntry(_))
-  lazy val blurb: Blurb = new Blurb(dom.select("#blurb").head)
+  lazy val blogEntries: Seq[BlogEntry] = dom.select("#blog-index article").asScala.map(new BlogEntry(_))
+  lazy val blurb: Blurb = new Blurb(dom.select("#blurb").asScala.head)
 }
 
 class BlogEntry(elem: Element)
