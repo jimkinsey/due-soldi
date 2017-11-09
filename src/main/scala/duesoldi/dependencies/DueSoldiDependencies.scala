@@ -2,10 +2,12 @@ package duesoldi.dependencies
 
 import java.sql.ResultSet
 
+import duesoldi.blog.model.BlogEntry
+import duesoldi.blog.pages._
+import duesoldi.blog.storage._
+import duesoldi.blog.validation.ValidateIdentifier
 import duesoldi.config.Config
 import duesoldi.config.Config.Credentials
-import duesoldi.controller.BlogEntryRoutes.MakeEntryPage
-import duesoldi.controller.BlogIndexRoutes.MakeIndexPage
 import duesoldi.controller.DebugRoutes.{MakeConfigPage, MakeHeadersPage}
 import duesoldi.controller.MetricsRoutes.GetAccessRecords
 import duesoldi.dependencies.Injection._
@@ -14,14 +16,11 @@ import duesoldi.furniture.{CurrentFurniturePath, Furniture}
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.markdown.MarkdownParser
 import duesoldi.markdown.MarkdownParser.ParseMarkdown
-import duesoldi.model.BlogEntry
 import duesoldi.page.{ConfigPageMaker, _}
 import duesoldi.rendering.Renderer
 import duesoldi.storage.AccessRecordStore.Access
 import duesoldi.storage.JDBCConnection.{ConnectionDetails, PerformQuery, PerformUpdate}
 import duesoldi.storage._
-import duesoldi.storage.blog.{DeleteBlogEntry, GetAllBlogEntries, GetBlogEntry, PutBlogEntry}
-import duesoldi.validation.ValidIdentifier
 
 import scala.concurrent.ExecutionContext
 
@@ -52,15 +51,15 @@ object DueSoldiDependencies
     inject(Renderer.render _)
   }
 
-  implicit val validIdentifier: Inject[duesoldi.validation.ValidIdentifier] = _ => ValidIdentifier.apply
+  implicit val validIdentifier: Inject[duesoldi.blog.validation.ValidateIdentifier] = _ => ValidIdentifier.apply
 
-  implicit val entryPageModel: Inject[EntryPageMaker.Model] = _ => EntryPageModel.pageModel
+  implicit val entryPageModel: Inject[BuildEntryPageModel] = _ => EntryPageModel.pageModel
 
   implicit def makeEntryPage(implicit executionContext: ExecutionContext): Inject[MakeEntryPage] = {
     inject(EntryPageMaker.entryPage _)
   }
 
-  implicit val indexPageModel:  Inject[IndexPageMaker.Model] = _ => IndexPageModel.pageModel
+  implicit val indexPageModel:  Inject[BuildIndexPageModel] = _ => IndexPageModel.pageModel
 
   implicit def makeIndexPage(implicit executionContext: ExecutionContext): Inject[MakeIndexPage] = {
     inject(IndexPageMaker.makeIndexPage _)

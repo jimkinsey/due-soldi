@@ -1,19 +1,18 @@
 package duesoldi.test.unit
 
 import bhuj.TemplateNotFound
-import duesoldi.controller.BlogEntryRoutes.MakeEntryPage
+import duesoldi.blog.model.BlogEntry
+import duesoldi.blog.pages.EntryPageMaker.Failure
+import duesoldi.blog.pages.EntryPageMaker.Failure.{EntryNotFound, InvalidId}
+import duesoldi.blog.pages.{BlogEntryPageModel, BuildEntryPageModel, EntryPageMaker, MakeEntryPage}
+import duesoldi.blog.storage.GetBlogEntry
+import duesoldi.blog.validation.ValidateIdentifier
 import duesoldi.events
 import duesoldi.events.Emit
 import duesoldi.markdown.MarkdownDocument
-import duesoldi.model.BlogEntry
-import duesoldi.page.EntryPageMaker
-import duesoldi.page.EntryPageMaker.Failure.{EntryNotFound, InvalidId}
-import duesoldi.page.EntryPageMaker.{Failure, Model, entryPage}
-import duesoldi.rendering.{BlogEntryPageModel, Render}
-import duesoldi.storage.blog.GetBlogEntry
+import duesoldi.rendering.Render
 import duesoldi.test.support.events.EventRecording._
 import duesoldi.test.support.matchers.CustomMatchers._
-import duesoldi.validation.ValidIdentifier
 import utest._
 
 import scala.concurrent.Future
@@ -85,9 +84,9 @@ object EntryPageMakerTests
     }
   }
 
-  private lazy val validatesIdentifier: duesoldi.validation.ValidIdentifier = Option.apply
-  private lazy val invalidIdentifier: duesoldi.validation.ValidIdentifier = _ => None
-  private def returnsModel(): Model = _ => BlogEntryPageModel("title", "yesterday", "hello")
+  private lazy val validatesIdentifier: duesoldi.blog.validation.ValidateIdentifier = Option.apply
+  private lazy val invalidIdentifier: duesoldi.blog.validation.ValidateIdentifier = _ => None
+  private def returnsModel(): BuildEntryPageModel = _ => BlogEntryPageModel("title", "yesterday", "hello")
   private lazy val rendersNothing: Render = (_, _) => Future.successful(Right(""))
   private lazy val failsToRender: Render = (_, _) => Future.successful(Left(bhuj.TemplateNotFound("foo")))
   private def renders(result: String): Render = (_, _) => Future.successful(Right(result))
@@ -95,12 +94,12 @@ object EntryPageMakerTests
   private def returnsEntry(name: String): GetBlogEntry = _ => Future.successful(Some(BlogEntry("hello", MarkdownDocument.empty)))
 
   private def withEntryPageMaker[T](
-    validIdentifier: ValidIdentifier = validatesIdentifier,
-    entry: GetBlogEntry = returnsEntry("test"),
-    model: Model = returnsModel(),
-    rendered: Render = renders("some html"),
-    emit: Emit = events.noopEmit
+                                     validIdentifier: ValidateIdentifier = validatesIdentifier,
+                                     entry: GetBlogEntry = returnsEntry("test"),
+                                     model: BuildEntryPageModel = returnsModel(),
+                                     rendered: Render = renders("some html"),
+                                     emit: Emit = events.noopEmit
   )(block: MakeEntryPage => T): T = {
-    block(entryPage(validIdentifier, entry, model, rendered, emit))
+    block(EntryPageMaker.entryPage(validIdentifier, entry, model, rendered, emit))
   }
 }

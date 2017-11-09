@@ -1,10 +1,9 @@
-package duesoldi.page
+package duesoldi.blog.pages
 
 import java.time.format.DateTimeFormatter
 
+import duesoldi.blog.model.BlogEntry
 import duesoldi.markdown.MarkdownDocument
-import duesoldi.model.BlogEntry
-import duesoldi.rendering.BlogIndexPageModel
 
 object IndexPageModel
 {

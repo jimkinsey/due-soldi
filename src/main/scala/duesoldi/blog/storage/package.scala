@@ -1,10 +1,11 @@
-package duesoldi.storage
+package duesoldi.blog
 
-import duesoldi.model.BlogEntry
+import duesoldi.blog.model.BlogEntry
+import duesoldi.blog.storage.BlogStore
 
 import scala.concurrent.Future
 
-package object blog
+package object storage
 {
   type GetBlogEntry = (String) => Future[Option[BlogEntry]]
   type GetAllBlogEntries = () => Future[List[BlogEntry]]

@@ -1,5 +1,4 @@
-package object duesoldi {
-
+package object duesoldi
+{
   type Env = Map[String, String]
-
 }

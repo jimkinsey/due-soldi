@@ -1,10 +1,10 @@
-package duesoldi.storage
+package duesoldi.blog.storage
 
 import java.sql.{ResultSet, Timestamp}
 import java.time.ZoneId
 
+import duesoldi.blog.model.BlogEntry
 import duesoldi.markdown.MarkdownParser.ParseMarkdown
-import duesoldi.model.BlogEntry
 import duesoldi.storage.JDBCConnection.{PerformQuery, PerformUpdate}
 
 import scala.concurrent.Future

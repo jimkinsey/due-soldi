@@ -3,9 +3,9 @@ package duesoldi.controller
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import duesoldi.controller.AccessRecordingDirective.recordAccess
-import duesoldi.controller.BlogEditingRoutes.blogEditingRoutes
-import duesoldi.controller.BlogEntryRoutes.blogEntryRoutes
-import duesoldi.controller.BlogIndexRoutes.blogIndexRoutes
+import duesoldi.blog.routes.BlogEditingRoutes.blogEditingRoutes
+import duesoldi.blog.routes.BlogEntryRoutes.blogEntryRoutes
+import duesoldi.blog.routes.BlogIndexRoutes.blogIndexRoutes
 import duesoldi.controller.DebugRoutes.debugRoutes
 import duesoldi.controller.FurnitureRoutes.furnitureRoutes
 import duesoldi.controller.LearnJapaneseRoutes.learnJapaneseRoutes

@@ -1,8 +1,7 @@
-package duesoldi.page
+package duesoldi.blog.pages
 
-import duesoldi.controller.BlogEntryRoutes.MakeEntryPage
-import duesoldi.model.BlogEntry
-import duesoldi.rendering.BlogEntryPageModel
+import duesoldi.blog.storage.GetBlogEntry
+import duesoldi.blog.validation.ValidateIdentifier
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -12,9 +11,9 @@ object EntryPageMaker
   import cats.instances.all._
   import duesoldi.transformers.TransformerOps._
 
-  def entryPage(validId: duesoldi.validation.ValidIdentifier,
-                entry: duesoldi.storage.blog.GetBlogEntry,
-                pageModel: Model,
+  def entryPage(validId: ValidateIdentifier,
+                entry: GetBlogEntry,
+                pageModel: BuildEntryPageModel,
                 rendered: duesoldi.rendering.Render,
                 emit: duesoldi.events.Emit = duesoldi.events.noopEmit)
                (implicit executionContext: ExecutionContext): MakeEntryPage = { entryId: String =>
@@ -46,6 +45,4 @@ object EntryPageMaker
   }
 
   type Result = Future[Either[Failure, String]]
-
-  type Model = (BlogEntry) => BlogEntryPageModel
 }

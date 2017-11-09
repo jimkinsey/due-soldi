@@ -1,16 +1,16 @@
-package duesoldi.controller
+package duesoldi.blog.routes
 
 import akka.http.scaladsl.model.HttpResponse
-import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Directives.{entity, _}
 import akka.http.scaladsl.server.Route
+import duesoldi.blog.model.BlogEntry
+import duesoldi.blog.storage.{DeleteBlogEntry, GetBlogEntry, PutBlogEntry}
+import duesoldi.blog.validation.{ValidateContent, ValidateIdentifier}
 import duesoldi.config.Config.Credentials
 import duesoldi.controller.AdminAuthentication.adminsOnly
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
 import duesoldi.markdown.MarkdownParser.ParseMarkdown
-import duesoldi.model.BlogEntry
-import duesoldi.storage.blog.{DeleteBlogEntry, GetBlogEntry, PutBlogEntry}
-import duesoldi.validation.{ValidBlogContent, ValidIdentifier}
 
 import scala.concurrent.ExecutionContext
 

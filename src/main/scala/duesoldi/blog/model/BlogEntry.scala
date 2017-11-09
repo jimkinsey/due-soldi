@@ -1,4 +1,4 @@
-package duesoldi.model
+package duesoldi.blog.model
 
 import java.time.ZonedDateTime
 

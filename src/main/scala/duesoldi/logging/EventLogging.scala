@@ -1,8 +1,8 @@
 package duesoldi.logging
 
-import duesoldi.controller.BlogIndexRoutes.Event.BlogIndexPageNotRendered
+import duesoldi.blog.pages.{EntryPageMaker, IndexPageMaker}
+import duesoldi.blog.routes.BlogIndexRoutes.Event.BlogIndexPageNotRendered
 import duesoldi.events.Events
-import duesoldi.page.{EntryPageMaker, IndexPageMaker}
 import duesoldi.storage.AccessRecordStorage
 
 object EventLogging

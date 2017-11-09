@@ -1,4 +1,4 @@
-package duesoldi.controller
+package duesoldi.blog.routes
 
 import akka.http.scaladsl.model.HttpCharsets._
 import akka.http.scaladsl.model.MediaTypes._
@@ -6,18 +6,16 @@ import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import duesoldi.controller.BlogIndexRoutes.Event.{BlogIndexPageNotRendered, BlogIndexPageRendered}
+import duesoldi.blog.pages.{IndexPageMaker, MakeIndexPage}
+import duesoldi.blog.routes.BlogIndexRoutes.Event.{BlogIndexPageNotRendered, BlogIndexPageRendered}
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
 import duesoldi.events.Emit
-import duesoldi.page.IndexPageMaker
 
 import scala.concurrent.ExecutionContext
 
 object BlogIndexRoutes
 {
-  type MakeIndexPage = () => IndexPageMaker.Result
-
   def blogIndexRoutes(implicit executionContext: ExecutionContext, inject: RequestDependencyInjector): Route =
     pathPrefix("blog") {
       pathEndOrSingleSlash {

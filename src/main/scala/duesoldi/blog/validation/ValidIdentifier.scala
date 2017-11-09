@@ -1,4 +1,4 @@
-package duesoldi.validation
+package duesoldi.blog.validation
 
 import duesoldi.markdown.MarkdownDocument
 
