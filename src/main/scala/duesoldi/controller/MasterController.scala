@@ -7,7 +7,7 @@ import duesoldi.blog.routes.BlogEditingRoutes.blogEditingRoutes
 import duesoldi.blog.routes.BlogEntryRoutes.blogEntryRoutes
 import duesoldi.blog.routes.BlogIndexRoutes.blogIndexRoutes
 import duesoldi.controller.DebugRoutes.debugRoutes
-import duesoldi.controller.FurnitureRoutes.furnitureRoutes
+import duesoldi.furniture.routes.FurnitureRoutes.furnitureRoutes
 import duesoldi.controller.LearnJapaneseRoutes.learnJapaneseRoutes
 import duesoldi.metrics.routes.MetricsRoutes.metricsRoutes
 import duesoldi.controller.RobotsRoutes.robotsRoutes

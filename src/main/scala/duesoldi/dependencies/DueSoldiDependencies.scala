@@ -11,7 +11,8 @@ import duesoldi.config.Config.Credentials
 import duesoldi.controller.DebugRoutes.{MakeConfigPage, MakeHeadersPage}
 import duesoldi.dependencies.Injection._
 import duesoldi.events.Events
-import duesoldi.furniture.{CurrentFurniturePath, Furniture}
+import duesoldi.furniture.CurrentUrlPath
+import duesoldi.furniture.storage.FurnitureFiles
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.markdown.MarkdownParser
 import duesoldi.markdown.MarkdownParser.ParseMarkdown
@@ -105,5 +106,5 @@ object DueSoldiDependencies
 
   implicit lazy val parseMarkdown: Inject[ParseMarkdown] = _ => MarkdownParser.parseMarkdown
 
-  implicit lazy val currentFurniturePath: Inject[CurrentFurniturePath] = config => Furniture.currentPath(config.furniturePath)
+  implicit lazy val currentFurniturePath: Inject[CurrentUrlPath] = config => FurnitureFiles.currentUrlPath(config.furniturePath)
 }
