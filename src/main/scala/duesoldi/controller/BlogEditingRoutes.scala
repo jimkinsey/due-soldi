@@ -29,18 +29,13 @@ object BlogEditingRoutes
               inject.dependency[PutBlogEntry] into { putBlogEntry =>
                 complete {
                   (for {
-                    _ <- ValidIdentifier(id).failWith({
-                      s"Identifier invalid: '$id'"
-                    })
+                    _ <- ValidIdentifier(id).failWith({ HttpResponse(400, entity = s"Identifier invalid: '$id'") })
                     document = parseMarkdown(content)
-                    _ <- ValidBlogContent(document).failOnSomeWith(reason => s"Content invalid: $reason")
-                    result <- putBlogEntry(BlogEntry(id, document)).failWith(_ => "Failed to store entry")
+                    _ <- ValidBlogContent(document).failOnSomeWith(reason => HttpResponse(400, entity = s"Content invalid: $reason"))
+                    result <- putBlogEntry(BlogEntry(id, document)).failWith(_ => HttpResponse(500, entity = "Failed to store entry"))
                   } yield {
-                    result
-                  }).value.map {
-                    case Right(_) => HttpResponse(201)
-                    case Left(failureReason) => HttpResponse(400, entity = failureReason)
-                  }
+                    HttpResponse(201)
+                  }).value
                 }
               }
             }
@@ -57,14 +52,11 @@ object BlogEditingRoutes
           } ~ get {
             inject.dependency[GetBlogEntry] into { getEntry =>
               complete {
-                for {
-                  result <- getEntry(id)
+                (for {
+                  entry <- getEntry(id).failWith({ HttpResponse(404) })
                 } yield {
-                  result match {
-                    case Some(entry) => HttpResponse(200, entity = entry.content.raw)
-                    case _ => HttpResponse(404)
-                  }
-                }
+                  HttpResponse(200, entity = entry.content.raw)
+                }).value
               }
             }
           }
