@@ -10,7 +10,7 @@ import duesoldi.page.EntryPageMaker
 import duesoldi.page.EntryPageMaker.Failure.{EntryNotFound, InvalidId}
 import duesoldi.page.EntryPageMaker.{Failure, Model, entryPage}
 import duesoldi.rendering.{BlogEntryPageModel, Render}
-import duesoldi.storage.blog.Entry
+import duesoldi.storage.blog.GetBlogEntry
 import duesoldi.test.support.events.EventRecording._
 import duesoldi.test.support.matchers.CustomMatchers._
 import duesoldi.validation.ValidIdentifier
@@ -91,12 +91,12 @@ object EntryPageMakerTests
   private lazy val rendersNothing: Render = (_, _) => Future.successful(Right(""))
   private lazy val failsToRender: Render = (_, _) => Future.successful(Left(bhuj.TemplateNotFound("foo")))
   private def renders(result: String): Render = (_, _) => Future.successful(Right(result))
-  private lazy val noEntry: Entry = _ => Future.successful(None)
-  private def returnsEntry(name: String): Entry = _ => Future.successful(Some(BlogEntry("hello", MarkdownDocument.empty)))
+  private lazy val noEntry: GetBlogEntry = _ => Future.successful(None)
+  private def returnsEntry(name: String): GetBlogEntry = _ => Future.successful(Some(BlogEntry("hello", MarkdownDocument.empty)))
 
   private def withEntryPageMaker[T](
     validIdentifier: ValidIdentifier = validatesIdentifier,
-    entry: Entry = returnsEntry("test"),
+    entry: GetBlogEntry = returnsEntry("test"),
     model: Model = returnsModel(),
     rendered: Render = renders("some html"),
     emit: Emit = events.noopEmit

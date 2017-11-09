@@ -9,17 +9,13 @@ import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
 import duesoldi.markdown.MarkdownParser.ParseMarkdown
 import duesoldi.model.BlogEntry
-import duesoldi.storage.BlogStore
+import duesoldi.storage.blog.{DeleteBlogEntry, GetBlogEntry, PutBlogEntry}
 import duesoldi.validation.{ValidBlogContent, ValidIdentifier}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 object BlogEditingRoutes
 {
-  type GetBlogEntry = (String) => Future[Option[BlogEntry]]
-  type PutBlogEntry = (BlogEntry) => Future[Either[BlogStore.PutResult.Failure.type, BlogStore.PutResult.Created.type]]
-  type DeleteBlogEntry = (String) => Future[Unit]
-
   import cats.instances.all._
   import duesoldi.transformers.TransformerOps._
 

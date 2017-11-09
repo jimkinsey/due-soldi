@@ -6,13 +6,14 @@ import duesoldi.rendering.BlogEntryPageModel
 
 import scala.concurrent.{ExecutionContext, Future}
 
-object EntryPageMaker {
+object EntryPageMaker
+{
   import Failure._
   import cats.instances.all._
   import duesoldi.transformers.TransformerOps._
 
   def entryPage(validId: duesoldi.validation.ValidIdentifier,
-                entry: duesoldi.storage.blog.Entry,
+                entry: duesoldi.storage.blog.GetBlogEntry,
                 pageModel: Model,
                 rendered: duesoldi.rendering.Render,
                 emit: duesoldi.events.Emit = duesoldi.events.noopEmit)
@@ -30,14 +31,16 @@ object EntryPageMaker {
   }
 
   sealed trait Failure
-  object Failure {
+  object Failure
+  {
     case class InvalidId(id: String) extends Failure
     case class EntryNotFound(id: String) extends Failure
     case class RenderFailure(failure: bhuj.Failure) extends Failure
   }
 
   sealed trait Event
-  object Event {
+  object Event
+  {
     case class MadePage(html: String) extends Event
     case class FailedToMakePage(failure: Failure) extends Event
   }

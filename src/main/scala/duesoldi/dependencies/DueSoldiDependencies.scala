@@ -4,7 +4,6 @@ import java.sql.ResultSet
 
 import duesoldi.config.Config
 import duesoldi.config.Config.Credentials
-import duesoldi.controller.BlogEditingRoutes.{DeleteBlogEntry, GetBlogEntry, PutBlogEntry}
 import duesoldi.controller.BlogEntryRoutes.MakeEntryPage
 import duesoldi.controller.BlogIndexRoutes.MakeIndexPage
 import duesoldi.controller.DebugRoutes.{MakeConfigPage, MakeHeadersPage}
@@ -16,12 +15,12 @@ import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.markdown.MarkdownParser
 import duesoldi.markdown.MarkdownParser.ParseMarkdown
 import duesoldi.model.BlogEntry
-import duesoldi.page.IndexPageMaker.GetAllBlogEntries
 import duesoldi.page.{ConfigPageMaker, _}
 import duesoldi.rendering.Renderer
 import duesoldi.storage.AccessRecordStore.Access
 import duesoldi.storage.JDBCConnection.{ConnectionDetails, PerformQuery, PerformUpdate}
 import duesoldi.storage._
+import duesoldi.storage.blog.{DeleteBlogEntry, GetAllBlogEntries, GetBlogEntry, PutBlogEntry}
 import duesoldi.validation.ValidIdentifier
 
 import scala.concurrent.ExecutionContext
