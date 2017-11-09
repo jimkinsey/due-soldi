@@ -1,8 +1,7 @@
-package duesoldi.page
+package duesoldi.debug.pages
 
 import duesoldi.config.Config
 import duesoldi.config.EnvironmentalConfig.{nonSensitive, toEnv}
-import duesoldi.controller.DebugRoutes.MakeConfigPage
 
 object ConfigPageMaker
 {

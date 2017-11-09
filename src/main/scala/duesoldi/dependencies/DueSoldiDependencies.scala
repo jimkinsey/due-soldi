@@ -8,7 +8,6 @@ import duesoldi.blog.storage._
 import duesoldi.blog.validation.{ValidIdentifier, ValidateIdentifier}
 import duesoldi.config.Config
 import duesoldi.config.Config.Credentials
-import duesoldi.controller.DebugRoutes.{MakeConfigPage, MakeHeadersPage}
 import duesoldi.dependencies.Injection._
 import duesoldi.events.Events
 import duesoldi.furniture.CurrentUrlPath
@@ -17,7 +16,7 @@ import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.markdown.MarkdownParser
 import duesoldi.markdown.MarkdownParser.ParseMarkdown
 import duesoldi.metrics.storage.{AccessRecordStorage, AccessRecordStore, GetAllAccessRecords}
-import duesoldi.page.{ConfigPageMaker, _}
+import duesoldi.debug.pages.{ConfigPageMaker, _}
 import duesoldi.rendering.Renderer
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.storage.JDBCConnection.{ConnectionDetails, PerformQuery, PerformUpdate}

@@ -1,6 +1,4 @@
-package duesoldi.page
-
-import duesoldi.controller.DebugRoutes.MakeHeadersPage
+package duesoldi.debug.pages
 
 object HeadersPageMaker
 {

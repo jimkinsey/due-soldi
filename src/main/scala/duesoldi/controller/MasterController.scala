@@ -6,7 +6,7 @@ import duesoldi.metrics.routes.AccessRecordingDirective.recordAccess
 import duesoldi.blog.routes.BlogEditingRoutes.blogEditingRoutes
 import duesoldi.blog.routes.BlogEntryRoutes.blogEntryRoutes
 import duesoldi.blog.routes.BlogIndexRoutes.blogIndexRoutes
-import duesoldi.controller.DebugRoutes.debugRoutes
+import duesoldi.debug.routes.DebugRoutes.debugRoutes
 import duesoldi.furniture.routes.FurnitureRoutes.furnitureRoutes
 import duesoldi.controller.LearnJapaneseRoutes.learnJapaneseRoutes
 import duesoldi.metrics.routes.MetricsRoutes.metricsRoutes
