@@ -4,6 +4,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import duesoldi.config.Config.Credentials
 import duesoldi.controller.AdminAuthentication.adminsOnly
+import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.debug.pages.{MakeConfigPage, MakeHeadersPage}
 import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
 

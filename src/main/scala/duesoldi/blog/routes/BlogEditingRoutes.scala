@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.Directives.{entity, _}
 import akka.http.scaladsl.server.Route
 import duesoldi.blog.model.BlogEntry
 import duesoldi.blog.storage.{DeleteBlogEntry, GetBlogEntry, PutBlogEntry}
-import duesoldi.blog.validation.{ValidBlogContent, ValidIdentifier}
+import duesoldi.blog.validation.{ValidateIdentifier, ValidateContent}
 import duesoldi.config.Config.Credentials
 import duesoldi.controller.AdminAuthentication.adminsOnly
 import duesoldi.dependencies.DueSoldiDependencies._
@@ -26,12 +26,12 @@ object BlogEditingRoutes
         adminsOnly(credentials) {
           put {
             entity(as[String]) { content =>
-              inject.dependency[PutBlogEntry] into { putBlogEntry =>
+              inject.dependencies[PutBlogEntry, ValidateIdentifier, ValidateContent] into { case (putBlogEntry, validateIdentifier, validateContent) =>
                 complete {
                   (for {
-                    _ <- ValidIdentifier(id).failWith({ HttpResponse(400, entity = s"Identifier invalid: '$id'") })
+                    _ <- validateIdentifier(id).failWith({ HttpResponse(400, entity = s"Identifier invalid: '$id'") })
                     document = parseMarkdown(content)
-                    _ <- ValidBlogContent(document).failOnSomeWith(reason => HttpResponse(400, entity = s"Content invalid: $reason"))
+                    _ <- validateContent(document).failOnSomeWith(reason => HttpResponse(400, entity = s"Content invalid: $reason"))
                     result <- putBlogEntry(BlogEntry(id, document)).failWith(_ => HttpResponse(500, entity = "Failed to store entry"))
                   } yield {
                     HttpResponse(201)

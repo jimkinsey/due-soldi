@@ -2,7 +2,8 @@ package duesoldi.blog.validation
 
 import duesoldi.markdown.MarkdownDocument
 
-object ValidIdentifier {
+object ValidIdentifier
+{
   val Valid = """^([a-z0-9\-]+)$""".r
   def apply(identifier: String): Option[String] = Valid.findFirstIn(identifier)
 }

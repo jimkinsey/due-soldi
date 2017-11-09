@@ -5,7 +5,7 @@ import java.sql.ResultSet
 import duesoldi.blog.model.BlogEntry
 import duesoldi.blog.pages._
 import duesoldi.blog.storage._
-import duesoldi.blog.validation.{ValidIdentifier, ValidateIdentifier}
+import duesoldi.blog.validation.{ValidBlogContent, ValidIdentifier, ValidateIdentifier}
 import duesoldi.config.Config
 import duesoldi.config.Config.Credentials
 import duesoldi.dependencies.Injection._
@@ -51,7 +51,9 @@ object DueSoldiDependencies
     inject(Renderer.render _)
   }
 
-  implicit val validIdentifier: Inject[duesoldi.blog.validation.ValidateIdentifier] = _ => ValidIdentifier.apply
+  implicit val validateBlogIdentifier: Inject[duesoldi.blog.validation.ValidateIdentifier] = _ => ValidIdentifier.apply
+
+  implicit val validateBlogContent: Inject[duesoldi.blog.validation.ValidateContent] = _ => ValidBlogContent.apply
 
   implicit val entryPageModel: Inject[BuildEntryPageModel] = _ => EntryPageModel.pageModel
 
