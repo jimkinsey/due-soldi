@@ -1,4 +1,4 @@
-package duesoldi.controller
+package duesoldi.metrics.routes
 
 import java.time.ZonedDateTime
 
@@ -9,7 +9,7 @@ import akka.http.scaladsl.server.{Directive, RequestContext}
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
 import duesoldi.events.Emit
-import duesoldi.storage.AccessRecordStore.Access
+import duesoldi.metrics.storage.AccessRecordStore.Access
 
 object AccessRecordingDirective
 {

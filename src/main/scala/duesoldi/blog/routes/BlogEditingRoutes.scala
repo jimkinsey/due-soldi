@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.Directives.{entity, _}
 import akka.http.scaladsl.server.Route
 import duesoldi.blog.model.BlogEntry
 import duesoldi.blog.storage.{DeleteBlogEntry, GetBlogEntry, PutBlogEntry}
-import duesoldi.blog.validation.{ValidateContent, ValidateIdentifier}
+import duesoldi.blog.validation.{ValidBlogContent, ValidIdentifier}
 import duesoldi.config.Config.Credentials
 import duesoldi.controller.AdminAuthentication.adminsOnly
 import duesoldi.dependencies.DueSoldiDependencies._

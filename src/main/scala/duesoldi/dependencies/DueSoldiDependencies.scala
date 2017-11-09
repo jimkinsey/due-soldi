@@ -5,20 +5,20 @@ import java.sql.ResultSet
 import duesoldi.blog.model.BlogEntry
 import duesoldi.blog.pages._
 import duesoldi.blog.storage._
-import duesoldi.blog.validation.ValidateIdentifier
+import duesoldi.blog.validation.{ValidIdentifier, ValidateIdentifier}
 import duesoldi.config.Config
 import duesoldi.config.Config.Credentials
 import duesoldi.controller.DebugRoutes.{MakeConfigPage, MakeHeadersPage}
-import duesoldi.controller.MetricsRoutes.GetAccessRecords
 import duesoldi.dependencies.Injection._
 import duesoldi.events.Events
 import duesoldi.furniture.{CurrentFurniturePath, Furniture}
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.markdown.MarkdownParser
 import duesoldi.markdown.MarkdownParser.ParseMarkdown
+import duesoldi.metrics.storage.{AccessRecordStorage, AccessRecordStore, GetAllAccessRecords}
 import duesoldi.page.{ConfigPageMaker, _}
 import duesoldi.rendering.Renderer
-import duesoldi.storage.AccessRecordStore.Access
+import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.storage.JDBCConnection.{ConnectionDetails, PerformQuery, PerformUpdate}
 import duesoldi.storage._
 
@@ -43,7 +43,7 @@ object DueSoldiDependencies
       events emit _
   }
 
-  implicit val getAccessRecords: Inject[GetAccessRecords] = { config =>
+  implicit val getAccessRecords: Inject[GetAllAccessRecords] = { config =>
     AccessRecordStore.getAll(jdbcPerformQuery[Access](AccessRecordStore.toAccess)(config))
   }
 

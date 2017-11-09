@@ -1,4 +1,4 @@
-package duesoldi.storage
+package duesoldi.metrics.storage
 
 import java.sql.{ResultSet, Timestamp}
 import java.time.{ZoneId, ZonedDateTime}
@@ -24,11 +24,11 @@ object AccessRecordStore
     )
   }
 
-  def getAll(performQuery: PerformQuery[Access]): () => Future[List[Access]] = () => Future.fromTry {
+  def getAll(performQuery: PerformQuery[Access]): GetAllAccessRecords = () => Future.fromTry {
     performQuery("SELECT timestamp, path, referer, user_agent, duration, client_ip, country, status_code FROM access_record", Seq.empty)
   }
 
-  def put(performUpdate: PerformUpdate)(access: Access): Future[Unit] = Future.fromTry {
+  def put(performUpdate: PerformUpdate): StoreAccessRecord = (access) => Future.fromTry {
     performUpdate("INSERT INTO access_record ( timestamp, path, referer, user_agent, duration, client_ip, country, status_code ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )",
       Seq(
         Timestamp.from(access.time.toInstant),

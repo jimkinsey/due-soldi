@@ -1,25 +1,24 @@
-package duesoldi.controller
+package duesoldi.metrics.routes
 
 import java.time.format.DateTimeFormatter
 
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
-import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Directives.{path, _}
 import akka.http.scaladsl.server.Route
 import duesoldi.config.Config.Credentials
 import duesoldi.controller.AdminAuthentication.adminsOnly
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
-import duesoldi.storage.AccessRecordStore.Access
+import duesoldi.metrics.storage.AccessRecordStore.Access
+import duesoldi.metrics.storage.GetAllAccessRecords
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 object MetricsRoutes
 {
-  type GetAccessRecords = () => Future[List[Access]]
-
   def metricsRoutes(implicit executionContext: ExecutionContext, inject: RequestDependencyInjector): Route =
     path("admin" / "metrics" / "access.csv") {
-      inject.dependencies[GetAccessRecords, Credentials] into { case (getAccessRecords, adminCredentials) =>
+      inject.dependencies[GetAllAccessRecords, Credentials] into { case (getAccessRecords, adminCredentials) =>
         adminsOnly(adminCredentials) {
           complete {
             getAccessRecords().map(

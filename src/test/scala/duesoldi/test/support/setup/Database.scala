@@ -6,7 +6,7 @@ import java.util.UUID
 import javax.sql.DataSource
 
 import duesoldi._
-import duesoldi.storage.AccessRecordStore
+import duesoldi.metrics.storage.AccessRecordStore
 import duesoldi.test.support.database.ScriptRunner
 import org.h2.jdbcx.JdbcConnectionPool
 

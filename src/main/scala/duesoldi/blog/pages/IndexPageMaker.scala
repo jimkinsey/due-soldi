@@ -2,7 +2,7 @@ package duesoldi.blog.pages
 
 import duesoldi.blog.model.BlogEntry
 import duesoldi.blog.storage.GetAllBlogEntries
-import duesoldi.blog.validation.ValidateIdentifier
+import duesoldi.blog.validation.ValidIdentifier
 import duesoldi.rendering.Render
 
 import scala.concurrent.{ExecutionContext, Future}

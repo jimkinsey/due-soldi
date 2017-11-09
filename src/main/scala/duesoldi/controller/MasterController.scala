@@ -2,14 +2,14 @@ package duesoldi.controller
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import duesoldi.controller.AccessRecordingDirective.recordAccess
+import duesoldi.metrics.routes.AccessRecordingDirective.recordAccess
 import duesoldi.blog.routes.BlogEditingRoutes.blogEditingRoutes
 import duesoldi.blog.routes.BlogEntryRoutes.blogEntryRoutes
 import duesoldi.blog.routes.BlogIndexRoutes.blogIndexRoutes
 import duesoldi.controller.DebugRoutes.debugRoutes
 import duesoldi.controller.FurnitureRoutes.furnitureRoutes
 import duesoldi.controller.LearnJapaneseRoutes.learnJapaneseRoutes
-import duesoldi.controller.MetricsRoutes.metricsRoutes
+import duesoldi.metrics.routes.MetricsRoutes.metricsRoutes
 import duesoldi.controller.RobotsRoutes.robotsRoutes
 import duesoldi.controller.TaggedRequestDirective._
 import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
