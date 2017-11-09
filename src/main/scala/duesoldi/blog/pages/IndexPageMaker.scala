@@ -2,7 +2,6 @@ package duesoldi.blog.pages
 
 import duesoldi.blog.model.BlogEntry
 import duesoldi.blog.storage.GetAllBlogEntries
-import duesoldi.blog.validation.ValidIdentifier
 import duesoldi.rendering.Render
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -26,11 +25,9 @@ object IndexPageMaker
 
   private def blogEntries(getEntries: GetAllBlogEntries)
                          (implicit executionContext: ExecutionContext): Future[Either[Failure.BlogStoreEmpty.type, Seq[BlogEntry]]] =
-    getEntries().map { entries =>
-      entries.filter(entry => ValidIdentifier(entry.id).nonEmpty) match {
-        case Nil => Left(Failure.BlogStoreEmpty)
-        case other => Right(other)
-      }
+    getEntries().map {
+      case Nil => Left(Failure.BlogStoreEmpty)
+      case other => Right(other)
     }
 
   sealed trait Failure

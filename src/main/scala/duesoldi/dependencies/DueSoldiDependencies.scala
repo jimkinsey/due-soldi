@@ -5,7 +5,7 @@ import java.sql.ResultSet
 import duesoldi.blog.model.BlogEntry
 import duesoldi.blog.pages._
 import duesoldi.blog.storage._
-import duesoldi.blog.validation.{ValidBlogContent, ValidIdentifier, ValidateIdentifier}
+import duesoldi.blog.validation.{ValidBlogContent, ValidIdentifier}
 import duesoldi.config.Config
 import duesoldi.config.Config.Credentials
 import duesoldi.dependencies.Injection._

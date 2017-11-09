@@ -84,8 +84,8 @@ object EntryPageMakerTests
     }
   }
 
-  private lazy val validatesIdentifier: duesoldi.blog.validation.ValidateIdentifier = Option.apply
-  private lazy val invalidIdentifier: duesoldi.blog.validation.ValidateIdentifier = _ => None
+  private lazy val validatesIdentifier: ValidateIdentifier = _ => None
+  private lazy val invalidIdentifier: ValidateIdentifier = _ => Some("Invalid identifier")
   private def returnsModel(): BuildEntryPageModel = _ => BlogEntryPageModel("title", "yesterday", "hello")
   private lazy val rendersNothing: Render = (_, _) => Future.successful(Right(""))
   private lazy val failsToRender: Render = (_, _) => Future.successful(Left(bhuj.TemplateNotFound("foo")))

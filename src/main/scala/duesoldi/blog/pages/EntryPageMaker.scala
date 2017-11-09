@@ -18,7 +18,7 @@ object EntryPageMaker
                 emit: duesoldi.events.Emit = duesoldi.events.noopEmit)
                (implicit executionContext: ExecutionContext): MakeEntryPage = { entryId: String =>
     (for {
-      _ <- validId(entryId).failWith({ InvalidId(entryId) })
+      _ <- validId(entryId).failOnSomeWith(_ => { InvalidId(entryId) })
       entry <- entry(entryId).failWith({ EntryNotFound(entryId) })
       model = pageModel(entry)
       html <- rendered("blog-entry", model).failWith[Failure](RenderFailure)

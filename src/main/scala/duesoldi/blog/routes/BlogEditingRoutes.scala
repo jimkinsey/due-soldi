@@ -29,7 +29,7 @@ object BlogEditingRoutes
               inject.dependencies[PutBlogEntry, ValidateIdentifier, ValidateContent] into { case (putBlogEntry, validateIdentifier, validateContent) =>
                 complete {
                   (for {
-                    _ <- validateIdentifier(id).failWith({ HttpResponse(400, entity = s"Identifier invalid: '$id'") })
+                    _ <- validateIdentifier(id).failOnSomeWith(reason => HttpResponse(400, entity = s"Identifier invalid: $reason"))
                     document = parseMarkdown(content)
                     _ <- validateContent(document).failOnSomeWith(reason => HttpResponse(400, entity = s"Content invalid: $reason"))
                     result <- putBlogEntry(BlogEntry(id, document)).failWith(_ => HttpResponse(500, entity = "Failed to store entry"))
