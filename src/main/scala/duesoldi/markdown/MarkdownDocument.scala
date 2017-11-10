@@ -30,7 +30,7 @@ object MarkdownDocument {
     case (acc, _)                    => acc
   }
 
-  def title(markdown: MarkdownDocument) = markdown.nodes.collectFirst {
+  def title(markdown: MarkdownDocument): Option[String] = markdown.nodes.collectFirst {
     case Heading(nodes, 1) => MarkdownDocument.text(nodes)
   }
 

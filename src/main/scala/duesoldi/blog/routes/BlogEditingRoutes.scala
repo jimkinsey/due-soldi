@@ -10,7 +10,7 @@ import duesoldi.config.Config.Credentials
 import duesoldi.controller.AdminAuthentication.adminsOnly
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
-import duesoldi.markdown.MarkdownParser.ParseMarkdown
+import duesoldi.markdown
 
 import scala.concurrent.ExecutionContext
 
@@ -22,7 +22,7 @@ object BlogEditingRoutes
   def blogEditingRoutes(implicit executionContext: ExecutionContext,
                         inject: RequestDependencyInjector): Route =
     path("admin" / "blog" / Remaining) { id =>
-      inject.dependencies[Credentials, ParseMarkdown] into { case (credentials, parseMarkdown) =>
+      inject.dependencies[Credentials, markdown.Parse] into { case (credentials, parseMarkdown) =>
         adminsOnly(credentials) {
           put {
             entity(as[String]) { content =>

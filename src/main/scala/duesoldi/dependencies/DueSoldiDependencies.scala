@@ -14,9 +14,9 @@ import duesoldi.furniture.CurrentUrlPath
 import duesoldi.furniture.storage.FurnitureFiles
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.markdown.MarkdownParser
-import duesoldi.markdown.MarkdownParser.ParseMarkdown
 import duesoldi.metrics.storage.{AccessRecordStorage, AccessRecordStore, GetAllAccessRecords}
 import duesoldi.debug.pages.{ConfigPageMaker, _}
+import duesoldi.markdown
 import duesoldi.rendering.Renderer
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.storage.JDBCConnection.{ConnectionDetails, PerformQuery, PerformUpdate}
@@ -105,7 +105,7 @@ object DueSoldiDependencies
 
   implicit val deleteBlogEntry: Inject[DeleteBlogEntry] = inject(BlogStore.delete _)
 
-  implicit lazy val parseMarkdown: Inject[ParseMarkdown] = _ => MarkdownParser.parseMarkdown
+  implicit lazy val parseMarkdown: Inject[markdown.Parse] = _ => MarkdownParser.parseMarkdown
 
   implicit lazy val currentFurniturePath: Inject[CurrentUrlPath] = config => FurnitureFiles.currentUrlPath(config.furniturePath)
 }

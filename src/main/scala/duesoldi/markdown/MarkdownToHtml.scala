@@ -2,8 +2,8 @@ package duesoldi.markdown
 
 import duesoldi.markdown.MarkdownDocument._
 
-object MarkdownToHtmlConverter {
-
+object MarkdownToHtml
+{
   def html(nodes: Seq[MarkdownDocument.Node]): String = {
     nodes collect {
       case Heading(content, level)      => s"<h$level>${html(content)}</h$level>"
@@ -22,5 +22,4 @@ object MarkdownToHtmlConverter {
       case Image(alt, src, title)       => s"""<img src="$src" alt="$alt" title="${title.getOrElse("")}" />"""
     } mkString
   }
-
 }

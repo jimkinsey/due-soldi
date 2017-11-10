@@ -12,8 +12,6 @@ import scala.language.implicitConversions
 
 object MarkdownParser
 {
-  type ParseMarkdown = (String) => MarkdownDocument
-
   def parseMarkdown(raw: String): MarkdownDocument = {
     val parser: IParse = Parser.builder().build()
     val document: Node = parser.parse(raw)

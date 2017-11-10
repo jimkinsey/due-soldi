@@ -4,7 +4,7 @@ import java.sql.{ResultSet, Timestamp}
 import java.time.ZoneId
 
 import duesoldi.blog.model.BlogEntry
-import duesoldi.markdown.MarkdownParser.ParseMarkdown
+import duesoldi.markdown
 import duesoldi.storage.JDBCConnection.{PerformQuery, PerformUpdate}
 
 import scala.concurrent.Future
@@ -18,7 +18,7 @@ object BlogStore
     case object Failure extends PutResult
   }
 
-  def toBlogEntry(parseMarkdown: ParseMarkdown): (ResultSet => BlogEntry) = { row =>
+  def toBlogEntry(parseMarkdown: markdown.Parse): (ResultSet => BlogEntry) = { row =>
     BlogEntry(
       id = row.getString("id"),
       lastModified = row.getTimestamp("published").toInstant.atZone(ZoneId.of("UTC+1")),
