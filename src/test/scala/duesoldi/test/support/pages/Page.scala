@@ -17,3 +17,8 @@ trait Page
   }
   final override def toString: String = dom.toString
 }
+
+object Page
+{
+  def metaContent(name: String, dom: Document): Option[String] = Option(dom.select(s"""meta[name="$name"]""").first()).map(_.attr("content"))
+}

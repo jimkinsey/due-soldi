@@ -34,6 +34,11 @@ object MarkdownDocument {
     case Heading(nodes, 1) => MarkdownDocument.text(nodes)
   }
 
+  def content(markdown: MarkdownDocument): Seq[Node] = markdown.nodes.dropWhile {
+    case Heading(_, 1) => true
+    case _ => false
+  }
+
   lazy val empty = MarkdownDocument(Seq.empty, "")
 }
 

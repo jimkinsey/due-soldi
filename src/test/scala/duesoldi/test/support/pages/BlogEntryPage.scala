@@ -1,5 +1,6 @@
 package duesoldi.test.support.pages
 
+import duesoldi.test.support.pages.Page.metaContent
 import org.jsoup.Jsoup
 import org.jsoup.nodes.{Document, Element}
 
@@ -15,7 +16,23 @@ with PageFooter
   lazy val content: Content = new Content(dom.select("#content").first())
   lazy val date: String = dom.select("header time").text()
   lazy val navigation: Navigation = new Navigation(dom.select("nav").asScala.head)
+  lazy val twitterCard = TwitterCard(dom)
 }
+
+object TwitterCard
+{
+  def apply(dom: Document): Option[TwitterCard] = {
+    for {
+      card <- metaContent("twitter:card", dom)
+      title <- metaContent("twitter:title", dom)
+      description <- metaContent("twitter:description", dom)
+    } yield {
+      TwitterCard(title, card, description)
+    }
+  }
+}
+
+case class TwitterCard(title: String, card: String, description: String, creator: Option[String] = None, site: Option[String] = None)
 
 class Navigation(elem: Element)
 {

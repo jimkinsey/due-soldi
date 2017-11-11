@@ -9,4 +9,11 @@ object BlogIndexPageModel
 
 case class BlogIndexPageModel(entries: Seq[BlogIndexPageModel.Entry]) extends PageModel
 
-case class BlogEntryPageModel(title: String, lastModified: String, contentHtml: String) extends PageModel
+case class BlogEntryPageModel(
+  title: String,
+  lastModified: String,
+  contentHtml: String,
+  twitterCard: Option[TwitterCard] = None
+) extends PageModel
+
+case class TwitterCard(title: String, description: String)

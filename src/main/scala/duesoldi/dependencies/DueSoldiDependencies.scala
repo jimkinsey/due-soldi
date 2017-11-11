@@ -16,7 +16,8 @@ import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.markdown.MarkdownParser
 import duesoldi.metrics.storage.{AccessRecordStorage, AccessRecordStore, GetAllAccessRecords}
 import duesoldi.debug.pages.{ConfigPageMaker, _}
-import duesoldi.markdown
+import duesoldi.dependencies.Features.forFeature
+import duesoldi.{Env, markdown}
 import duesoldi.rendering.Renderer
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.storage.JDBCConnection.{ConnectionDetails, PerformQuery, PerformUpdate}
@@ -55,7 +56,7 @@ object DueSoldiDependencies
 
   implicit val validateBlogContent: Inject[duesoldi.blog.validation.ValidateContent] = _ => ValidBlogContent.apply
 
-  implicit val entryPageModel: Inject[BuildEntryPageModel] = _ => EntryPageModel.pageModel
+  implicit val entryPageModel: Inject[BuildEntryPageModel] = inject(EntryPageModel.pageModel _)
 
   implicit def makeEntryPage(implicit executionContext: ExecutionContext): Inject[MakeEntryPage] = {
     inject(EntryPageMaker.entryPage _)
@@ -108,4 +109,24 @@ object DueSoldiDependencies
   implicit lazy val parseMarkdown: Inject[markdown.Parse] = _ => MarkdownParser.parseMarkdown
 
   implicit lazy val currentFurniturePath: Inject[CurrentUrlPath] = config => FurnitureFiles.currentUrlPath(config.furniturePath)
+
+  implicit lazy val getBlogEntryTwitterCard: Inject[GetEntryTwitterCard] = {
+    forFeature("TWITTER_CARDS")(ifOn = BlogEntryTwitterCard.getTwitterCard, ifOff = BlogEntryTwitterCard.noTwitterCard)
+  }
+}
+
+object Features
+{
+  def forFeature[T](name: String)(ifOn: => T, ifOff: => T): Inject[T] = (config) => {
+    config.features.get(name) match {
+      case Some(true) => ifOn
+      case _ => ifOff
+    }
+  }
+
+  def featureStatuses(env: Env): Map[String,Boolean] = {
+    env.collect {
+      case (key, value) if key.startsWith("FEATURE_") => key.substring("FEATURE_".length) -> (value == "on")
+    }
+  }
 }

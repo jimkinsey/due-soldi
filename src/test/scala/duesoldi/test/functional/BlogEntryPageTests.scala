@@ -6,6 +6,8 @@ import duesoldi.test.support.matchers.CustomMatchers._
 import duesoldi.test.support.pages.BlogEntryPage
 import duesoldi.test.support.setup.BlogStorage._
 import duesoldi.test.support.setup.Database._
+import duesoldi.test.support.setup.FeatureSwitching
+import duesoldi.test.support.setup.FeatureSwitching.{featureDisabled, featureEnabled}
 import duesoldi.test.support.setup.Setup.withSetup
 import utest._
 
@@ -193,6 +195,49 @@ object BlogEntryPageTests
           }
         }
       }
+      "has a Twitter Card" - {
+        withSetup(
+          database,
+          runningApp,
+          blogEntry("title" ->
+            """# Title
+              |
+              |The start of the content
+            """.stripMargin
+          ),
+          featureEnabled("TWITTER_CARDS")
+        ) { implicit env =>
+          for {
+            response <- get("/blog/title")
+            page = new BlogEntryPage(response.body)
+          } yield {
+            assert(page.twitterCard.isDefined)
+            page.twitterCard.foreach { card =>
+              assert(
+                card.title == "Title",
+                card.card == "summary",
+                card.description == "The start of the content"
+              )
+            }
+          }
+        }
+      }
+      "has no Twitter Card when the feature is disabled" - {
+        withSetup(
+          database,
+          runningApp,
+          blogEntry("title" -> "# Title"),
+          featureDisabled("TWITTER_CARDS")
+        ) { implicit env =>
+          for {
+            response <- get("/blog/title")
+            twitterCard = new BlogEntryPage(response.body).twitterCard
+          } yield {
+            assert(twitterCard.isEmpty)
+          }
+        }
+      }
     }
   }
 }
+

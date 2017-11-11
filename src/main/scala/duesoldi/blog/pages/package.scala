@@ -8,4 +8,6 @@ package object pages
   type MakeIndexPage = () => IndexPageMaker.Result
   type BuildEntryPageModel = (BlogEntry) => BlogEntryPageModel
   type BuildIndexPageModel = Seq[BlogEntry] => BlogIndexPageModel
+
+  type GetEntryTwitterCard = BlogEntry => Option[TwitterCard]
 }

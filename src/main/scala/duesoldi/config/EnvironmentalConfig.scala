@@ -1,12 +1,11 @@
 package duesoldi.config
 
 import duesoldi._
+import duesoldi.dependencies.Features
 import duesoldi.storage.JDBCConnection
 
-import scala.concurrent.duration.Duration
-import scala.util.Try
-
-object EnvironmentalConfig {
+object EnvironmentalConfig
+{
   def apply(env: Env): Config = {
     Config(
       host = env.getOrElse("HOST", "0.0.0.0"),
@@ -22,7 +21,8 @@ object EnvironmentalConfig {
       imageBaseUrl = env.getOrElse("IMAGE_BASE_URL", ""),
       loggingEnabled = env.get("LOGGING_ENABLED").map(_.toBoolean).getOrElse(true),
       loggerName = env.getOrElse("LOGGER_NAME", ""),
-      secretKey = env.getOrElse("SECRET_KEY", "")
+      secretKey = env.getOrElse("SECRET_KEY", ""),
+      features = Features.featureStatuses(env)
     )
   }
 
@@ -40,7 +40,9 @@ object EnvironmentalConfig {
       "LOGGING_ENABLED" -> config.loggingEnabled.toString,
       "LOGGER_NAME" -> config.loggerName,
       "SECRET_KEY" -> config.secretKey
-    )
+    ) ++ config.features.map {
+      case (key, value) => s"FEATURE_$key" -> (if (value) "on" else "off")
+    }
   }
 
   def nonSensitive(env: Env): Env = env.filterNot { case (name, _) => isSensitive(name) }

@@ -16,15 +16,19 @@ case class Config(
   imageBaseUrl: String,
   loggingEnabled: Boolean,
   loggerName: String,
-  secretKey: String 
+  secretKey: String,
+  features: Map[String, Boolean]
 )
 
-object Config {
+object Config
+{
   case class Credentials(username: String, password: String)
 
-  object Credentials {
+  object Credentials
+  {
     sealed trait ParseFailure
-    object ParseFailure {
+    object ParseFailure
+    {
       case object Malformed extends ParseFailure
     }
     def parsed(colonSeparated: String): Either[ParseFailure, Credentials] = {
