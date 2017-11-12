@@ -86,7 +86,7 @@ object EntryPageMakerTests
 
   private lazy val validatesIdentifier: ValidateIdentifier = _ => None
   private lazy val invalidIdentifier: ValidateIdentifier = _ => Some("Invalid identifier")
-  private def returnsModel(): BuildEntryPageModel = _ => BlogEntryPageModel("title", "yesterday", "hello", OgData("title", "description"))
+  private def returnsModel(): BuildEntryPageModel = _ => BlogEntryPageModel("title", "yesterday", "hello", OgMetadata("title", "description"))
   private lazy val rendersNothing: Render = (_, _) => Future.successful(Right(""))
   private lazy val failsToRender: Render = (_, _) => Future.successful(Left(bhuj.TemplateNotFound("foo")))
   private def renders(result: String): Render = (_, _) => Future.successful(Right(result))

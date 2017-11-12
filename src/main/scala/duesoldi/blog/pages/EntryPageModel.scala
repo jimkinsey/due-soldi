@@ -15,7 +15,7 @@ object EntryPageModel
       lastModified = entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy")),
       contentHtml = MarkdownToHtml.html(entry.content.nodes),
       twitterMetadata = getTwitterCard(entry),
-      ogData = OgData(
+      ogMetadata = OgMetadata(
         title = title,
         description = MarkdownDocument.text(MarkdownDocument.content(entry.content)).take(140)
       )

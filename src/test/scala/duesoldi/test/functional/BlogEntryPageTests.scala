@@ -250,8 +250,8 @@ object BlogEntryPageTests
             response <- get("/blog/title")
             page = new BlogEntryPage(response.body)
           } yield {
-            assert(page.ogData.isDefined)
-            page.ogData.foreach { data =>
+            assert(page.ogMetadata.isDefined)
+            page.ogMetadata.foreach { data =>
               assert(
                 data.title == "Title",
                 data.description contains "The start of the content"

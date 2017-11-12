@@ -13,10 +13,10 @@ case class BlogEntryPageModel(
                                title: String,
                                lastModified: String,
                                contentHtml: String,
-                               ogData: OgData,
+                               ogMetadata: OgMetadata,
                                twitterMetadata: Option[TwitterMetadata] = None
 ) extends PageModel
 
 case class TwitterMetadata(card: String)
 
-case class OgData(title: String, description: String)
+case class OgMetadata(title: String, description: String)

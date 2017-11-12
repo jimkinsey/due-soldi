@@ -17,7 +17,7 @@ with PageFooter
   lazy val date: String = dom.select("header time").text()
   lazy val navigation: Navigation = new Navigation(dom.select("nav").asScala.head)
   lazy val twitterMetadata = TwitterMetadata(dom)
-  lazy val ogData = OgData(dom)
+  lazy val ogMetadata = OgMetadata(dom)
 }
 
 object TwitterMetadata
@@ -33,19 +33,19 @@ object TwitterMetadata
 
 case class TwitterMetadata(card: String)
 
-object OgData
+object OgMetadata
 {
-  def apply(dom: Document): Option[OgData] = {
+  def apply(dom: Document): Option[OgMetadata] = {
     for {
       title <- metaProperty("og:title", dom)
       description = metaProperty("og:description", dom)
     } yield {
-      OgData(title, description)
+      OgMetadata(title, description)
     }
   }
 }
 
-case class OgData(title: String, description: Option[String])
+case class OgMetadata(title: String, description: Option[String])
 
 class Navigation(elem: Element)
 {
