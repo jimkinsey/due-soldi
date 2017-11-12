@@ -211,12 +211,10 @@ object BlogEntryPageTests
             response <- get("/blog/title")
             page = new BlogEntryPage(response.body)
           } yield {
-            assert(page.twitterCard.isDefined)
-            page.twitterCard.foreach { card =>
+            assert(page.twitterMetadata.isDefined)
+            page.twitterMetadata.foreach { data =>
               assert(
-                card.title == "Title",
-                card.card == "summary",
-                card.description == "The start of the content"
+                data.card == "summary"
               )
             }
           }
@@ -231,7 +229,7 @@ object BlogEntryPageTests
         ) { implicit env =>
           for {
             response <- get("/blog/title")
-            twitterCard = new BlogEntryPage(response.body).twitterCard
+            twitterCard = new BlogEntryPage(response.body).twitterMetadata
           } yield {
             assert(twitterCard.isEmpty)
           }

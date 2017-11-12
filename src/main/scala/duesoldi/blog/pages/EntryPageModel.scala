@@ -7,14 +7,14 @@ import duesoldi.markdown.{MarkdownDocument, MarkdownToHtml}
 
 object EntryPageModel
 {
-  def pageModel(getTwitterCard: GetEntryTwitterCard)
+  def pageModel(getTwitterCard: GetEntryTwitterMetadata)
                (entry: BlogEntry): BlogEntryPageModel = {
     val title = MarkdownDocument.title(entry.content).getOrElse("-untitled-")
     BlogEntryPageModel(
       title = title,
       lastModified = entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy")),
       contentHtml = MarkdownToHtml.html(entry.content.nodes),
-      twitterCard = getTwitterCard(entry),
+      twitterMetadata = getTwitterCard(entry),
       ogData = OgData(
         title = title,
         description = MarkdownDocument.text(MarkdownDocument.content(entry.content)).take(140)
@@ -23,16 +23,8 @@ object EntryPageModel
   }
 }
 
-object BlogEntryTwitterCard
+object BlogEntryTwitterMetadata
 {
-  val getTwitterCard: GetEntryTwitterCard = (entry) => {
-    for {
-      title <- MarkdownDocument.title(entry.content)
-      description = MarkdownDocument.text(MarkdownDocument.content(entry.content)).take(140)
-    } yield {
-      TwitterCard(title, description)
-    }
-  }
-
-  val noTwitterCard: GetEntryTwitterCard = _ => None
+  val getTwitterCard: GetEntryTwitterMetadata = _ => Some(TwitterMetadata("summary"))
+  val noTwitterCard: GetEntryTwitterMetadata = _ => None
 }

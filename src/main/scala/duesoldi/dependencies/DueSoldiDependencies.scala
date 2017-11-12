@@ -110,8 +110,8 @@ object DueSoldiDependencies
 
   implicit lazy val currentFurniturePath: Inject[CurrentUrlPath] = config => FurnitureFiles.currentUrlPath(config.furniturePath)
 
-  implicit lazy val getBlogEntryTwitterCard: Inject[GetEntryTwitterCard] = {
-    forFeature("TWITTER_CARDS")(ifOn = BlogEntryTwitterCard.getTwitterCard, ifOff = BlogEntryTwitterCard.noTwitterCard)
+  implicit lazy val getBlogEntryTwitterCard: Inject[GetEntryTwitterMetadata] = {
+    forFeature("TWITTER_CARDS")(ifOn = BlogEntryTwitterMetadata.getTwitterCard, ifOff = BlogEntryTwitterMetadata.noTwitterCard)
   }
 }
 

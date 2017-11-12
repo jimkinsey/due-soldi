@@ -10,13 +10,13 @@ object BlogIndexPageModel
 case class BlogIndexPageModel(entries: Seq[BlogIndexPageModel.Entry]) extends PageModel
 
 case class BlogEntryPageModel(
-  title: String,
-  lastModified: String,
-  contentHtml: String,
-  ogData: OgData,
-  twitterCard: Option[TwitterCard] = None
+                               title: String,
+                               lastModified: String,
+                               contentHtml: String,
+                               ogData: OgData,
+                               twitterMetadata: Option[TwitterMetadata] = None
 ) extends PageModel
 
-case class TwitterCard(title: String, description: String)
+case class TwitterMetadata(card: String)
 
 case class OgData(title: String, description: String)

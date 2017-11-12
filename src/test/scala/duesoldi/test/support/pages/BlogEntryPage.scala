@@ -16,24 +16,22 @@ with PageFooter
   lazy val content: Content = new Content(dom.select("#content").first())
   lazy val date: String = dom.select("header time").text()
   lazy val navigation: Navigation = new Navigation(dom.select("nav").asScala.head)
-  lazy val twitterCard = TwitterCard(dom)
+  lazy val twitterMetadata = TwitterMetadata(dom)
   lazy val ogData = OgData(dom)
 }
 
-object TwitterCard
+object TwitterMetadata
 {
-  def apply(dom: Document): Option[TwitterCard] = {
+  def apply(dom: Document): Option[TwitterMetadata] = {
     for {
       card <- metaContent("twitter:card", dom)
-      title <- metaContent("twitter:title", dom)
-      description <- metaContent("twitter:description", dom)
     } yield {
-      TwitterCard(title, card, description)
+      TwitterMetadata(card)
     }
   }
 }
 
-case class TwitterCard(title: String, card: String, description: String, creator: Option[String] = None, site: Option[String] = None)
+case class TwitterMetadata(card: String)
 
 object OgData
 {

@@ -9,5 +9,5 @@ package object pages
   type BuildEntryPageModel = (BlogEntry) => BlogEntryPageModel
   type BuildIndexPageModel = Seq[BlogEntry] => BlogIndexPageModel
 
-  type GetEntryTwitterCard = BlogEntry => Option[TwitterCard]
+  type GetEntryTwitterMetadata = BlogEntry => Option[TwitterMetadata]
 }
