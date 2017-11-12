@@ -13,7 +13,10 @@ case class BlogEntryPageModel(
   title: String,
   lastModified: String,
   contentHtml: String,
+  ogData: OgData,
   twitterCard: Option[TwitterCard] = None
 ) extends PageModel
 
 case class TwitterCard(title: String, description: String)
+
+case class OgData(title: String, description: String)

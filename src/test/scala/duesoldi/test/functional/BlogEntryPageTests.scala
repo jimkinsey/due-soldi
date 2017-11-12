@@ -237,6 +237,31 @@ object BlogEntryPageTests
           }
         }
       }
+      "has some Open Graph metadata" - {
+        withSetup(
+          database,
+          runningApp,
+          blogEntry("title" ->
+            """# Title
+              |
+              |The start of the content
+            """.stripMargin
+          )
+        ) { implicit env =>
+          for {
+            response <- get("/blog/title")
+            page = new BlogEntryPage(response.body)
+          } yield {
+            assert(page.ogData.isDefined)
+            page.ogData.foreach { data =>
+              assert(
+                data.title == "Title",
+                data.description contains "The start of the content"
+              )
+            }
+          }
+        }
+      }
     }
   }
 }

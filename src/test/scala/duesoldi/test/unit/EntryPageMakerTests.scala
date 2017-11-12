@@ -4,7 +4,7 @@ import bhuj.TemplateNotFound
 import duesoldi.blog.model.BlogEntry
 import duesoldi.blog.pages.EntryPageMaker.Failure
 import duesoldi.blog.pages.EntryPageMaker.Failure.{EntryNotFound, InvalidId}
-import duesoldi.blog.pages.{BlogEntryPageModel, BuildEntryPageModel, EntryPageMaker, MakeEntryPage}
+import duesoldi.blog.pages._
 import duesoldi.blog.storage.GetBlogEntry
 import duesoldi.blog.validation.ValidateIdentifier
 import duesoldi.events
@@ -86,7 +86,7 @@ object EntryPageMakerTests
 
   private lazy val validatesIdentifier: ValidateIdentifier = _ => None
   private lazy val invalidIdentifier: ValidateIdentifier = _ => Some("Invalid identifier")
-  private def returnsModel(): BuildEntryPageModel = _ => BlogEntryPageModel("title", "yesterday", "hello")
+  private def returnsModel(): BuildEntryPageModel = _ => BlogEntryPageModel("title", "yesterday", "hello", OgData("title", "description"))
   private lazy val rendersNothing: Render = (_, _) => Future.successful(Right(""))
   private lazy val failsToRender: Render = (_, _) => Future.successful(Left(bhuj.TemplateNotFound("foo")))
   private def renders(result: String): Render = (_, _) => Future.successful(Right(result))

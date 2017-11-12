@@ -6,6 +6,10 @@
     <meta name="twitter:title" content="{{title}}"/>
     <meta name="twitter:description" content="{{description}}"/>
     {{/twitterCard}}
+    {{#ogData}}
+    <meta property="og:title" content="{{title}}"/>
+    <meta property="og:description" content="{{description}}"/>
+    {{/ogData}}
     <title>{{title}}</title>
     <link href="https://fonts.googleapis.com/css?family=Neuton" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet"/>
@@ -13,9 +17,9 @@
   </head>
   <body>
     <nav>
-        <ol>
-            <li><a href="/blog/">Blog Index</a></li>
-        </ol>
+      <ol>
+        <li><a href="/blog/">Blog Index</a></li>
+      </ol>
     </nav>
     <article id="content">
       <header><small><time>{{lastModified}}</time></small></header>

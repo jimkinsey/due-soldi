@@ -21,4 +21,5 @@ trait Page
 object Page
 {
   def metaContent(name: String, dom: Document): Option[String] = Option(dom.select(s"""meta[name="$name"]""").first()).map(_.attr("content"))
+  def metaProperty(name: String, dom: Document): Option[String] = Option(dom.select(s"""meta[property="$name"]""").first()).map(_.attr("content"))
 }
