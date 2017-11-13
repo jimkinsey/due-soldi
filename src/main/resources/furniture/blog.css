@@ -1,14 +1,24 @@
 body {
-    font-family: 'Neuton', serif;
+    font-family: serif;
     font-weight: lighter;
-    background-color: #ffffff;
-    color: #555555;
+    letter-spacing: 0.7;
+    background-color: rgb(255,255,250);
+    background: linear-gradient(to right, rgb(255,255,250) 80%, rgb(255,255,230) 99.5%, rgb(128,64,0));
+    color: rgb(50,35,0);
     margin: 0.25em;
+    line-height: 1.5em;
+    max-width: 50em;
+}
+
+body article {
+    text-align: justify;
 }
 
 header, footer, h1, h2, h3, h4, h5, h6 {
-    font-family: 'Nunito', sans-serif;
-    font-weight: bold;
+    font-family: sans-serif;
+    font-weight: bolder;
+    letter-spacing: 1;
+    text-align: left;
 }
 
 header, footer {
@@ -40,7 +50,7 @@ nav {
     margin-bottom: 0.25em;
     background-color: #555555;
     color: white;
-    font-family: 'Nunito', sans-serif;
+    font-family: sans-serif;
     font-size: smaller;
 }
 
@@ -70,6 +80,21 @@ nav ol li a:before {
     margin-top: 0;
 }
 
+#blurb h2 {
+    margin-bottom: 0.25em;
+    background-color: #555555;
+    color: white;
+    font-family: sans-serif;
+    font-size: smaller;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+}
+
+#blurb {
+    text-align: left;
+    font-size: smaller;
+}
+
 #blog-index article header h2 {
     font-size: 1.5em;
     border: none;
@@ -97,6 +122,8 @@ a:visited {
 
 img {
     max-width: 100%;
+    filter: contrast(1) saturate(4.1) sepia(.3);
+
 }
 
 @media only screen and (min-width: 768px) {
@@ -118,31 +145,39 @@ img {
 
     body {
         margin: 2em;
-        margin-left: 240px;
+        margin-left: 22em;
+        padding-right: 5em;
     }
 
     #blurb {
         position: fixed;
         top: 0;
         left: 0;
-        width: 200px;
-        padding: 20px;
+        width: 15em;
+        padding: 2em;
+        padding-left: 5em;
         text-align: left;
     }
 
     #blurb h2 {
+        background-color: inherit;
+        color: inherit;
+        font-size: medium;
+        padding: 0;
     }
 
     footer {
         position: fixed;
         left: 0;
         bottom: 0;
-        padding: 20px;
+        width: 15em;
+        padding: 2em;
+        padding-left: 5em;
     }
 
     nav {
         position:  initial;
-        background-color: white;
+        background-color: inherit;
     }
 
     nav ol li a {
