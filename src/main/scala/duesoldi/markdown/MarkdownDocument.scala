@@ -34,6 +34,12 @@ object MarkdownDocument {
     case Heading(nodes, 1) => MarkdownDocument.text(nodes)
   }
 
+  def findFirst(nodes: Seq[Node])(pred: Node => Boolean): Option[Node] = nodes.foldLeft[Option[Node]](None) {
+    case (None, node) if pred(node) => Some(node)
+    case (None, node: Container) => findFirst(node.items)(pred)
+    case (acc, _) => acc
+  }
+
   def content(markdown: MarkdownDocument): Seq[Node] = markdown.nodes.dropWhile {
     case Heading(_, 1) => true
     case _ => false

@@ -260,6 +260,36 @@ object BlogEntryPageTests
           }
         }
       }
+      "includes the first image, if any, in the Open Graph metadata" - {
+        withSetup(
+          database,
+          runningApp,
+          blogEntry("title" ->
+            """# Title
+              |
+              |The start of the content
+              |
+              |![The first image](/blog/title/images/image.gif "An image title")
+            """.stripMargin
+          )
+        ) { implicit env =>
+          for {
+            response <- get("/blog/title")
+            page = new BlogEntryPage(response.body)
+          } yield {
+            assert(page.ogMetadata.flatMap(_.image).isDefined)
+            for {
+              ogMetadata <- page.ogMetadata
+              ogImage <- ogMetadata.image
+            } yield {
+              assert(
+                ogImage.url == "/blog/title/images/image.gif",
+                ogImage.alt contains "The first image"
+              )
+            }
+          }
+        }
+      }
     }
   }
 }

@@ -7,6 +7,10 @@
     {{#ogMetadata}}
     <meta property="og:title" content="{{title}}"/>
     <meta property="og:description" content="{{description}}"/>
+    {{#image}}
+    <meta property="og:image:url" content="{{url}}"/>
+    {{#alt}}<meta property="og:image:alt" content="{{_}}"/>{{/alt}}
+    {{/image}}
     {{/ogMetadata}}
     <title>{{title}}</title>
     <link href="{{#furniture}}/blog.css{{/furniture}}" rel="stylesheet"/>

@@ -19,4 +19,9 @@ case class BlogEntryPageModel(
 
 case class TwitterMetadata(card: String)
 
-case class OgMetadata(title: String, description: String)
+object OgMetadata
+{
+  case class Image(url: String, alt: Option[String] = None)
+}
+
+case class OgMetadata(title: String, description: String, image: Option[OgMetadata.Image] = None)

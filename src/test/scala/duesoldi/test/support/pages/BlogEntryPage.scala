@@ -40,12 +40,26 @@ object OgMetadata
       title <- metaProperty("og:title", dom)
       description = metaProperty("og:description", dom)
     } yield {
-      OgMetadata(title, description)
+      OgMetadata(title, description, Image(dom))
+    }
+  }
+
+  case class Image(url: String, alt: Option[String])
+
+  object Image
+  {
+    def apply(dom: Document): Option[Image] = {
+      for {
+        url <- metaProperty("og:image:url", dom).orElse(metaProperty("og:image", dom))
+        alt = metaProperty("og:image:alt", dom)
+      } yield {
+        Image(url, alt)
+      }
     }
   }
 }
 
-case class OgMetadata(title: String, description: Option[String])
+case class OgMetadata(title: String, description: Option[String], image: Option[OgMetadata.Image])
 
 class Navigation(elem: Element)
 {
