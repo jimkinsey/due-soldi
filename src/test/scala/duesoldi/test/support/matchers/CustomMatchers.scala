@@ -16,4 +16,10 @@ object CustomMatchers {
     def isLeftOf(value: L): Boolean = either.left.toOption.contains(value)
     def isRightOf(value: R): Boolean = either.toOption.contains(value)
   }
+
+  implicit class OptionalItemRequired[T](option: Option[T]) {
+    def meetsRequirements(requirements: (T => Boolean)*): Boolean = {
+      option.exists(t => requirements.forall(_ (t)))
+    }
+  }
 }

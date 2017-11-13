@@ -277,16 +277,9 @@ object BlogEntryPageTests
             response <- get("/blog/title")
             page = new BlogEntryPage(response.body)
           } yield {
-            assert(page.ogMetadata.flatMap(_.image).isDefined)
-            for {
-              ogMetadata <- page.ogMetadata
-              ogImage <- ogMetadata.image
-            } yield {
-              assert(
-                ogImage.url == "/blog/title/images/image.gif",
-                ogImage.alt contains "The first image"
-              )
-            }
+            assert(
+              page.ogMetadata.flatMap(_.image) meetsRequirements (_.url == "/blog/title/images/image.gif", _.alt contains "The first image")
+            )
           }
         }
       }
