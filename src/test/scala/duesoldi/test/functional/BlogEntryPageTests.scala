@@ -3,7 +3,7 @@ package duesoldi.test.functional
 import duesoldi.test.support.app.ServerRequests._
 import duesoldi.test.support.app.TestApp.runningApp
 import duesoldi.test.support.matchers.CustomMatchers._
-import duesoldi.test.support.pages.BlogEntryPage
+import duesoldi.test.support.pages.{BlogEntryPage, OgMetadata}
 import duesoldi.test.support.setup.BlogStorage._
 import duesoldi.test.support.setup.Database._
 import duesoldi.test.support.setup.FeatureSwitching
@@ -277,9 +277,9 @@ object BlogEntryPageTests
             response <- get("/blog/title")
             page = new BlogEntryPage(response.body)
           } yield {
-            assert(
-              page.ogMetadata.flatMap(_.image) meetsRequirements (_.url == "/blog/title/images/image.gif", _.alt contains "The first image")
-            )
+            assertMatch(page.ogMetadata.flatMap(_.image)) {
+              case Some(OgMetadata.Image("/blog/title/images/image.gif", Some("The first image"))) => true
+            }
           }
         }
       }
