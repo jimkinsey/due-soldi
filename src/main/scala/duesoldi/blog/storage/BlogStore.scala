@@ -4,6 +4,7 @@ import java.sql.{ResultSet, Timestamp}
 import java.time.ZoneId
 
 import duesoldi.blog.model.BlogEntry
+import duesoldi.blog.storage.BlogStore.DeleteResult.Deleted
 import duesoldi.markdown
 import duesoldi.storage.JDBCConnection.{PerformQuery, PerformUpdate}
 
@@ -13,9 +14,17 @@ import scala.util.{Failure, Success}
 object BlogStore
 {
   sealed trait PutResult
-  object PutResult {
+  object PutResult
+  {
     case object Created extends PutResult
     case object Failure extends PutResult
+  }
+
+  sealed trait DeleteResult
+  object DeleteResult
+  {
+    case object Deleted extends DeleteResult
+    case object Failure extends DeleteResult
   }
 
   def toBlogEntry(parseMarkdown: markdown.Parse): (ResultSet => BlogEntry) = { row =>
@@ -51,7 +60,7 @@ object BlogStore
     }
   }
 
-  def delete(performUpdate: PerformUpdate)(name: String): Future[Unit] = Future.fromTry {
-    performUpdate("DELETE FROM blog_entry WHERE id = ?", Seq(name)) map (_ => {})
+  def delete(performUpdate: PerformUpdate)(name: String): Future[Either[DeleteResult.Failure.type, DeleteResult.Deleted.type]] = Future.fromTry {
+    performUpdate("DELETE FROM blog_entry WHERE id = ?", Seq(name)) map (_ => { Right(Deleted) }) recover { case _ => Left(DeleteResult.Failure) }
   }
 }

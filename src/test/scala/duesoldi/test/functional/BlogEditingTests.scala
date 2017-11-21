@@ -121,6 +121,18 @@ object BlogEditingTests
           }
         }
       }
+      "returns a 400 when the id is invalid" - {
+        withSetup(
+          database,
+          runningApp
+        ) { implicit env =>
+          for {
+            createResponse <- delete("/admin/blog/';+DROP+TABLE+blog_entry;", headers = TestApp.adminAuth)
+          } yield {
+            assert(createResponse.status == 400)
+          }
+        }
+      }
       "require admin priviliges" - {
         withSetup(
           database,
@@ -136,7 +148,7 @@ object BlogEditingTests
       }
     }
     "making a GET request to a blog entry URL" - {
-      "return a 404 when the blog entry does not exist" - {
+      "returns a 404 when the blog entry does not exist" - {
         withSetup(
           database,
           runningApp,
@@ -149,7 +161,19 @@ object BlogEditingTests
           }
         }
       }
-      "return the blog entry YAML doc when it does exist" - {
+      "returns a 400 when the id is invalid" - {
+        withSetup(
+          database,
+          runningApp
+        ) { implicit env =>
+          for {
+            createResponse <- get("/admin/blog/';+DROP+TABLE+blog_entry;", headers = TestApp.adminAuth)
+          } yield {
+            assert(createResponse.status == 400)
+          }
+        }
+      }
+      "returns the blog entry YAML doc when it does exist" - {
         withSetup(
           database,
           runningApp,
@@ -185,7 +209,7 @@ object BlogEditingTests
           }
         }
       }
-      "require admin privileges" - {
+      "requires admin privileges" - {
         withSetup(
           database,
           runningApp,

@@ -10,5 +10,5 @@ package object storage
   type GetBlogEntry = (String) => Future[Option[BlogEntry]]
   type GetAllBlogEntries = () => Future[List[BlogEntry]]
   type PutBlogEntry = (BlogEntry) => Future[Either[BlogStore.PutResult.Failure.type, BlogStore.PutResult.Created.type]]
-  type DeleteBlogEntry = (String) => Future[Unit]
+  type DeleteBlogEntry = (String) => Future[Either[BlogStore.DeleteResult.Failure.type, BlogStore.DeleteResult.Deleted.type]]
 }

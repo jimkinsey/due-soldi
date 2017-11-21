@@ -21,11 +21,11 @@ object BlogEditingRoutes
   def blogEditingRoutes(implicit executionContext: ExecutionContext,
                         inject: RequestDependencyInjector): Route =
     path("admin" / "blog" / Remaining) { id =>
-      inject.dependency[Credentials] into { credentials =>
+      inject.dependencies[Credentials, ValidateIdentifier] into { case (credentials, validateIdentifier) =>
         adminsOnly(credentials) {
           put {
             entity(as[String]) { content =>
-              inject.dependencies[PutBlogEntry, ValidateIdentifier, ValidateContent, EntryFromYaml, GetBlogEntry] into { case (putEntry, validateIdentifier, validateContent, parse, getEntry) =>
+              inject.dependencies[PutBlogEntry, ValidateContent, EntryFromYaml, GetBlogEntry] into { case (putEntry, validateContent, parse, getEntry) =>
                 complete {
                   (for {
                     _ <- validateIdentifier(id).failOnSomeWith(reason => HttpResponse(400, entity = s"Identifier invalid: $reason"))
@@ -42,17 +42,19 @@ object BlogEditingRoutes
           } ~ delete {
             inject.dependency[DeleteBlogEntry] into { deleteEntry =>
               complete {
-                for {
-                  result <- deleteEntry(id)
+                (for {
+                  _ <- validateIdentifier(id).failOnSomeWith(_ => { HttpResponse(400, entity = "Invalid ID") })
+                  _ <- deleteEntry(id).failWith(_ => { HttpResponse(500, entity = "Failed to delete blog entry")})
                 } yield {
                   HttpResponse(204)
-                }
+                }).value
               }
             }
           } ~ get {
             inject.dependencies[GetBlogEntry, EntryToYaml] into { case (getEntry, format) =>
               complete {
                 (for {
+                  _ <- validateIdentifier(id).failOnSomeWith(_ => { HttpResponse(400, entity = "Invalid ID") })
                   entry <- getEntry(id).failWith({ HttpResponse(404) })
                   yaml = format(entry)
                 } yield {
