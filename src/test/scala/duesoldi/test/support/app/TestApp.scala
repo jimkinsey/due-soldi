@@ -4,7 +4,8 @@ import duesoldi._
 import duesoldi.test.support.httpclient.BasicAuthorization
 import duesoldi.test.support.setup.SyncSetup
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.duration._
 
 case class ServerStartFailure(attempt: Int) extends Exception
 
@@ -43,10 +44,10 @@ object TestApp
   def attemptStop(): Future[Unit] = running.stop()
 
   def attemptStart(implicit executionContext: ExecutionContext): Unit = {
-    App.start(testEnv)
-      .foreach { s =>
+    Await.result(App.start(testEnv)
+      .map { s =>
         running = s
-      }
+      }, 5.seconds)
   }
 
   def runningApp(implicit executionContext: ExecutionContext) = new SyncSetup {

@@ -14,19 +14,28 @@ object BlogEditingTests
 {
   implicit val executionContext = utest.framework.ExecutionContext.RunNow
   val tests = this {
-    "making a PUT request with a Markdown document" - {
+    "making a PUT request with a YAML document" - {
       "create a blog entry at the specified ID where none already exists" - {
         withSetup(
           database,
           runningApp
         ) { implicit env =>
           for {
-            createResponse <- put("/admin/blog/new-entry", body = "# New entry!", headers = TestApp.adminAuth)
+            createResponse <- put("/admin/blog/new-entry",
+              body =
+                s"""id: new-entry
+                   |description:
+                   |content: |
+                   |    # New entry!
+                   |""".stripMargin,
+              headers = TestApp.adminAuth, "Content-Type" -> "text/x-yaml; charset=utf-8")
             entryResponse <- get("/blog/new-entry")
           } yield {
-            assert(createResponse.status == 201)
-            assert(entryResponse.status == 200)
-            assert(entryResponse.body contains "New entry!")
+            assert(
+              createResponse.status == 201,
+              entryResponse.status == 200,
+              entryResponse.body contains "New entry!"
+            )
           }
         }
       }
@@ -72,9 +81,26 @@ object BlogEditingTests
           runningApp
         ) { implicit env =>
           for {
-            createResponse <- put("/admin/blog/new-entry", body = "# New entry!", headers = BasicAuthorization("not-an-admin", "password"))
+            createResponse <- put("/admin/blog/new-entry",
+              body = "# Doesn't matter!",
+              headers = BasicAuthorization("not-an-admin", "password"))
           } yield {
             assert(createResponse.status == 401)
+          }
+        }
+      }
+      "not allow creation where the blog entry already exists" - {
+        withSetup(
+          database,
+          runningApp,
+          blogEntries(entry.withId("already-there"))
+        ) { implicit env =>
+          for {
+            createResponse <- put("/admin/blog/already-there",
+              body = entry.withId("already-there").toYaml,
+              headers = TestApp.adminAuth)
+          } yield {
+            assert(createResponse.status == 409)
           }
         }
       }
@@ -123,7 +149,7 @@ object BlogEditingTests
           }
         }
       }
-      "return the blog entry markdown doc when it does exist" - {
+      "return the blog entry YAML doc when it does exist" - {
         withSetup(
           database,
           runningApp,
@@ -132,8 +158,30 @@ object BlogEditingTests
           for {
             getResponse <- get("/admin/blog/does-exist", headers = TestApp.adminAuth)
           } yield {
-            assert(getResponse.status == 200)
-            assert(getResponse.body == "# Title")
+            assert(
+              getResponse.status == 200,
+              getResponse.body contains "id: does-exist",
+              getResponse.body contains "last-modified: ",
+              getResponse.body contains "description: ",
+              getResponse.body contains "content: |"
+            )
+          }
+        }
+      }
+      "returns a blog entry YAML doc which is compatible with the PUT endpoint" - {
+        withSetup(
+          database,
+          runningApp,
+          blogEntries("id" -> "# Title")
+        ) { implicit env =>
+          for {
+            getResponse <- get("/admin/blog/id", headers = TestApp.adminAuth)
+            _ <- delete("/admin/blog/id", headers = TestApp.adminAuth)
+            putResponse <- put("/admin/blog/id", getResponse.body, headers = TestApp.adminAuth)
+          } yield {
+            assert(
+              putResponse.status == 201
+            )
           }
         }
       }

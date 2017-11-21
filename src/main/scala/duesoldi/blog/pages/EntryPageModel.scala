@@ -17,7 +17,7 @@ object EntryPageModel
       twitterMetadata = getTwitterCard(entry),
       ogMetadata = OgMetadata(
         title = title,
-        description = MarkdownDocument.text(MarkdownDocument.content(entry.content)).take(140),
+        description = entry.description.getOrElse(""),
         image = MarkdownDocument.findFirst(entry.content.nodes)(_.isInstanceOf[MarkdownDocument.Image]).map {
           case MarkdownDocument.Image(alt, src, _) => OgMetadata.Image(src, Some(alt))
         }

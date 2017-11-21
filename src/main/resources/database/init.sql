@@ -10,7 +10,8 @@ CREATE TABLE access_record (
 );
 
 CREATE TABLE blog_entry (
-  id        character varying not null PRIMARY KEY,
-  published timestamp         not null,
-  content   text              not null
+  id          character varying not null PRIMARY KEY,
+  published   timestamp         not null,
+  content     text              not null,
+  description text              null
 );

@@ -239,23 +239,22 @@ object BlogEntryPageTests
         withSetup(
           database,
           runningApp,
-          blogEntry("title" ->
-            """# Title
-              |
-              |The start of the content
-            """.stripMargin
+          blogEntry(
+            entry.withId("title")
+              .withDescription("Some excellent content.")
+              .withContent(
+                """# Title
+                  |
+                  |The start of the content
+                """.stripMargin)
           )
         ) { implicit env =>
           for {
             response <- get("/blog/title")
             page = new BlogEntryPage(response.body)
           } yield {
-            assert(page.ogMetadata.isDefined)
-            page.ogMetadata.foreach { data =>
-              assert(
-                data.title == "Title",
-                data.description contains "The start of the content"
-              )
+            assertMatch(page.ogMetadata) {
+              case Some(OgMetadata("Title", Some("Some excellent content."), _)) => {}
             }
           }
         }
@@ -278,7 +277,7 @@ object BlogEntryPageTests
             page = new BlogEntryPage(response.body)
           } yield {
             assertMatch(page.ogMetadata.flatMap(_.image)) {
-              case Some(OgMetadata.Image("/blog/title/images/image.gif", Some("The first image"))) => true
+              case Some(OgMetadata.Image("/blog/title/images/image.gif", Some("The first image"))) => {}
             }
           }
         }

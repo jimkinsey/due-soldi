@@ -10,11 +10,11 @@ object BlogIndexPageModel
 case class BlogIndexPageModel(entries: Seq[BlogIndexPageModel.Entry]) extends PageModel
 
 case class BlogEntryPageModel(
-                               title: String,
-                               lastModified: String,
-                               contentHtml: String,
-                               ogMetadata: OgMetadata,
-                               twitterMetadata: Option[TwitterMetadata] = None
+  title: String,
+  lastModified: String,
+  contentHtml: String,
+  ogMetadata: OgMetadata,
+  twitterMetadata: Option[TwitterMetadata] = None
 ) extends PageModel
 
 case class TwitterMetadata(card: String)
@@ -24,4 +24,8 @@ object OgMetadata
   case class Image(url: String, alt: Option[String] = None)
 }
 
-case class OgMetadata(title: String, description: String, image: Option[OgMetadata.Image] = None)
+case class OgMetadata(
+  title: String,
+  description: String,
+  image: Option[OgMetadata.Image] = None
+)

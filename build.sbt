@@ -12,11 +12,12 @@ resolvers +=
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http-core" % "10.0.10",
   "com.typesafe.akka" %% "akka-http" % "10.0.10",
-  "com.h2database" % "h2" % "1.4.193" % "test",
   "org.postgresql" % "postgresql" % "9.4.1212",
   "org.typelevel" %% "cats-core" % "1.0.0-MF",
   "com.vladsch.flexmark" % "flexmark" % "0.27.0",
   "com.github.jimkinsey" %% "bhuj" % "0.2-SNAPSHOT",
+  "io.circe" %% "circe-yaml" % "0.6.1",
+  "com.h2database" % "h2" % "1.4.193" % "test",
   "net.databinder.dispatch" %% "dispatch-core" % "0.13.2" % "test",
   "org.jsoup" % "jsoup" % "1.10.3" % "test",
   "com.lihaoyi" %% "utest" % "0.5.4" % "test"

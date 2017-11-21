@@ -4,6 +4,7 @@ import java.sql.ResultSet
 
 import duesoldi.blog.model.BlogEntry
 import duesoldi.blog.pages._
+import duesoldi.blog.serialisation.EntryYaml
 import duesoldi.blog.storage._
 import duesoldi.blog.validation.{ValidBlogContent, ValidIdentifier}
 import duesoldi.config.Config
@@ -17,7 +18,7 @@ import duesoldi.markdown.MarkdownParser
 import duesoldi.metrics.storage.{AccessRecordStorage, AccessRecordStore, GetAllAccessRecords}
 import duesoldi.debug.pages.{ConfigPageMaker, _}
 import duesoldi.dependencies.Features.forFeature
-import duesoldi.{Env, markdown}
+import duesoldi.{Env, blog, markdown}
 import duesoldi.rendering.Renderer
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.storage.JDBCConnection.{ConnectionDetails, PerformQuery, PerformUpdate}
@@ -113,6 +114,10 @@ object DueSoldiDependencies
   implicit lazy val getBlogEntryTwitterCard: Inject[GetEntryTwitterMetadata] = {
     forFeature("TWITTER_CARDS")(ifOn = BlogEntryTwitterMetadata.getTwitterCard, ifOff = BlogEntryTwitterMetadata.noTwitterCard)
   }
+
+  implicit lazy val blogEntryFromYaml: Inject[blog.EntryFromYaml] = _ => EntryYaml.parse
+
+  implicit lazy val blogEntryToYaml: Inject[blog.EntryToYaml] = _ => EntryYaml.format
 }
 
 object Features

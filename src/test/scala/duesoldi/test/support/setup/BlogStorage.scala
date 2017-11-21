@@ -1,6 +1,7 @@
 package duesoldi.test.support.setup
 
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 import duesoldi.Env
 import duesoldi.test.support.httpclient.BasicAuthorization
@@ -10,7 +11,27 @@ import scala.concurrent.{ExecutionContext, Future}
 
 object BlogStorage
 {
-  case class EntryBuilder(id: String = "id", content: String = "# Title", lastModified: ZonedDateTime = ZonedDateTime.now())
+  val entry = EntryBuilder()
+
+  case class EntryBuilder(
+    id: String = "id",
+    content: String = "# Title",
+    lastModified: ZonedDateTime = ZonedDateTime.now(),
+    description: Option[String] = None
+  ) {
+    def withId(id: String): EntryBuilder = copy(id = id)
+    def withDescription(description: String): EntryBuilder = copy(description = Some(description))
+    def withContent(content: String): EntryBuilder = copy(content = content)
+
+    lazy val toYaml: String = {
+      s"""id: $id
+         |description: ${description.getOrElse("")}
+         |published: ${lastModified.format(DateTimeFormatter.ISO_ZONED_DATE_TIME)}
+         |content: |
+         |${content.lines.map(line => s"    $line").mkString("\n")}
+       """.stripMargin
+    }
+  }
 
   implicit def tupleToBuilder(tuple: (String, String)): EntryBuilder = tuple match {
     case (id, content) => EntryBuilder(id, content)
@@ -27,7 +48,7 @@ object BlogStorage
       implicit val e: Env = env
       val user :: password :: Nil = env("ADMIN_CREDENTIALS").split(":").toList
       Future.sequence(
-        entries.map(entry => ServerRequests.put(s"/admin/blog/${entry.id}", entry.content, BasicAuthorization(user, password)))
+        entries.map(entry => ServerRequests.put(s"/admin/blog/${entry.id}", entry.toYaml, BasicAuthorization(user, password)))
       ) map ( _ => Map.empty )
     }
   }
