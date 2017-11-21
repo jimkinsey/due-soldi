@@ -34,9 +34,9 @@ object MarkdownDocument {
     case Heading(nodes, 1) => MarkdownDocument.text(nodes)
   }
 
-  def findFirst(nodes: Seq[Node])(pred: Node => Boolean): Option[Node] = nodes.foldLeft[Option[Node]](None) {
-    case (None, node) if pred(node) => Some(node)
-    case (None, node: Container) => findFirst(node.items)(pred)
+  def collectFirst[T](nodes: Seq[Node])(pf: PartialFunction[Node,T]): Option[T] = nodes.foldLeft[Option[T]](None) {
+    case (None, node) if pf.isDefinedAt(node) => Some(pf(node))
+    case (None, node: Container) => collectFirst[T](node.items)(pf)
     case (acc, _) => acc
   }
 

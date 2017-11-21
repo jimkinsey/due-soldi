@@ -18,7 +18,7 @@ object EntryPageModel
       ogMetadata = OgMetadata(
         title = title,
         description = entry.description.getOrElse(""),
-        image = MarkdownDocument.findFirst(entry.content.nodes)(_.isInstanceOf[MarkdownDocument.Image]).map {
+        image = MarkdownDocument.collectFirst(entry.content.nodes) {
           case MarkdownDocument.Image(alt, src, _) => OgMetadata.Image(src, Some(alt))
         }
       )
