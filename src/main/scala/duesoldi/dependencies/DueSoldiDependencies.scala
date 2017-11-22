@@ -118,6 +118,8 @@ object DueSoldiDependencies
   implicit lazy val blogEntryFromYaml: Inject[blog.EntryFromYaml] = _ => EntryYaml.parse
 
   implicit lazy val blogEntryToYaml: Inject[blog.EntryToYaml] = _ => EntryYaml.format
+
+  implicit lazy val blogEntriesToYaml: Inject[blog.EntriesToYaml] = _ => EntryYaml.formatAll
 }
 
 object Features

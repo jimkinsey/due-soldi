@@ -147,6 +147,38 @@ object BlogEditingTests
         }
       }
     }
+    "making a GET request to the blog collection" - {
+      "returns an empty response when there are no blog entries" - {
+        withSetup(
+          database,
+          runningApp,
+          blogEntries()
+        ) { implicit env =>
+          for {
+            getAllResponse <- get("/admin/blog", headers = TestApp.adminAuth)
+          } yield {
+            assert(getAllResponse.status == 204)
+          }
+        }
+      }
+      "returns a YAML doc listing all entries when there are blog entries" - {
+        withSetup(
+          database,
+          runningApp,
+          blogEntries("one" -> "# One", "two" -> "# Two")
+        ) { implicit env =>
+          for {
+            getAllResponse <- get("/admin/blog", headers = TestApp.adminAuth)
+          } yield {
+            assert(
+              getAllResponse.status == 200,
+              getAllResponse.body contains "  id: one",
+              getAllResponse.body contains "  id: two"
+            )
+          }
+        }
+      }
+    }
     "making a GET request to a blog entry URL" - {
       "returns a 404 when the blog entry does not exist" - {
         withSetup(

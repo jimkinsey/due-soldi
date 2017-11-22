@@ -7,4 +7,5 @@ package object blog
 {
   type EntryFromYaml = String => Either[EntryYaml.ParseFailure, BlogEntry]
   type EntryToYaml = BlogEntry => String
+  type EntriesToYaml = Seq[BlogEntry] => String
 }

@@ -12,7 +12,7 @@ object EntryYaml
 {
   import duesoldi.collections.MapEnhancements._
 
-  def parse(yaml: String): Either[EntryYaml.ParseFailure, BlogEntry] = {
+  def parse(yaml: String): Either[EntryYaml.ParseFailure, BlogEntry] =
     for {
       yaml <- YamlObject.parse(yaml).left.map(_ => Malformed)
       id <- yaml.field[String]("id").toRight({ MissingId })
@@ -23,17 +23,21 @@ object EntryYaml
     } yield {
       BlogEntry(id, markdown, description = description, lastModified = lastModified.getOrElse(ZonedDateTime.now()))
     }
-  }
 
-  def format(entry: BlogEntry): String = {
-    s"""
-       |id: ${entry.id}
+  def format(entry: BlogEntry): String =
+    s"""id: ${entry.id}
        |description: ${entry.description.getOrElse("")}
        |last-modified: ${entry.lastModified.format(ISO_ZONED_DATE_TIME)}
        |content: |
-       |${entry.content.raw.lines.map(line => s"    $line").mkString("\n")}
-     """.stripMargin
-  }
+       |${indentBlock(entry.content.raw)}""".stripMargin
+
+  def formatAll(entries: Seq[BlogEntry]): String = entries
+    .map(format)
+    .map(entry => "- \n" + indentBlock(entry))
+    .mkString("\n")
+
+  def indentBlock(text: String): String = text.lines.map(indentLine).mkString("\n")
+  def indentLine(line: String): String = s"  $line"
 
   sealed trait ParseFailure
   object ParseFailure
