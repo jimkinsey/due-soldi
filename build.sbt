@@ -16,7 +16,7 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-core" % "1.0.0-MF",
   "com.vladsch.flexmark" % "flexmark" % "0.27.0",
   "com.github.jimkinsey" %% "bhuj" % "0.2-SNAPSHOT",
-  "io.circe" %% "circe-yaml" % "0.6.1",
+  "io.circe" %% "circe-yaml" % "0.7.0-M1",
   "com.h2database" % "h2" % "1.4.193" % "test",
   "net.databinder.dispatch" %% "dispatch-core" % "0.13.2" % "test",
   "org.jsoup" % "jsoup" % "1.10.3" % "test",
