@@ -105,9 +105,11 @@ object DueSoldiDependencies
 
   implicit val putBlogEntry: Inject[PutBlogEntry] = inject(BlogStore.put _)
 
+  implicit def putAllBlogEntries(implicit executionContext: ExecutionContext): Inject[PutBlogEntries] = inject(BlogStore.putAll _)
+
   implicit val deleteBlogEntry: Inject[DeleteBlogEntry] = inject(BlogStore.delete _)
 
-  implicit val deletaAllBlogEntries: Inject[DeleteAllBlogEntries] = inject(BlogStore.deleteAll _)
+  implicit val deleteAllBlogEntries: Inject[DeleteAllBlogEntries] = inject(BlogStore.deleteAll _)
 
   implicit lazy val parseMarkdown: Inject[markdown.Parse] = _ => MarkdownParser.parseMarkdown
 
@@ -122,6 +124,8 @@ object DueSoldiDependencies
   implicit lazy val blogEntryToYaml: Inject[blog.EntryToYaml] = _ => EntryYaml.format
 
   implicit lazy val blogEntriesToYaml: Inject[blog.EntriesToYaml] = _ => EntryYaml.formatAll
+
+  implicit lazy val blogEntriesFromYaml: Inject[blog.EntriesFromYaml] = _ => EntryYaml.parseAll
 }
 
 object Features

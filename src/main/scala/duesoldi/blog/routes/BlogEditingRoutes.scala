@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.Directives.{entity, _}
 import akka.http.scaladsl.server.Route
 import duesoldi.blog.storage._
 import duesoldi.blog.validation.{ValidateContent, ValidateIdentifier}
-import duesoldi.blog.{EntriesToYaml, EntryFromYaml, EntryToYaml}
+import duesoldi.blog.{EntriesFromYaml, EntriesToYaml, EntryFromYaml, EntryToYaml}
 import duesoldi.config.Config.Credentials
 import duesoldi.controller.AdminAuthentication.adminsOnly
 import duesoldi.dependencies.DueSoldiDependencies._
@@ -94,6 +94,19 @@ object BlogEditingRoutes
                     _ <- deleteEntries()
                   } yield {
                     HttpResponse(204)
+                  }
+                }
+              }
+            } ~ put {
+              inject.dependencies[EntriesFromYaml, PutBlogEntries] into { case (parse, store) =>
+                entity(as[String]) { content =>
+                  complete {
+                    (for {
+                      entries <- parse(content).failWith(_ => HttpResponse(400, entity = "Failed to parse provided entries"))
+                      res <- store(entries).failWith(_ => HttpResponse(500, entity = "Failed to store entries"))
+                    } yield {
+                      HttpResponse(204)
+                    }).value
                   }
                 }
               }

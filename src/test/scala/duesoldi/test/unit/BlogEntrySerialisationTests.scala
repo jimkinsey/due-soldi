@@ -19,7 +19,7 @@ extends TestSuite
             |last-modified:
           """.stripMargin
         )
-        assert(parseResult isLeftOf EntryYaml.ParseFailure.MissingContent)
+        assert(parseResult isLeftOf EntryYaml.ParseFailure.Invalid)
       }
       "results in a parse failure when the ID is missing" - {
         val parseResult = EntryYaml.parse(
@@ -29,7 +29,7 @@ extends TestSuite
             |  # Title
           """.stripMargin
         )
-        assert(parseResult isLeftOf EntryYaml.ParseFailure.MissingId)
+        assert(parseResult isLeftOf EntryYaml.ParseFailure.Invalid)
       }
       "results in a blog entry with the ID taken from the id field" - {
         val parseResult = EntryYaml.parse(

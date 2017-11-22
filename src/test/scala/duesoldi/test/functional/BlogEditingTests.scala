@@ -198,6 +198,31 @@ object BlogEditingTests
         }
       }
     }
+    "making a PUT request to the blog collection" - {
+      "puts all entries" - {
+        withSetup(
+          database,
+          runningApp,
+          blogEntries(entry.withId("1"), entry.withId("2"), entry.withId("3"))
+        ) { implicit env =>
+          for {
+            getAllResponse <- get("/admin/blog", headers = TestApp.adminAuth)
+            _ <- delete("/admin/blog", headers = TestApp.adminAuth)
+            putAllResponse <- put("/admin/blog", body = getAllResponse.body, headers = TestApp.adminAuth)
+            getFirstResponse <- get("/admin/blog/1", headers = TestApp.adminAuth)
+            getSecondResponse <- get("/admin/blog/2", headers = TestApp.adminAuth)
+            getThirdResponse <- get("/admin/blog/3", headers = TestApp.adminAuth)
+          } yield {
+            assert(
+              putAllResponse.status == 204,
+              getFirstResponse.status == 200,
+              getSecondResponse.status == 200,
+              getThirdResponse.status == 200
+            )
+          }
+        }
+      }
+    }
     "making a GET request to a blog entry URL" - {
       "returns a 404 when the blog entry does not exist" - {
         withSetup(

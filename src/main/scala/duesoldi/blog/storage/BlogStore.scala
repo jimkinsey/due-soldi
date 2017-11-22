@@ -5,10 +5,11 @@ import java.time.ZoneId
 
 import duesoldi.blog.model.BlogEntry
 import duesoldi.blog.storage.BlogStore.DeleteResult.Deleted
+import duesoldi.blog.storage.BlogStore.PutResult.Created
 import duesoldi.markdown
 import duesoldi.storage.JDBCConnection.{PerformQuery, PerformUpdate}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 object BlogStore
@@ -58,6 +59,10 @@ object BlogStore
       case Success(_) => Right(PutResult.Created)
       case Failure(_) => Left(PutResult.Failure)
     }
+  }
+
+  def putAll(performUpdate: PerformUpdate)(implicit executionContext: ExecutionContext): PutBlogEntries = (entries) => {
+    Future.sequence(entries.map(put(performUpdate))) map (_.collectFirst { case f @ Left(_) => f } getOrElse Right(Created))
   }
 
   def delete(performUpdate: PerformUpdate)(name: String): Future[Either[DeleteResult.Failure.type, DeleteResult.Deleted.type]] = Future.fromTry {

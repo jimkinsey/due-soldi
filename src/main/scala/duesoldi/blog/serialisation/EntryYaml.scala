@@ -1,27 +1,32 @@
 package duesoldi.blog.serialisation
 
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME
 
 import duesoldi.blog.model.BlogEntry
-import duesoldi.blog.serialisation.EntryYaml.ParseFailure.{Malformed, MissingContent, MissingId}
-import duesoldi.markdown.MarkdownParser
-import duesoldi.yaml.YamlObject
+import duesoldi.blog.serialisation.EntryMap.EntryMap
+import duesoldi.blog.serialisation.EntryYaml.ParseFailure.{Invalid, Malformed}
+import duesoldi.yaml.Yaml
 
 object EntryYaml
 {
-  import duesoldi.collections.MapEnhancements._
+  import duesoldi.collections.SeqEnhancements._
+  import duesoldi.collections.StandardCoercions._
 
-  def parse(yaml: String): Either[EntryYaml.ParseFailure, BlogEntry] =
+  def parse(yaml: String): Either[ParseFailure, BlogEntry] =
     for {
-      yaml <- YamlObject.parse(yaml).left.map(_ => Malformed)
-      id <- yaml.field[String]("id").toRight({ MissingId })
-      content <- yaml.field[String]("content").toRight({ MissingContent })
-      description = yaml.field[String]("description")
-      markdown = MarkdownParser.parseMarkdown(content)
-      lastModified = yaml.field[ZonedDateTime]("last-modified")
+      yaml <- Yaml.obj(yaml).left.map(_ => Malformed)
+      entry <- EntryMap.entry(yaml).left.map(_ => Invalid)
     } yield {
-      BlogEntry(id, markdown, description = description, lastModified = lastModified.getOrElse(ZonedDateTime.now()))
+      entry
+    }
+
+  def parseAll(yaml: String): Either[ParseFailure, Seq[BlogEntry]] =
+    for {
+      arr <- Yaml.arr(yaml).left.map(_ => Malformed)
+      maps = arr.asSeqOf[EntryMap]
+      entries <- EntryMap.entries(maps).left.map(_ => Invalid)
+    } yield {
+      entries
     }
 
   def format(entry: BlogEntry): String =
@@ -42,8 +47,7 @@ object EntryYaml
   sealed trait ParseFailure
   object ParseFailure
   {
-    case object MissingContent extends ParseFailure
-    case object MissingId extends ParseFailure
     case object Malformed extends ParseFailure
+    case object Invalid extends ParseFailure
   }
 }
