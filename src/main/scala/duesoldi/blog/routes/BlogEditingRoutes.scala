@@ -3,7 +3,7 @@ package duesoldi.blog.routes
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.server.Directives.{entity, _}
 import akka.http.scaladsl.server.Route
-import duesoldi.blog.storage.{DeleteBlogEntry, GetAllBlogEntries, GetBlogEntry, PutBlogEntry}
+import duesoldi.blog.storage._
 import duesoldi.blog.validation.{ValidateContent, ValidateIdentifier}
 import duesoldi.blog.{EntriesToYaml, EntryFromYaml, EntryToYaml}
 import duesoldi.config.Config.Credentials
@@ -84,6 +84,16 @@ object BlogEditingRoutes
                     } else {
                       HttpResponse(200, entity = format(entries))
                     }
+                  }
+                }
+              }
+            } ~ delete {
+              inject.dependency[DeleteAllBlogEntries] into { deleteEntries =>
+                complete {
+                  for {
+                    _ <- deleteEntries()
+                  } yield {
+                    HttpResponse(204)
                   }
                 }
               }

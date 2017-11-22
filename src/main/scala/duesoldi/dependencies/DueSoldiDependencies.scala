@@ -107,6 +107,8 @@ object DueSoldiDependencies
 
   implicit val deleteBlogEntry: Inject[DeleteBlogEntry] = inject(BlogStore.delete _)
 
+  implicit val deletaAllBlogEntries: Inject[DeleteAllBlogEntries] = inject(BlogStore.deleteAll _)
+
   implicit lazy val parseMarkdown: Inject[markdown.Parse] = _ => MarkdownParser.parseMarkdown
 
   implicit lazy val currentFurniturePath: Inject[CurrentUrlPath] = config => FurnitureFiles.currentUrlPath(config.furniturePath)

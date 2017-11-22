@@ -63,4 +63,12 @@ object BlogStore
   def delete(performUpdate: PerformUpdate)(name: String): Future[Either[DeleteResult.Failure.type, DeleteResult.Deleted.type]] = Future.fromTry {
     performUpdate("DELETE FROM blog_entry WHERE id = ?", Seq(name)) map (_ => { Right(Deleted) }) recover { case _ => Left(DeleteResult.Failure) }
   }
+
+  def deleteAll(performUpdate: PerformUpdate): DeleteAllBlogEntries = () => Future.fromTry {
+    performUpdate("DELETE FROM blog_entry", Seq.empty) map (_ => {
+      Right(Deleted)
+    }) recover {
+      case _ => Left(DeleteResult.Failure)
+    }
+  }
 }

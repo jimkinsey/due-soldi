@@ -179,6 +179,25 @@ object BlogEditingTests
         }
       }
     }
+    "making a DELETE request to the blog collection" - {
+      "deletes all entries" - {
+        withSetup(
+          database,
+          runningApp,
+          blogEntries(entry.withId("1"), entry.withId("2"), entry.withId("3"))
+        ) { implicit env =>
+          for {
+            deleteAllResponse <- delete("/admin/blog", headers = TestApp.adminAuth)
+            getAllResponse <- get("/admin/blog", headers = TestApp.adminAuth)
+          } yield {
+            assert(
+              deleteAllResponse.status == 204,
+              getAllResponse.status == 204
+            )
+          }
+        }
+      }
+    }
     "making a GET request to a blog entry URL" - {
       "returns a 404 when the blog entry does not exist" - {
         withSetup(
