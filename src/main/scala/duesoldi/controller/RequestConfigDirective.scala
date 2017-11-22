@@ -5,6 +5,7 @@ import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives.extract
 import duesoldi.config.EnvironmentalConfig.{nonSensitive, toEnv}
 import duesoldi.config.{Config, EnvironmentalConfig}
+import scala.language.postfixOps
 
 object RequestConfigDirective
 {

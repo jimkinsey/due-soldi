@@ -3,6 +3,7 @@ package duesoldi.transformers
 import cats.data.{EitherT, OptionT}
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.language.implicitConversions
 
 object TransformerOps {
   import cats.instances.all._

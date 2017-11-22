@@ -6,6 +6,7 @@ import io.netty.handler.codec.http.HttpHeaders
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.language.postfixOps
 
 object HttpClient
 {

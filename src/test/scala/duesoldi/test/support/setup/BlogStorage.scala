@@ -8,6 +8,7 @@ import duesoldi.test.support.httpclient.BasicAuthorization
 import duesoldi.test.support.app.ServerRequests
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.language.implicitConversions
 
 object BlogStorage
 {

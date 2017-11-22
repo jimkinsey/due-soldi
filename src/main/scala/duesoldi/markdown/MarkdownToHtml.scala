@@ -1,6 +1,7 @@
 package duesoldi.markdown
 
 import duesoldi.markdown.MarkdownDocument._
+import scala.language.postfixOps
 
 object MarkdownToHtml
 {
