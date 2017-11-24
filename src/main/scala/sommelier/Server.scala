@@ -45,11 +45,15 @@ object Server
   def request(exchange: HttpExchange): Request = {
     Request(
       method = Method(exchange.getRequestMethod),
-      uri = exchange.getRequestURI.toString
+      path = exchange.getRequestURI.toString,
+      accepts = Option(exchange.getRequestHeaders.getFirst("Accepts"))
     )
   }
 
   def send(exchange: HttpExchange)(response: Response): Unit = {
+    response.contentType.foreach { contentType =>
+      exchange.getResponseHeaders.add("Content-Type", contentType)
+    }
     exchange.sendResponseHeaders(response.status, response.body.map(_.length.toLong).getOrElse(0L))
     val os = exchange.getResponseBody
     response.body.foreach { body =>
