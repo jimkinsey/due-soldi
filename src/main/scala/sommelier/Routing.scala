@@ -2,7 +2,7 @@ package sommelier
 
 object Routing
 {
-  type Handler = (Context => Response)
+  type Handler = (Context => Either[Rejection,Response])
 
   lazy val GET = RequestMatcher(method = MethodMatcher(Method.GET))
 
