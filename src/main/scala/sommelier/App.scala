@@ -17,12 +17,15 @@ object App
   }
 
   lazy val internalStatus =
-    GET("/internal/status") respond { _ => 200 }
+    GET("/internal/status") respond { _ => Right(200) }
 
   lazy val journalPage =
     GET("/journal/:id") respond { implicit context =>
-      val id = pathParam("id")
-      200 (s"<title>Journal of $id</title>")
+      for {
+        id <- pathParam[Int]("id")
+      } yield {
+        200 (s"<title>Journal of $id</title>")
+      }
     }
 
 }

@@ -9,6 +9,10 @@ package object sommelier
     def apply(body: String): Response = copy(body = Some(body))
   }
 
+  trait Rejection {
+    def response: Response
+  }
+
   case class Route(matcher: RequestMatcher, handle: Routing.Handler)
 
   sealed trait Method

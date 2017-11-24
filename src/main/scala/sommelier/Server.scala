@@ -30,10 +30,14 @@ object Server
   }
 
   class Router(routes: Seq[Route]) extends HttpHandler {
-    def handle(t: HttpExchange): Unit = {
-      routes.toStream.find(_.matcher.matches(request(t))) match {
-        case Some(route) => send(t)(route.handle(Context(request(t), route.matcher)))
-        case None => send(t)(Response(404, Some("Route not matched")))
+    def handle(exchange: HttpExchange): Unit = {
+      routes.toStream.find(_.matcher.matches(request(exchange))) match {
+        case Some(route) =>
+          route
+            .handle(Context(request(exchange), route.matcher))
+            .map(send(exchange))
+            .left.map(rejection => send(exchange)(rejection.response))
+        case None => send(exchange)(Response(404, Some("Route not matched")))
       }
     }
   }

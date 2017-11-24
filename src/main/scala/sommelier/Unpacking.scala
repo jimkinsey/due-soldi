@@ -1,12 +1,27 @@
 package sommelier
 
 import scala.language.postfixOps
+import scala.util.Try
 
-object Unpacking
-{
-  def pathParam(name: String)(implicit context: Context): String = {
-    PathParams(context.matcher.path.pathPattern)(context.request.uri)(name) // FIXME this URI stuff
+object Unpacking {
+
+  trait Unpacker[T] {
+    def unpack(string: String): Option[T]
   }
+
+  case class BadPathVar(name: String) extends Rejection
+  {
+    lazy val response = Response(400, Some(s"Path var $name could not be unpacked"))
+  }
+
+  def pathParam[T](name: String)(implicit context: Context, unpacker: Unpacker[T]): Either[Rejection, T] = {
+    val pattern = context.matcher.path.pathPattern
+    val path = context.request.uri // FIXME this URI stuff
+    unpacker.unpack(PathParams(pattern)(path)(name)).toRight({ BadPathVar(name) })
+  }
+
+  implicit val unpackInt: Unpacker[Int] = string => Try(string.toInt).toOption
+  implicit val unpackString: Unpacker[String] = Some(_)
 }
 
 object PathParams
