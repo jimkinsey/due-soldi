@@ -32,7 +32,7 @@ object Server
   class Router(routes: Seq[Route]) extends HttpHandler {
     def handle(t: HttpExchange): Unit = {
       routes.toStream.find(_.matcher.matches(request(t))) match {
-        case Some(route) => send(t)(route.handle(request(t)))
+        case Some(route) => send(t)(route.handle(Context(request(t), route.matcher)))
         case None => send(t)(Response(404, Some("Route not matched")))
       }
     }
