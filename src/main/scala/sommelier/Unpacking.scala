@@ -16,7 +16,7 @@ object Unpacking {
 
   def pathParam[T](name: String)(implicit context: Context, unpacker: Unpacker[T]): Either[Rejection, T] = {
     val pattern = context.matcher.path.pathPattern
-    val path = context.request.uri // FIXME this URI stuff
+    val path = context.request.path
     unpacker.unpack(PathParams(pattern)(path)(name)).toRight({ BadPathVar(name) })
   }
 

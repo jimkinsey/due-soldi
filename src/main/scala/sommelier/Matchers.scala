@@ -23,7 +23,8 @@ case class PathMatcher(pathPattern: String)
 
 case class RequestMatcher(
   method: MethodMatcher = MethodMatcher(Method.GET),
-  path: PathMatcher = PathMatcher("/")
+  path: PathMatcher = PathMatcher("/"),
+  accepts: Option[AcceptsMatcher] = None
 )
 {
   def apply(path: String): RequestMatcher = {
@@ -31,7 +32,19 @@ case class RequestMatcher(
   }
 
   def matches(request: Request): Boolean = {
-    method.matches(request.method) && path.matches(request.uri)
+    method.matches(request.method) &&
+      path.matches(request.path) &&
+      (accepts.isEmpty || accepts.exists(_.matches(request.accepts.getOrElse("")))) // FIXME
+  }
+
+  def Accepts(contentType: String): RequestMatcher = {
+    copy(accepts = Some(AcceptsMatcher(contentType)))
   }
 }
 
+case class AcceptsMatcher(contentType: String)
+{
+  def matches(reqContentType: String): Boolean = {
+    contentType == reqContentType
+  }
+}

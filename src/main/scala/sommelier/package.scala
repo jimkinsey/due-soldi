@@ -4,11 +4,12 @@ package object sommelier
 
   type Result = Either[Rejection, Response]
 
-  case class Request(method: Method, uri: String)
+  case class Request(method: Method, path: String, accepts: Option[String] = None)
 
-  case class Response(status: Int, body: Option[String] = None)
+  case class Response(status: Int, body: Option[String] = None, contentType: Option[String] = None)
   {
     def apply(body: String): Response = copy(body = Some(body))
+    def ContentType(contentType: String): Response = copy(contentType = Some(contentType))
   }
 
   trait Rejection
