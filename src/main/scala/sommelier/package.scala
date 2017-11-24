@@ -1,5 +1,7 @@
 package object sommelier
 {
+  case class Context(request: Request, matcher: RequestMatcher)
+
   case class Request(method: Method, uri: String)
 
   case class Response(status: Int, body: Option[String] = None)
