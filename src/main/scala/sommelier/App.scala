@@ -17,14 +17,15 @@ object App
   }
 
   lazy val internalStatus =
-    GET("/internal/status") respond { _ => Right(200) }
+    GET("/internal/status") respond { _ => 200 }
 
   lazy val journalPage =
     GET("/journal/:id") respond { implicit context =>
       for {
         id <- pathParam[Int]("id")
+        journal <- JournalDataStore.get(id) rejectWith { 404 (s"Journal with ID $id not found") }
       } yield {
-        200 (s"<title>Journal of $id</title>")
+        200 (s"<h1>${journal.name}</h1>")
       }
     }
 

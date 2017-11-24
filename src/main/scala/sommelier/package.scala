@@ -2,6 +2,8 @@ package object sommelier
 {
   case class Context(request: Request, matcher: RequestMatcher)
 
+  type Result = Either[Rejection, Response]
+
   case class Request(method: Method, uri: String)
 
   case class Response(status: Int, body: Option[String] = None)
@@ -9,8 +11,15 @@ package object sommelier
     def apply(body: String): Response = copy(body = Some(body))
   }
 
-  trait Rejection {
+  trait Rejection
+  {
     def response: Response
+  }
+  object Rejection
+  {
+    def apply(r: Response) = new Rejection {
+      override def response: Response = r
+    }
   }
 
   case class Route(matcher: RequestMatcher, handle: Routing.Handler)
