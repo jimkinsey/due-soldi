@@ -1,6 +1,8 @@
 package sommelier
 
+import java.io.InputStream
 import java.net.InetSocketAddress
+import java.util.Scanner
 
 import com.sun.net.httpserver.{HttpExchange, HttpHandler, HttpServer}
 
@@ -31,10 +33,11 @@ object Server
 
   class Router(routes: Seq[Route]) extends HttpHandler {
     def handle(exchange: HttpExchange): Unit = {
-      routes.toStream.find(_.matcher.matches(request(exchange))) match {
+      val request = getRequest(exchange)
+      routes.toStream.find(_.matcher.matches(request)) match {
         case Some(route) =>
           route
-            .handle(Context(request(exchange), route.matcher))
+            .handle(Context(request, route.matcher))
             .map(send(exchange))
             .left.map(rejection => send(exchange)(rejection.response))
         case None => send(exchange)(Response(404, Some("Route not matched")))
@@ -42,12 +45,26 @@ object Server
     }
   }
 
-  def request(exchange: HttpExchange): Request = {
+  def getRequest(exchange: HttpExchange): Request = {
     Request(
       method = Method(exchange.getRequestMethod),
       path = exchange.getRequestURI.toString,
-      accepts = Option(exchange.getRequestHeaders.getFirst("Accepts"))
+      accept = Option(exchange.getRequestHeaders.getFirst("Accept")),
+      body = body(exchange)
     )
+  }
+
+  def body(exchange: HttpExchange): Option[String] = {
+    exchange.getRequestMethod match {
+      case "GET" | "HEAD" | "DELETE" => None
+      case _ =>
+        val requestBody = exchange.getRequestBody
+        val s = new Scanner(requestBody).useDelimiter("\\A")
+        val result = if (s.hasNext) Some(s.next) else None
+        requestBody.close()
+        println(s"REQUEST BODY $result")
+        result
+    }
   }
 
   def send(exchange: HttpExchange)(response: Response): Unit = {

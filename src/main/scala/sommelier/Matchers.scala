@@ -34,10 +34,10 @@ case class RequestMatcher(
   def matches(request: Request): Boolean = {
     method.matches(request.method) &&
       path.matches(request.path) &&
-      (accepts.isEmpty || accepts.exists(_.matches(request.accepts.getOrElse("")))) // FIXME
+      (accepts.isEmpty || accepts.exists(_.matches(request.accept.getOrElse("")))) // FIXME
   }
 
-  def Accepts(contentType: String): RequestMatcher = {
+  def Accept(contentType: String): RequestMatcher = {
     copy(accepts = Some(AcceptsMatcher(contentType)))
   }
 }
