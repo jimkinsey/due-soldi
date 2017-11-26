@@ -20,6 +20,26 @@ object Unpacking {
     unpacker.unpack(PathParams(pattern)(path)(name)).toRight({ BadPathVar(name) })
   }
 
+  def body[T](implicit context: Context, unpacker: Unpacker[T]): Either[Rejection, T] = {
+    for {
+      body <- context.request.body.toRight { RequestHasNoBody }
+      unpacked <- unpacker.unpack(body).toRight { BodyUnpackFailure }
+    } yield {
+      unpacked
+    }
+  }
+
+  case object RequestHasNoBody extends Rejection
+  {
+    val response: Response = Response(400, Some("Request has no body"))
+  }
+
+  case object BodyUnpackFailure extends Rejection
+  {
+    val response: Response = Response(500, Some("Failed to unpack the body"))
+  }
+
+
   implicit val unpackInt: Unpacker[Int] = string => Try(string.toInt).toOption
   implicit val unpackString: Unpacker[String] = Some(_)
 }
