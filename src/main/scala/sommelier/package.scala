@@ -4,7 +4,7 @@ package object sommelier
 
   type Result = Either[Rejection, Response]
 
-  case class Request(method: Method, path: String, accept: Option[String] = None, body: Option[String] = None)
+  case class Request(method: Method, path: String, headers: Map[String, Seq[String]] = Map.empty, accept: Option[String] = None, body: Option[String] = None)
 
   case class Response(status: Int, body: Option[String] = None, contentType: Option[String] = None)
   {

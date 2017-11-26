@@ -5,7 +5,7 @@ import java.net.InetSocketAddress
 import java.util.Scanner
 
 import com.sun.net.httpserver.{HttpExchange, HttpHandler, HttpServer}
-
+import scala.collection.JavaConverters._
 import scala.util.Try
 
 trait Server
@@ -49,9 +49,19 @@ object Server
     Request(
       method = Method(exchange.getRequestMethod),
       path = exchange.getRequestURI.toString,
+      headers = headers(exchange),
       accept = Option(exchange.getRequestHeaders.getFirst("Accept")),
       body = body(exchange)
     )
+  }
+
+  def headers(exchange: HttpExchange): Map[String, Seq[String]] = {
+    exchange
+      .getRequestHeaders
+      .entrySet().asScala
+      .toSeq
+      .map(entry => entry.getKey -> entry.getValue.asScala)
+      .toMap
   }
 
   def body(exchange: HttpExchange): Option[String] = {
@@ -62,7 +72,6 @@ object Server
         val s = new Scanner(requestBody).useDelimiter("\\A")
         val result = if (s.hasNext) Some(s.next) else None
         requestBody.close()
-        println(s"REQUEST BODY $result")
         result
     }
   }

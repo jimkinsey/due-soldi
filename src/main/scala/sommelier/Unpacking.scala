@@ -29,6 +29,15 @@ object Unpacking {
     }
   }
 
+  def header(name: String)(implicit context: Context): Either[Rejection, Seq[String]] = {
+    context.request.headers.get(name).toRight { HeaderNotFound(name) }
+  }
+
+  case class HeaderNotFound(name: String) extends Rejection
+  {
+    val response: Response = Response(400, Some(s"Header '$name' not found in request"))
+  }
+
   case object RequestHasNoBody extends Rejection
   {
     val response: Response = Response(400, Some("Request has no body"))
@@ -38,7 +47,6 @@ object Unpacking {
   {
     val response: Response = Response(500, Some("Failed to unpack the body"))
   }
-
 
   implicit val unpackInt: Unpacker[Int] = string => Try(string.toInt).toOption
   implicit val unpackString: Unpacker[String] = Some(_)

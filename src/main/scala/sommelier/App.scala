@@ -8,8 +8,14 @@ object App
   import Unpacking._
 
   def main(args: Array[String]): Unit = {
-    Server.start(Seq(internalStatus, journalData, journalPage, count), port = args.headOption.map(_.toInt)) match {
+    Server.start(Seq(internalStatus, journalData, journalPage, count, headers, ua), port = args.headOption.map(_.toInt)) match {
       case Success(server) =>
+        Runtime.getRuntime.addShutdownHook(new Thread {
+          override def run(): Unit = {
+            println("Shutting down...")
+            server.halt()
+          }
+        })
         println(s"Monsieur! A fruity little server is available on ${server.port}. A fine vintage!")
       case Failure(exception) =>
         exception.printStackTrace()
@@ -48,8 +54,23 @@ object App
       }
     }
 
+  lazy val headers =
+    GET("/headers") respond { implicit context =>
+      val content = context.request.headers.map { case (k,v) => s"$k: ${v mkString ","}" } mkString "\n"
+      200 (content) ContentType "text/plain"
+    }
+
+  lazy val ua =
+    GET("/ua") respond { implicit context =>
+      for {
+        ua <- header("User-agent")
+      } yield {
+        200 (s"Your user-agent is ${ua.headOption.getOrElse("n/a")}")
+      }
+    }
+
   // TESTS!!!
-  // todo HEAD, basic auth, redirects, getting headers, *** async ***, middleware
+  // todo HEAD, basic auth, redirects, *** async ***, middleware
   // less urgent: event handlers for logging, better rejections
   //   simpler route objects, reversable routes
   //   body unpacker should take content type as arg? or type param?
