@@ -5,8 +5,10 @@ import java.net.InetSocketAddress
 import java.util.Scanner
 
 import com.sun.net.httpserver.{HttpExchange, HttpHandler, HttpServer}
+
 import scala.collection.JavaConverters._
 import scala.util.Try
+import scala.util.matching.Regex
 
 trait Server
 {
@@ -48,12 +50,27 @@ object Server
   def getRequest(exchange: HttpExchange): Request = {
     Request(
       method = Method(exchange.getRequestMethod),
-      path = exchange.getRequestURI.toString,
+      path = exchange.getRequestURI.getPath,
+      queryParams = queryParams(exchange),
       headers = headers(exchange),
       accept = Option(exchange.getRequestHeaders.getFirst("Accept")),
       body = body(exchange)
     )
   }
+
+  def queryParams(exchange: HttpExchange): Map[String, Seq[String]] = {
+    Option(exchange.getRequestURI.getQuery)
+      .map(_
+        .split('&')
+        .collect {
+          case QueryParam(key, value) => key -> Seq(value) // FIXME
+        }
+        .toMap
+      )
+      .getOrElse(Map.empty)
+  }
+
+  lazy val QueryParam: Regex = """^(.+)=(.+)$""".r
 
   def headers(exchange: HttpExchange): Map[String, Seq[String]] = {
     exchange
@@ -79,6 +96,9 @@ object Server
   def send(exchange: HttpExchange)(response: Response): Unit = {
     response.contentType.foreach { contentType =>
       exchange.getResponseHeaders.add("Content-Type", contentType)
+    }
+    response.location.foreach { contentType =>
+      exchange.getResponseHeaders.add("Location", contentType)
     }
     exchange.sendResponseHeaders(response.status, response.body.map(_.length.toLong).getOrElse(0L))
     val os = exchange.getResponseBody
