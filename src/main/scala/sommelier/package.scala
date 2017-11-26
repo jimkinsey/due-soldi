@@ -4,12 +4,20 @@ package object sommelier
 
   type Result = Either[Rejection, Response]
 
-  case class Request(method: Method, path: String, headers: Map[String, Seq[String]] = Map.empty, accept: Option[String] = None, body: Option[String] = None)
+  case class Request(
+    method: Method,
+    path: String,
+    headers: Map[String, Seq[String]] = Map.empty,
+    queryParams: Map[String, Seq[String]] = Map.empty,
+    accept: Option[String] = None,
+    body: Option[String] = None
+  )
 
-  case class Response(status: Int, body: Option[String] = None, contentType: Option[String] = None)
+  case class Response(status: Int, body: Option[String] = None, contentType: Option[String] = None, location: Option[String] = None)
   {
     def apply(body: String): Response = copy(body = Some(body))
     def ContentType(contentType: String): Response = copy(contentType = Some(contentType))
+    def Location(uri: String): Response = copy(location = Some(uri))
     def body(body: String) = this(body)
   }
 

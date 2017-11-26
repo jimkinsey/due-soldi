@@ -33,9 +33,18 @@ object Unpacking {
     context.request.headers.get(name).toRight { HeaderNotFound(name) }
   }
 
+  def query[T](name: String)(implicit context: Context, unpacker: Unpacker[T]): Either[Rejection, Seq[T]] = {
+    context.request.queryParams.get(name).toRight { QueryParamNotFound(name) } .map(_.flatMap(unpacker.unpack))
+  }
+
   case class HeaderNotFound(name: String) extends Rejection
   {
     val response: Response = Response(400, Some(s"Header '$name' not found in request"))
+  }
+
+  case class QueryParamNotFound(name: String) extends Rejection
+  {
+    val response: Response = Response(400, Some(s"Query param '$name' not found in request"))
   }
 
   case object RequestHasNoBody extends Rejection

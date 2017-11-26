@@ -8,7 +8,7 @@ object App
   import Unpacking._
 
   def main(args: Array[String]): Unit = {
-    Server.start(Seq(internalStatus, journalData, journalPage, count, headers, ua), port = args.headOption.map(_.toInt)) match {
+    Server.start(Seq(internalStatus, journalData, journalPage, count, headers, ua, redirector), port = args.headOption.map(_.toInt)) match {
       case Success(server) =>
         Runtime.getRuntime.addShutdownHook(new Thread {
           override def run(): Unit = {
@@ -69,11 +69,25 @@ object App
       }
     }
 
+  lazy val redirector =
+    GET("/redirect") respond { implicit context =>
+      for {
+        loc <- query[String]("loc")
+        uri <- loc.headOption rejectWith { 400 ("Can only redirect to one location at a time!") }
+      } yield {
+        302 Location uri
+      }
+    }
+
   // TESTS!!!
-  // todo HEAD, basic auth, redirects, *** async ***, middleware
+  // todo HEAD, basic auth, *** async ***, middleware
+  // controllers
+  // find a free port
+  // Server.start("localhost", 8080, route1, controller1)   // "Routable"
   // less urgent: event handlers for logging, better rejections
   //   simpler route objects, reversable routes
   //   body unpacker should take content type as arg? or type param?
+  //   validation? query[String]("loc") validate onlyOne
 
 
 }
