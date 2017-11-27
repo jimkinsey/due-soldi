@@ -1,50 +1,125 @@
 package sommelier
 
-case class MethodMatcher(methods: Method*)
+import java.util.Base64
+
+import scala.util.matching.Regex
+
+trait Rejects[T]
 {
-  def matches(method: Method): Boolean = methods.contains(method)
+  def rejects(t: T): Option[Rejection]
 }
 
-case class PathMatcher(pathPattern: String)
+case object MethodNotAllowed extends Rejection
 {
-  def matches(path: String): Boolean = {
-    val parts: Array[String] = path.split('/')
-    val patternParts: Array[String] = pathPattern.split('/')
+  val response: Response = Response(405)
+}
 
-    if (parts.length != patternParts.length) return false
+case class MethodMatcher(methods: Method*) extends Rejects[Method]
+{
+  def rejects(method: Method): Option[Rejection] = if (methods.contains(method)) None else Some(MethodNotAllowed)
+}
 
-    parts.zip(patternParts).foldLeft(true) {
-      case (acc, (part, pattern)) if part == pattern => acc
-      case (acc, (_, pattern)) if pattern.startsWith(":") => acc
-      case _ => false
+case object ResourceNotFound extends Rejection
+{
+  val response: Response = Response(404)
+}
+
+case class PathMatcher(pathPattern: String) extends Rejects[String]
+{
+  def rejects(path: String): Option[Rejection] = {
+    val parts = path.split('/')
+    val patternParts = pathPattern.split('/')
+
+    if (parts.length != patternParts.length) return Some(ResourceNotFound)
+
+    parts.zip(patternParts).foldLeft[Option[Rejection]](None) {
+      case (None, (part, pattern)) if part == pattern => None
+      case (None, (_, pattern)) if pattern.startsWith(":") => None
+      case _ => Some(ResourceNotFound)
     }
   }
 }
 
 case class RequestMatcher(
-  method: MethodMatcher = MethodMatcher(Method.GET),
-  path: PathMatcher = PathMatcher("/"),
-  accepts: Option[AcceptsMatcher] = None
-)
+  method: Option[MethodMatcher] = Some(MethodMatcher(Method.GET)), // FIXME None
+  path: Option[PathMatcher] = Some(PathMatcher("/")), // FIXME None
+  accept: Option[AcceptMatcher] = None,
+  authorization: Option[AuthorizationMatcher] = None
+) extends Rejects[Request]
 {
-  def apply(path: String): RequestMatcher = {
-    copy(path = PathMatcher(path))
+  lazy val specificity: Float = {
+    val options = Seq(method, path, accept, authorization)
+    options.count(_.isDefined) / options.length
   }
 
-  def matches(request: Request): Boolean = {
-    method.matches(request.method) &&
-      path.matches(request.path) &&
-      (accepts.isEmpty || accepts.exists(_.matches(request.accept.getOrElse("")))) // FIXME
+  def apply(path: String): RequestMatcher = {
+    copy(path = Some(PathMatcher(path)))
+  }
+
+  def rejects(request: Request): Option[Rejection] = {
+    method.flatMap(_.rejects(request.method)) orElse
+    path.flatMap(_.rejects(request.path)) orElse
+    accept.flatMap(_.rejects(request.accept.getOrElse(""))) orElse // FIXME
+    authorization.flatMap(_.rejects(request))
   }
 
   def Accept(contentType: String): RequestMatcher = {
-    copy(accepts = Some(AcceptsMatcher(contentType)))
+    copy(accept = Some(AcceptMatcher(contentType)))
+  }
+
+  def Authorization(authorization: AuthorizationMatcher): RequestMatcher = {
+    copy(authorization = Some(authorization))
+  }
+
+  override def toString: String =
+    s"""${method.map(_.methods.mkString(",")).getOrElse("[Any Method]")} ${path.map(_.pathPattern).getOrElse("*")}
+       |Accept: ${accept.map(_.contentType).getOrElse("*/*")}
+       |Authorization: ${authorization.getOrElse("n/a")}""".stripMargin
+}
+
+case object Unnacceptable extends Rejection
+{
+  val response: Response = Response(406)
+}
+
+case class AcceptMatcher(contentType: String) extends Rejects[String]
+{
+  def rejects(reqContentType: String): Option[Rejection] = {
+    if (contentType == reqContentType) None else Some(Unnacceptable)
   }
 }
 
-case class AcceptsMatcher(contentType: String)
-{
-  def matches(reqContentType: String): Boolean = {
-    contentType == reqContentType
+sealed trait AuthorizationFailed extends Rejection
+object AuthorizationFailed {
+  case class Unauthorized(realm: String) extends AuthorizationFailed
+  {
+    val response: Response = Response(401) WWWAuthenticate s"""Basic realm="$realm""""
   }
+  case object Forbidden extends AuthorizationFailed
+  {
+    val response: Response = Response(403)
+  }
+}
+
+trait AuthorizationMatcher extends Rejects[Request]
+{
+  def rejects(request: Request): Option[Rejection]
+}
+object Basic
+{
+  val Creds: Regex = s"""^Basic (.+)""".r
+}
+case class Basic(username: String, password: String, realm: String) extends AuthorizationMatcher
+{
+  def rejects(request: Request): Option[Rejection] = {
+    request.headers.get("Authorization").flatMap(_.headOption) match {
+      case None => Some(AuthorizationFailed.Unauthorized(realm))
+      case Some(Basic.Creds(requestCreds)) if requestCreds == encoded => None
+      case _ => Some(AuthorizationFailed.Forbidden)
+    }
+  }
+
+  lazy val encoded: String = Base64.getEncoder.encodeToString(s"$username:$password".getBytes("UTF-8"))
+
+  override def toString: String = s"Basic ***"
 }
