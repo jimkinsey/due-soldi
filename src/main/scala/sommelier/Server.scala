@@ -47,9 +47,16 @@ object Server
     }
   }
 
+  def getMethod(exchange: HttpExchange): Method = {
+    exchange.getRequestMethod match {
+      case "HEAD" => Method.GET
+      case method => Method(method)
+    }
+  }
+
   def getRequest(exchange: HttpExchange): Request = {
     Request(
-      method = Method(exchange.getRequestMethod),
+      method = getMethod(exchange),
       path = exchange.getRequestURI.getPath,
       queryParams = queryParams(exchange),
       headers = headers(exchange),
@@ -62,10 +69,14 @@ object Server
     Option(exchange.getRequestURI.getQuery)
       .map(_
         .split('&')
-        .collect {
-          case QueryParam(key, value) => key -> Seq(value) // FIXME
+        .foldLeft[Map[String, Seq[String]]](Map.empty) {
+          case (acc, QueryParam(key, value)) if acc.contains(key) =>
+            acc ++ Map(key -> (acc(key) :+ value))
+          case (acc, QueryParam(key, value)) =>
+            acc ++ Map(key -> Seq(value))
+          case (acc, _) =>
+            acc
         }
-        .toMap
       )
       .getOrElse(Map.empty)
   }
@@ -101,10 +112,12 @@ object Server
       exchange.getResponseHeaders.add("Location", contentType)
     }
     exchange.sendResponseHeaders(response.status, response.body.map(_.length.toLong).getOrElse(0L))
-    val os = exchange.getResponseBody
-    response.body.foreach { body =>
-      os.write(body.getBytes())
+    if (exchange.getRequestMethod != "HEAD") {
+      val os = exchange.getResponseBody
+      response.body.foreach { body =>
+        os.write(body.getBytes())
+      }
+      os.close()
     }
-    os.close()
   }
 }
