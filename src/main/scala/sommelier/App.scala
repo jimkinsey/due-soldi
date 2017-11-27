@@ -87,7 +87,6 @@ object App
   // TESTS!!!
   // todo *** async ***, middleware
   // todo controllers
-  // todo find a free port
   // todo tests
 
 }

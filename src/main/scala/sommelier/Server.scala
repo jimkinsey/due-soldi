@@ -1,6 +1,6 @@
 package sommelier
 
-import java.net.InetSocketAddress
+import java.net.{InetSocketAddress, ServerSocket}
 import java.util.Scanner
 
 import com.sun.net.httpserver.{HttpExchange, HttpHandler, HttpServer}
@@ -20,7 +20,14 @@ object Server
 {
   def start(routes: Seq[Route], host: String = "localhost", port: Option[Int] = None): Try[Server] = {
     Try({
-      val serverPort = port.getOrElse(8000)
+      lazy val randomPort: Int = {
+        val socket = new ServerSocket(0)
+        val socketPort = socket.getLocalPort
+        socket.close()
+        socketPort
+      }
+
+      val serverPort = port.getOrElse(randomPort)
       val server = HttpServer.create(new InetSocketAddress(serverPort), 0)
       server.createContext("/", new Router(routes))
       server.setExecutor(null); // creates a default executor
@@ -28,7 +35,9 @@ object Server
 
       new Server {
         val port: Int = serverPort
-        def halt(): Unit = { server.stop(0) }
+        def halt(): Unit = {
+          server.stop(0)
+        }
       }
     })
   }
