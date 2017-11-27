@@ -59,6 +59,8 @@ object Server
             }
           case ClosestMatching(rejection) =>
             send(exchange)(rejection.response)
+          case _ =>
+            send(exchange)(Response(404))
         }
       } recover {
         case ex =>

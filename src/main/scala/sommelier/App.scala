@@ -13,7 +13,6 @@ object App
       case Success(server) =>
         Runtime.getRuntime.addShutdownHook(new Thread { // MAKE THIS WORK!!!
           override def run(): Unit = {
-            println("Shutting down...")
             server.halt()
           }
         })
