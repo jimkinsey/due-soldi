@@ -6,6 +6,7 @@ object App
 {
   import Routing._
   import Unpacking._
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   def main(args: Array[String]): Unit = {
     Server.start(Seq(internalStatus, journalData, journalPage, count, headers, ua, redirector, secret), port = args.headOption.map(_.toInt)) match {
@@ -85,7 +86,7 @@ object App
     }
 
   // TESTS!!!
-  // todo *** async ***, middleware
+  // todo middleware
   // todo controllers
   // todo tests
 

@@ -51,10 +51,12 @@ object Server
         }
         checkedRoutes match {
           case FirstMatching(route) =>
-            route
-              .handle(Context(request, route.matcher))
-              .map(send(exchange))
-              .left.map(rejection => send(exchange)(rejection.response))
+            // FIXME this can be simplified
+            route.handle(Context(request, route.matcher)) match {
+              case SyncResult.Accepted(response) => send(exchange)(response)
+              case SyncResult.Rejected(rejection) => send(exchange)(rejection.response)
+              case ar: AsyncResult[Response] => ar.map(send(exchange))
+            }
           case ClosestMatching(rejection) =>
             send(exchange)(rejection.response)
         }
