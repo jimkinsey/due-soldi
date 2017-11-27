@@ -2,8 +2,6 @@ package object sommelier
 {
   case class Context(request: Request, matcher: RequestMatcher)
 
-  type Result = Either[Rejection, Response]
-
   case class Request(
     method: Method,
     path: String,

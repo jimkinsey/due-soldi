@@ -1,10 +1,11 @@
 package sommelier
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.implicitConversions
 
 object Routing
 {
-  type Handler = (Context => Result)
+  type Handler = (Context => Result[Response])
 
   lazy val GET = RequestMatcher(method = Some(MethodMatcher(Method.GET)))
   lazy val POST = RequestMatcher(method = Some(MethodMatcher(Method.POST)))
@@ -17,11 +18,17 @@ object Routing
 
   implicit def statusToResponse(status: Int): Response = Response(status = status)
 
-  implicit class OptionRejection[T](opt: Option[T]) {
-    def rejectWith(response: => Response): Either[Rejection,T] = opt.toRight({ Rejection(response) })
+  implicit class OptionRejection[T](opt: Option[T])
+  {
+    def rejectWith(response: => Response): SyncResult[T] = opt.fold[SyncResult[T]](SyncResult.Rejected(Rejection(response)))(SyncResult.Accepted(_))
   }
 
-  implicit def responseToResult(response: Response): Result = Right(response)
+  implicit class AsyncOptionRejection[T](fOpt: Future[Option[T]])
+  {
+    def rejectWith(response: => Response)(implicit executionContext: ExecutionContext): AsyncResult[T] = AsyncResult(fOpt.map(_ rejectWith response))
+  }
 
-  implicit def statusToResult(status: Int): Result = Right(Response(status))
+  implicit def responseToResult(response: Response): Result[Response] = SyncResult.Accepted(response)
+
+  implicit def statusToResult(status: Int): Result[Response] = SyncResult.Accepted(Response(status))
 }

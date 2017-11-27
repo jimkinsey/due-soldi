@@ -2,8 +2,10 @@ package sommelier
 
 import scala.language.postfixOps
 import scala.util.Try
+import scala.util.matching.Regex
 
 object Unpacking {
+  import Result._
 
   trait Unpacker[T] {
     def unpack(string: String): Option[T]
@@ -19,31 +21,31 @@ object Unpacking {
     lazy val response = Response(400, Some(s"Path var $name could not be unpacked"))
   }
 
-  def pathParam[T](name: String)(implicit context: Context, unpacker: Unpacker[T]): Either[Rejection, T] = {
+  def pathParam[T](name: String)(implicit context: Context, unpacker: Unpacker[T]): Result[T] = {
     for {
-      pattern <- context.matcher.path.map(_.pathPattern) toRight { RouteHasNoPath }
+      pattern <- context.matcher.path.map(_.pathPattern) rejectWith  { RouteHasNoPath }
       path = context.request.path
-      value <- unpacker.unpack(PathParams(pattern)(path)(name)) toRight { BadPathVar(name) }
+      value <- unpacker.unpack(PathParams(pattern)(path)(name)) rejectWith { BadPathVar(name) }
     } yield {
       value
     }
   }
 
-  def body[T](implicit context: Context, unpacker: Unpacker[T]): Either[Rejection, T] = {
+  def body[T](implicit context: Context, unpacker: Unpacker[T]): Result[T] = {
     for {
-      body <- context.request.body.toRight { RequestHasNoBody }
-      unpacked <- unpacker.unpack(body).toRight { BodyUnpackFailure }
+      body <- context.request.body rejectWith { RequestHasNoBody }
+      unpacked <- unpacker.unpack(body) rejectWith { BodyUnpackFailure }
     } yield {
       unpacked
     }
   }
 
-  def header(name: String)(implicit context: Context): Either[Rejection, Seq[String]] = {
-    context.request.headers.get(name).toRight { HeaderNotFound(name) }
+  def header(name: String)(implicit context: Context): Result[Seq[String]] = {
+    context.request.headers.get(name) rejectWith { HeaderNotFound(name) }
   }
 
-  def query[T](name: String)(implicit context: Context, unpacker: Unpacker[T]): Either[Rejection, Seq[T]] = {
-    context.request.queryParams.get(name).toRight { QueryParamNotFound(name) } .map(_.flatMap(unpacker.unpack))
+  def query[T](name: String)(implicit context: Context, unpacker: Unpacker[T]): Result[Seq[T]] = {
+    context.request.queryParams.get(name) rejectWith { QueryParamNotFound(name) } map (_.flatMap(unpacker.unpack))
   }
 
   case class HeaderNotFound(name: String) extends Rejection
@@ -78,7 +80,7 @@ object PathParams
     } toMap
   }
 
-  def segments(path: String) = path.split('/')
+  def segments(path: String): Array[String] = path.split('/')
 
-  lazy val PathVariable = """^:(.+)$""".r
+  lazy val PathVariable: Regex = """^:(.+)$""".r
 }
