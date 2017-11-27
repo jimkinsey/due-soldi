@@ -9,15 +9,24 @@ object Unpacking {
     def unpack(string: String): Option[T]
   }
 
+  case object RouteHasNoPath extends Rejection
+  {
+    lazy val response = Response(500)
+  }
+
   case class BadPathVar(name: String) extends Rejection
   {
     lazy val response = Response(400, Some(s"Path var $name could not be unpacked"))
   }
 
   def pathParam[T](name: String)(implicit context: Context, unpacker: Unpacker[T]): Either[Rejection, T] = {
-    val pattern = context.matcher.path.pathPattern
-    val path = context.request.path
-    unpacker.unpack(PathParams(pattern)(path)(name)).toRight({ BadPathVar(name) })
+    for {
+      pattern <- context.matcher.path.map(_.pathPattern) toRight { RouteHasNoPath }
+      path = context.request.path
+      value <- unpacker.unpack(PathParams(pattern)(path)(name)) toRight { BadPathVar(name) }
+    } yield {
+      value
+    }
   }
 
   def body[T](implicit context: Context, unpacker: Unpacker[T]): Either[Rejection, T] = {

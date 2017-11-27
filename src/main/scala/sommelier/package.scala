@@ -13,12 +13,19 @@ package object sommelier
     body: Option[String] = None
   )
 
-  case class Response(status: Int, body: Option[String] = None, contentType: Option[String] = None, location: Option[String] = None)
+  case class Response(
+    status: Int,
+    body: Option[String] = None,
+    contentType: Option[String] = None,
+    location: Option[String] = None,
+    wwwAuthenticate: Option[String] = None
+  )
   {
     def apply(body: String): Response = copy(body = Some(body))
     def ContentType(contentType: String): Response = copy(contentType = Some(contentType))
     def Location(uri: String): Response = copy(location = Some(uri))
-    def body(body: String) = this(body)
+    def WWWAuthenticate(auth: String): Response = copy(wwwAuthenticate = Some(auth))
+    def body(body: String): Response = this(body)
   }
 
   trait Rejection

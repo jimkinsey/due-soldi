@@ -1,10 +1,10 @@
 package sommelier
 
-import java.io.InputStream
 import java.net.InetSocketAddress
 import java.util.Scanner
 
 import com.sun.net.httpserver.{HttpExchange, HttpHandler, HttpServer}
+import sommelier.AuthorizationFailed.{Forbidden, Unauthorized}
 
 import scala.collection.JavaConverters._
 import scala.util.Try
@@ -35,15 +35,49 @@ object Server
 
   class Router(routes: Seq[Route]) extends HttpHandler {
     def handle(exchange: HttpExchange): Unit = {
-      val request = getRequest(exchange)
-      routes.toStream.find(_.matcher.matches(request)) match {
-        case Some(route) =>
-          route
-            .handle(Context(request, route.matcher))
-            .map(send(exchange))
-            .left.map(rejection => send(exchange)(rejection.response))
-        case None => send(exchange)(Response(404, Some("Route not matched")))
+      Try {
+        val request = getRequest(exchange)
+        val checkedRoutes = routes.toStream.map { route =>
+          route -> route.matcher.rejects(request)
+        }
+        checkedRoutes match {
+          case FirstMatching(route) =>
+            route
+              .handle(Context(request, route.matcher))
+              .map(send(exchange))
+              .left.map(rejection => send(exchange)(rejection.response))
+          case ClosestMatching(rejection) =>
+            send(exchange)(rejection.response)
+        }
+      } recover {
+        case ex =>
+          ex.printStackTrace()
+          send(exchange)(Response(500))
       }
+    }
+  }
+
+  object FirstMatching
+  {
+    def unapply(routeResults: Seq[(Route,Option[Rejection])]): Option[Route] = {
+      routeResults.find(_._2.isEmpty).map(_._1)
+    }
+  }
+
+  object ClosestMatching
+  {
+    def unapply(routeResults: Seq[(Route, Option[Rejection])]): Option[Rejection] = {
+      routeResults.flatMap(_._2).sortBy(priority).lastOption // really not sure about this!
+    }
+  }
+
+  def priority(rejection: Rejection): Int = {
+    rejection match {
+      case ResourceNotFound => 1
+      case MethodNotAllowed => 2
+      case Unnacceptable => 3
+      case Unauthorized(_) => 4
+      case Forbidden => 5
     }
   }
 
@@ -111,13 +145,19 @@ object Server
     response.location.foreach { contentType =>
       exchange.getResponseHeaders.add("Location", contentType)
     }
-    exchange.sendResponseHeaders(response.status, response.body.map(_.length.toLong).getOrElse(0L))
+    response.wwwAuthenticate.foreach { auth =>
+      exchange.getResponseHeaders.add("WWW-Authenticate", auth)
+    }
     if (exchange.getRequestMethod != "HEAD") {
+      exchange.sendResponseHeaders(response.status, response.body.map(_.length.toLong).getOrElse(0L))
       val os = exchange.getResponseBody
       response.body.foreach { body =>
         os.write(body.getBytes())
       }
       os.close()
+    }
+    else {
+      exchange.sendResponseHeaders(response.status, -1)
     }
   }
 }

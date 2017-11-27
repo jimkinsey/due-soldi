@@ -8,7 +8,7 @@ object App
   import Unpacking._
 
   def main(args: Array[String]): Unit = {
-    Server.start(Seq(internalStatus, journalData, journalPage, count, headers, ua, redirector), port = args.headOption.map(_.toInt)) match {
+    Server.start(Seq(internalStatus, journalData, journalPage, count, headers, ua, redirector, secret), port = args.headOption.map(_.toInt)) match {
       case Success(server) =>
         Runtime.getRuntime.addShutdownHook(new Thread { // MAKE THIS WORK!!!
           override def run(): Unit = {
@@ -79,21 +79,15 @@ object App
       }
     }
 
-  // TESTS!!!
-  // todo basic auth, *** async ***, middleware
-  // for Auth, need to sort out matching and rejections
-  // - auth doesn't match = Forbidden, etc.
-  // - method doesn't match = unsupported method
-  // - Headers don't match = bad request
-  // - path doesn't match = not found
-  // etc.
-  // controllers
-  // find a free port
-  // Server.start("localhost", Some(8080), route1, controller1, middleware1?)   // "Routable"
-  // less urgent: event handlers for logging, better rejections
-  //   simpler route objects, reversable routes
-  //   body unpacker should take content type as arg? or type param?
-  //   validation? query[String]("loc") validate onlyOne
+  lazy val secret =
+    GET("/secret") Authorization Basic("user", "12345", "access to secrets") respond { _ =>
+      200 ("i know nothing about security")
+    }
 
+  // TESTS!!!
+  // todo *** async ***, middleware
+  // todo controllers
+  // todo find a free port
+  // todo tests
 
 }
