@@ -10,7 +10,7 @@ object App
   def main(args: Array[String]): Unit = {
     Server.start(Seq(internalStatus, journalData, journalPage, count, headers, ua, redirector), port = args.headOption.map(_.toInt)) match {
       case Success(server) =>
-        Runtime.getRuntime.addShutdownHook(new Thread {
+        Runtime.getRuntime.addShutdownHook(new Thread { // MAKE THIS WORK!!!
           override def run(): Unit = {
             println("Shutting down...")
             server.halt()
@@ -73,17 +73,23 @@ object App
     GET("/redirect") respond { implicit context =>
       for {
         loc <- query[String]("loc")
-        uri <- loc.headOption rejectWith { 400 ("Can only redirect to one location at a time!") }
+        uri <- loc.headOption rejectWith { 400 ("Need a location to redirect to!") }
       } yield {
         302 Location uri
       }
     }
 
   // TESTS!!!
-  // todo HEAD, basic auth, *** async ***, middleware
+  // todo basic auth, *** async ***, middleware
+  // for Auth, need to sort out matching and rejections
+  // - auth doesn't match = Forbidden, etc.
+  // - method doesn't match = unsupported method
+  // - Headers don't match = bad request
+  // - path doesn't match = not found
+  // etc.
   // controllers
   // find a free port
-  // Server.start("localhost", 8080, route1, controller1)   // "Routable"
+  // Server.start("localhost", Some(8080), route1, controller1, middleware1?)   // "Routable"
   // less urgent: event handlers for logging, better rejections
   //   simpler route objects, reversable routes
   //   body unpacker should take content type as arg? or type param?
