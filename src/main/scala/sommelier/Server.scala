@@ -151,15 +151,6 @@ object Server
   }
 
   def send(exchange: HttpExchange)(response: Response): Unit = {
-    response.contentType.foreach { contentType =>
-      exchange.getResponseHeaders.add("Content-Type", contentType)
-    }
-    response.location.foreach { contentType =>
-      exchange.getResponseHeaders.add("Location", contentType)
-    }
-    response.wwwAuthenticate.foreach { auth =>
-      exchange.getResponseHeaders.add("WWW-Authenticate", auth)
-    }
     response.headers.foreach { case (key, value) =>
       exchange.getResponseHeaders.add(key, value)
     }
