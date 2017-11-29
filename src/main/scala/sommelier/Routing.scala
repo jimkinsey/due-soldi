@@ -33,4 +33,8 @@ object Routing
   implicit def statusToResult(status: Int): Result[Response] = SyncResult.Accepted(Response(status))
 
   implicit def futureResponseToResult(fResponse: Future[Response])(implicit executionContext: ExecutionContext): Result[Response] = AsyncResult(fResponse.map(SyncResult.Accepted(_)))
+
+  implicit def futureResultToResult(fResult: Future[Result[Response]])(implicit executionContext: ExecutionContext): Result[Response] = AsyncResult(fResult)
+
+  def reject(response: Response): Result[Response] = SyncResult.Rejected(Rejection(response))
 }

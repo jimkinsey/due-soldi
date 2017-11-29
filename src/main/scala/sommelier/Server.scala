@@ -7,6 +7,7 @@ import com.sun.net.httpserver.{HttpExchange, HttpHandler, HttpServer}
 import sommelier.AuthorizationFailed.{Forbidden, Unauthorized}
 
 import scala.collection.JavaConverters._
+import scala.concurrent.ExecutionContext
 import scala.util.Try
 import scala.util.matching.Regex
 
@@ -18,8 +19,9 @@ trait Server
 
 object Server
 {
-  def start(routes: Seq[Route], host: String = "localhost", port: Option[Int] = None): Try[Server] = {
+  def start(routes: Seq[Route], host: String = "localhost", port: Option[Int] = None)(implicit executionContext: ExecutionContext): Try[Server] = {
     Try({
+      // might need to look into synchronising this
       lazy val randomPort: Int = {
         val socket = new ServerSocket(0)
         val socketPort = socket.getLocalPort
@@ -42,7 +44,7 @@ object Server
     })
   }
 
-  class Router(routes: Seq[Route]) extends HttpHandler {
+  class Router(routes: Seq[Route])(implicit executionContext: ExecutionContext) extends HttpHandler {
     def handle(exchange: HttpExchange): Unit = {
       Try {
         val request = getRequest(exchange)
@@ -51,12 +53,12 @@ object Server
         }
         checkedRoutes match {
           case FirstMatching(route) =>
-            // FIXME this can be simplified
-            route.handle(Context(request, route.matcher)) match {
-              case SyncResult.Accepted(response) => send(exchange)(response)
+            def sendResponse(result: Result[Response]): Unit = result match {
+              case accepted: SyncResult.Accepted[Response] => send(exchange)(accepted.result)
               case SyncResult.Rejected(rejection) => send(exchange)(rejection.response)
-              case ar: AsyncResult[Response] => ar.map(send(exchange))
+              case ar: AsyncResult[Response] => ar.result.map(sendResponse)
             }
+            sendResponse(route.handle(Context(request, route.matcher)))
           case ClosestMatching(rejection) =>
             send(exchange)(rejection.response)
           case _ =>
