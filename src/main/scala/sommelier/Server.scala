@@ -53,12 +53,9 @@ object Server
         }
         checkedRoutes match {
           case FirstMatching(route) =>
-            def sendResponse(result: Result[Response]): Unit = result match {
-              case accepted: SyncResult.Accepted[Response] => send(exchange)(accepted.result)
-              case SyncResult.Rejected(rejection) => send(exchange)(rejection.response)
-              case ar: AsyncResult[Response] => ar.result.map(sendResponse)
-            }
-            sendResponse(route.handle(Context(request, route.matcher)))
+            route.handle(Context(request, route.matcher))
+              .map(send(exchange))
+              .recover(rejection => send(exchange)(rejection.response))
           case ClosestMatching(rejection) =>
             send(exchange)(rejection.response)
           case _ =>
