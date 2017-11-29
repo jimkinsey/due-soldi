@@ -14,16 +14,13 @@ package object sommelier
   case class Response(
     status: Int,
     body: Option[String] = None,
-    contentType: Option[String] = None,
-    location: Option[String] = None,
-    wwwAuthenticate: Option[String] = None,
     headers: Seq[(String, String)] = Seq.empty
   )
   {
     def apply(body: String): Response = copy(body = Some(body))
-    def ContentType(contentType: String): Response = copy(contentType = Some(contentType))
-    def Location(uri: String): Response = copy(location = Some(uri))
-    def WWWAuthenticate(auth: String): Response = copy(wwwAuthenticate = Some(auth))
+    def ContentType(contentType: String): Response = header("Content-Type" -> contentType)
+    def Location(uri: String): Response = header("Location" -> uri)
+    def WWWAuthenticate(auth: String): Response = header("WWW-Authenticate" -> auth)
     def body(body: String): Response = this(body)
     def header(header: (String, String)): Response = copy(headers = headers :+ header)
   }
