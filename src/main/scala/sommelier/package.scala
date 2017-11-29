@@ -16,7 +16,8 @@ package object sommelier
     body: Option[String] = None,
     contentType: Option[String] = None,
     location: Option[String] = None,
-    wwwAuthenticate: Option[String] = None
+    wwwAuthenticate: Option[String] = None,
+    headers: Seq[(String, String)] = Seq.empty
   )
   {
     def apply(body: String): Response = copy(body = Some(body))
@@ -24,6 +25,7 @@ package object sommelier
     def Location(uri: String): Response = copy(location = Some(uri))
     def WWWAuthenticate(auth: String): Response = copy(wwwAuthenticate = Some(auth))
     def body(body: String): Response = this(body)
+    def header(header: (String, String)): Response = copy(headers = headers :+ header)
   }
 
   trait Rejection

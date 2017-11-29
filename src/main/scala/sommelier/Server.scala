@@ -161,8 +161,11 @@ object Server
     response.wwwAuthenticate.foreach { auth =>
       exchange.getResponseHeaders.add("WWW-Authenticate", auth)
     }
+    response.headers.foreach { case (key, value) =>
+      exchange.getResponseHeaders.add(key, value)
+    }
     if (exchange.getRequestMethod != "HEAD") {
-      exchange.sendResponseHeaders(response.status, response.body.map(_.length.toLong).getOrElse(0L))
+      exchange.sendResponseHeaders(response.status, response.body.map(_.getBytes("UTF-8").length.toLong).getOrElse(0L))
       val os = exchange.getResponseBody
       response.body.foreach { body =>
         os.write(body.getBytes())
