@@ -2,8 +2,9 @@ package sommelier.test
 
 import java.nio.charset.Charset
 
+import akka.parboiled2.util.Base64
 import dispatch.{Http, url}
-import sommelier.Server
+import sommelier._
 import sommelier.Routing._
 import utest._
 
@@ -101,6 +102,52 @@ extends TestSuite
           } yield {
             assert(
               response.getStatusCode == 200
+            )
+          }
+        }
+      }
+      "returns the response from the rejection when the handler rejects" - {
+        withServer({ sommelier.Server.start(routes = Seq(
+          GET("/book") respond { _ => reject(451) }
+        ) )}) { server =>
+          for {
+            response <- Http.default(url(s"http://localhost:${server.port}/book"))
+          } yield {
+            assert(
+              response.getStatusCode == 451
+            )
+          }
+        }
+      }
+      "returns the response from the rejection when the handler rejects asynchronously" - {
+        withServer({ sommelier.Server.start(routes = Seq(
+          GET("/book") respond { _ => Future { reject(451) } }
+        ) )}) { server =>
+          for {
+            response <- Http.default(url(s"http://localhost:${server.port}/book"))
+          } yield {
+            assert(
+              response.getStatusCode == 451
+            )
+          }
+        }
+      }
+      "when all routes fail, chooses the most appropriate rejection" - {
+        withServer({ sommelier.Server.start(routes = Seq(
+          GET("/path-fail") respond { _ => 200 },
+          GET("/path-match-acc-match-auth-fail") Accept "text/plain" Authorization Basic("u", "x", "r") respond { _ => 200 },
+          GET("/path-fail-auth-match") Authorization Basic("u", "p", "r") respond { _ => 200 },
+          GET("/path-match-acc-fail-auth-match") Accept "text/css" Authorization Basic("u", "p", "r") respond { _ => 200 }
+        ) )}) { server =>
+          for {
+            response <- Http.default(
+              url(s"http://localhost:${server.port}/path-match-acc-match-auth-fail")
+                .setHeader("Accept", "text/plain")
+                .setHeader("Authorization", s"Basic ${Base64.rfc2045().encodeToString("u:p".getBytes(), false)}")
+            )
+          } yield {
+            assert(
+              response.getStatusCode == 403
             )
           }
         }

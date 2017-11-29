@@ -21,16 +21,16 @@ object SyncResult
     override def map[T1](fn: (T) => T1): Result[T1] = Accepted(fn(result))
   }
 }
-case class AsyncResult[T](fut: Future[Result[T]])(implicit executionContext: ExecutionContext) extends Result[T]
+case class AsyncResult[T](result: Future[Result[T]])(implicit executionContext: ExecutionContext) extends Result[T]
 {
   override def flatMap[T1](fn: (T) => Result[T1]): Result[T1] =
-    AsyncResult(fut.flatMap {
+    AsyncResult(result.flatMap {
       case SyncResult.Rejected(f) => Future.successful(SyncResult.Rejected(f))
       case SyncResult.Accepted(t) => Future.successful(fn(t))
       case AsyncResult(futT1) => futT1.map(_ flatMap fn)
     })
   override def map[T1](fn: (T) => T1): Result[T1] =
-    AsyncResult(fut.map(_.map(fn)))
+    AsyncResult(result.map(_.map(fn)))
 }
 object Result
 {
