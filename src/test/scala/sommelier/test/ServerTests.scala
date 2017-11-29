@@ -1,9 +1,13 @@
 package sommelier.test
 
+import java.nio.charset.Charset
+
 import dispatch.{Http, url}
 import sommelier.Server
+import sommelier.Routing._
 import utest._
 
+import scala.concurrent.Future
 import scala.util.Try
 
 object ServerTests
@@ -19,6 +23,85 @@ extends TestSuite
             response <- Http.default(url(s"http://localhost:${server.port}/any-url"))
           } yield {
             assert(response.getStatusCode == 404)
+          }
+        }
+      }
+      "returns the handled response of the first matching route" - {
+        withServer({ sommelier.Server.start(routes = Seq(
+          GET("/some-other-resource") respond { _ => 200 },
+          GET("/some-resource") respond { _ => 200 }
+        ) )}) { server =>
+          for {
+            response <- Http.default(url(s"http://localhost:${server.port}/some-resource"))
+          } yield {
+            assert(response.getStatusCode == 200)
+          }
+        }
+      }
+      "returns a 404 if none of the routes match" - {
+        withServer({ sommelier.Server.start(routes = Seq(
+          GET("/some-other-resource") respond { _ => 200 },
+          GET("/yet-another-resource") respond { _ => 200 }
+        ) )}) { server =>
+          for {
+            response <- Http.default(url(s"http://localhost:${server.port}/some-resource"))
+          } yield {
+            assert(response.getStatusCode == 404)
+          }
+        }
+      }
+      "handles HEAD requests" - {
+        withServer({ sommelier.Server.start(routes = Seq(
+          GET("/some-resource") respond { _ => 200 ("Some content") }
+        ) )}) { server =>
+          for {
+            response <- Http.default(url(s"http://localhost:${server.port}/some-resource").setMethod("HEAD"))
+          } yield {
+            assert(
+              response.getStatusCode == 200,
+              response.hasResponseBody == false,
+              response.getHeaders("Content-Length").isEmpty
+            )
+          }
+        }
+      }
+      "sends the response body" - {
+        withServer({ sommelier.Server.start(routes = Seq(
+          GET("/some-resource") respond { _ => 200 ("Some content") }
+        ) )}) { server =>
+          for {
+            response <- Http.default(url(s"http://localhost:${server.port}/some-resource"))
+          } yield {
+            assert(
+              response.getResponseBody(Charset.forName("UTF-8")) == "Some content",
+              response.getHeaders("Content-Length").get(0).toInt == "Some content".getBytes("UTF-8").length
+            )
+          }
+        }
+      }
+      "sends the response headers" - {
+        withServer({ sommelier.Server.start(routes = Seq(
+          GET("/ask") respond { _ => 200 ("Some content") header ("X-The-Answer" -> "42") }
+        ) )}) { server =>
+          for {
+            response <- Http.default(url(s"http://localhost:${server.port}/ask"))
+          } yield {
+            assert(
+              response.getHeader("X-The-Answer") == "42"
+            )
+          }
+        }
+      }
+      "allows async request handling" - {
+        withServer({ sommelier.Server.start(routes = Seq(
+          GET("/async") respond { _ => Future { 200 ("hi!") } }
+        ) )}) { server =>
+          for {
+            response <- Http.default(url(s"http://localhost:${server.port}/async"))
+          } yield {
+            assert(
+              response.getStatusCode == 200
+            )
           }
         }
       }
