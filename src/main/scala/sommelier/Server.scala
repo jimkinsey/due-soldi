@@ -6,6 +6,7 @@ import java.util.Scanner
 import com.sun.net.httpserver.{HttpExchange, HttpHandler, HttpServer}
 import sommelier.AuthorizationFailed.{Forbidden, Unauthorized}
 import sommelier.Middleware.Incoming
+import sommelier.SyncResult.{Accepted, Rejected}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
@@ -48,24 +49,24 @@ object Server
 
   class Router(routes: Seq[Route], middleware: Seq[Middleware])(implicit executionContext: ExecutionContext) extends HttpHandler {
     def handle(exchange: HttpExchange): Unit = {
+
+      def applyRoutes(request: Request): Result[Response] = {
+        routes.toStream.map { route =>
+          route -> route.matcher.rejects(request)
+        } match {
+          case FirstMatching(route) => route.handle(Context(request, route.matcher))
+          case ClosestMatching(rejection) => Rejected(rejection)
+          case _ => Rejected(Rejection(Response(404)))
+        }
+      }
+
       Try {
-        ApplyMiddleware.incoming(middleware)(getRequest(exchange))
-          .map { request =>
-            val checkedRoutes = routes.toStream.map { route =>
-              route -> route.matcher.rejects(request)
-            }
-            checkedRoutes match {
-              case FirstMatching(route) =>
-                route.handle(Context(request, route.matcher))
-                  .map(send(exchange))
-                  .recover(rejection => send(exchange)(rejection.response))
-              case ClosestMatching(rejection) =>
-                send(exchange)(rejection.response)
-              case _ =>
-                send(exchange)(Response(404))
-            }
-          }
-          .recover(rejection => send(exchange)(rejection.response))
+        for {
+          request <- ApplyMiddleware.incoming(middleware)(getRequest(exchange))
+          response <- applyRoutes(request) recover { _.response }
+        } yield {
+          send(exchange)(response)
+        }
       } recover {
         case ex =>
           ex.printStackTrace()
