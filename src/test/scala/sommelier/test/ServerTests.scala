@@ -10,6 +10,7 @@ import utest._
 
 import scala.concurrent.Future
 import scala.util.Try
+import Unpacking._
 
 object ServerTests
 extends TestSuite
@@ -148,6 +149,24 @@ extends TestSuite
           } yield {
             assert(
               response.getStatusCode == 403
+            )
+          }
+        }
+      }
+      "applies incoming middleware to any matching incoming request" - {
+        withServer({ sommelier.Server.start(
+          routes = Seq(
+            GET("/path") respond { implicit context => body[String] map (content => 200 (content)) }
+          ),
+          middleware = Seq(
+            AnyRequest incoming { _ body "Handled" }
+          )
+        )}) { server =>
+          for {
+            response <- Http.default(url(s"http://localhost:${server.port}/path"))
+          } yield {
+            assert(
+              response.getResponseBody == "Handled"
             )
           }
         }

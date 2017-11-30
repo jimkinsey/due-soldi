@@ -12,6 +12,8 @@ object Routing
   lazy val PUT = RequestMatcher(method = Some(MethodMatcher(Method.PUT)))
   lazy val DELETE = RequestMatcher(method = Some(MethodMatcher(Method.DELETE)))
 
+  val AnyRequest = RequestMatcher()
+
   implicit class RouteMaker(matcher: RequestMatcher) {
     def respond(handler: Handler) = Route(matcher, handler)
   }
@@ -30,11 +32,17 @@ object Routing
 
   implicit def responseToResult(response: Response): Result[Response] = SyncResult.Accepted(response)
 
+  implicit def requestToResult(request: Request): Result[Request] = SyncResult.Accepted(request)
+
   implicit def statusToResult(status: Int): Result[Response] = SyncResult.Accepted(Response(status))
 
   implicit def futureResponseToResult(fResponse: Future[Response])(implicit executionContext: ExecutionContext): Result[Response] = AsyncResult(fResponse.map(SyncResult.Accepted(_)))
 
+  implicit def futureRequestToResult(fRequest: Future[Request])(implicit executionContext: ExecutionContext): Result[Request] = AsyncResult(fRequest.map(SyncResult.Accepted(_)))
+
   implicit def futureResultToResult(fResult: Future[Result[Response]])(implicit executionContext: ExecutionContext): Result[Response] = AsyncResult(fResult)
 
   def reject(response: Response): Result[Response] = SyncResult.Rejected(Rejection(response))
+
+  def rejectRequest(response: Response): Result[Request] = SyncResult.Rejected(Rejection(response))
 }
