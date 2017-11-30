@@ -1,3 +1,6 @@
+import sommelier.{Middleware, Request, Result}
+import sommelier.Middleware.Incoming
+
 package object sommelier
 {
   case class Context(request: Request, matcher: RequestMatcher)
@@ -10,6 +13,10 @@ package object sommelier
     accept: Option[String] = None,
     body: Option[String] = None
   )
+  {
+    def header(header: (String, Seq[String])): Request = copy(headers = headers + header)
+    def body(str: String): Request = copy(body = Some(str))
+  }
 
   case class Response(
     status: Int,
@@ -37,6 +44,17 @@ package object sommelier
   }
 
   case class Route(matcher: RequestMatcher, handle: Routing.Handler)
+
+  sealed trait Middleware
+  object Middleware
+  {
+    case class Incoming(matcher: RequestMatcher, handle: Request => Result[Request]) extends Middleware
+  }
+
+  implicit class MiddlewareMaker(matcher: RequestMatcher)
+  {
+    def incoming(handle: Request => Result[Request]): Middleware = Incoming(matcher, handle)
+  }
 
   sealed trait Method
   object Method

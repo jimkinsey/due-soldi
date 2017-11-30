@@ -41,8 +41,8 @@ case class PathMatcher(pathPattern: String) extends Rejects[String]
 }
 
 case class RequestMatcher(
-  method: Option[MethodMatcher] = Some(MethodMatcher(Method.GET)), // FIXME None
-  path: Option[PathMatcher] = Some(PathMatcher("/")), // FIXME None
+  method: Option[MethodMatcher] = None,
+  path: Option[PathMatcher] = None,
   accept: Option[AcceptMatcher] = None,
   authorization: Option[AuthorizationMatcher] = None
 ) extends Rejects[Request]

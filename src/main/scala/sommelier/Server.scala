@@ -5,6 +5,7 @@ import java.util.Scanner
 
 import com.sun.net.httpserver.{HttpExchange, HttpHandler, HttpServer}
 import sommelier.AuthorizationFailed.{Forbidden, Unauthorized}
+import sommelier.Middleware.Incoming
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
@@ -19,7 +20,8 @@ trait Server
 
 object Server
 {
-  def start(routes: Seq[Route], host: String = "localhost", port: Option[Int] = None)(implicit executionContext: ExecutionContext): Try[Server] = {
+  def start(routes: Seq[Route], middleware: Seq[Middleware] = Seq.empty, host: String = "localhost", port: Option[Int] = None)
+           (implicit executionContext: ExecutionContext): Try[Server] = {
     Try({
       // might need to look into synchronising this
       lazy val randomPort: Int = {
@@ -31,7 +33,7 @@ object Server
 
       val serverPort = port.getOrElse(randomPort)
       val server = HttpServer.create(new InetSocketAddress(serverPort), 0)
-      server.createContext("/", new Router(routes))
+      server.createContext("/", new Router(routes, middleware))
       server.setExecutor(null); // creates a default executor
       server.start()
 
@@ -44,23 +46,26 @@ object Server
     })
   }
 
-  class Router(routes: Seq[Route])(implicit executionContext: ExecutionContext) extends HttpHandler {
+  class Router(routes: Seq[Route], middleware: Seq[Middleware])(implicit executionContext: ExecutionContext) extends HttpHandler {
     def handle(exchange: HttpExchange): Unit = {
       Try {
-        val request = getRequest(exchange)
-        val checkedRoutes = routes.toStream.map { route =>
-          route -> route.matcher.rejects(request)
-        }
-        checkedRoutes match {
-          case FirstMatching(route) =>
-            route.handle(Context(request, route.matcher))
-              .map(send(exchange))
-              .recover(rejection => send(exchange)(rejection.response))
-          case ClosestMatching(rejection) =>
-            send(exchange)(rejection.response)
-          case _ =>
-            send(exchange)(Response(404))
-        }
+        ApplyMiddleware.incoming(middleware)(getRequest(exchange))
+          .map { request =>
+            val checkedRoutes = routes.toStream.map { route =>
+              route -> route.matcher.rejects(request)
+            }
+            checkedRoutes match {
+              case FirstMatching(route) =>
+                route.handle(Context(request, route.matcher))
+                  .map(send(exchange))
+                  .recover(rejection => send(exchange)(rejection.response))
+              case ClosestMatching(rejection) =>
+                send(exchange)(rejection.response)
+              case _ =>
+                send(exchange)(Response(404))
+            }
+          }
+          .recover(rejection => send(exchange)(rejection.response))
       } recover {
         case ex =>
           ex.printStackTrace()
