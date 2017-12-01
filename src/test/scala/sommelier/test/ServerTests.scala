@@ -171,6 +171,24 @@ extends TestSuite
           }
         }
       }
+      "applies outgoing middleware to the generated response of any matching request" - {
+        withServer({ sommelier.Server.start(
+          routes = Seq(
+            GET("/path") respond { _ => 200 }
+          ),
+          middleware = Seq(
+            AnyRequest outgoing { (req, res) => res body "Handled" }
+          )
+        )}) { server =>
+          for {
+            response <- Http.default(url(s"http://localhost:${server.port}/path"))
+          } yield {
+            assert(
+              response.getResponseBody == "Handled"
+            )
+          }
+        }
+      }
     }
   }
 

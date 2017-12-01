@@ -4,9 +4,8 @@ import java.net.{InetSocketAddress, ServerSocket}
 import java.util.Scanner
 
 import com.sun.net.httpserver.{HttpExchange, HttpHandler, HttpServer}
-import sommelier.AuthorizationFailed.{Forbidden, Unauthorized}
-import sommelier.Middleware.Incoming
-import sommelier.SyncResult.{Accepted, Rejected}
+import sommelier.ApplyMiddleware.{applyIncoming, applyOutgoing}
+import sommelier.ApplyRoutes.applyRoutes
 
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
@@ -47,55 +46,24 @@ object Server
     })
   }
 
-  class Router(routes: Seq[Route], middleware: Seq[Middleware])(implicit executionContext: ExecutionContext) extends HttpHandler {
+  class Router(routes: Seq[Route], middleware: Seq[Middleware])
+              (implicit executionContext: ExecutionContext)
+  extends HttpHandler
+  {
     def handle(exchange: HttpExchange): Unit = {
-
-      def applyRoutes(request: Request): Result[Response] = {
-        routes.toStream.map { route =>
-          route -> route.matcher.rejects(request)
-        } match {
-          case FirstMatching(route) => route.handle(Context(request, route.matcher))
-          case ClosestMatching(rejection) => Rejected(rejection)
-          case _ => Rejected(Rejection(Response(404)))
-        }
-      }
-
       Try {
         for {
-          request <- ApplyMiddleware.incoming(middleware)(getRequest(exchange))
-          response <- applyRoutes(request) recover { _.response }
+          finalRequest <- applyIncoming(middleware)(getRequest(exchange))
+          interimResponse <- applyRoutes(routes)(finalRequest) recover { _.response }
+          finalResponse <- applyOutgoing(middleware)(finalRequest, interimResponse)
         } yield {
-          send(exchange)(response)
+          send(exchange)(finalResponse)
         }
       } recover {
         case ex =>
           ex.printStackTrace()
-          send(exchange)(Response(500))
+          send(exchange)(Response(500, Some("Internal Server Error")))
       }
-    }
-  }
-
-  object FirstMatching
-  {
-    def unapply(routeResults: Seq[(Route,Option[Rejection])]): Option[Route] = {
-      routeResults.find(_._2.isEmpty).map(_._1)
-    }
-  }
-
-  object ClosestMatching
-  {
-    def unapply(routeResults: Seq[(Route, Option[Rejection])]): Option[Rejection] = {
-      routeResults.flatMap(_._2).sortBy(priority).lastOption // really not sure about this!
-    }
-  }
-
-  def priority(rejection: Rejection): Int = {
-    rejection match {
-      case ResourceNotFound => 1
-      case MethodNotAllowed => 2
-      case Unnacceptable => 3
-      case Unauthorized(_) => 4
-      case Forbidden => 5
     }
   }
 
