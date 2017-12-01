@@ -1,5 +1,5 @@
 import sommelier.{Middleware, Request, Result}
-import sommelier.Middleware.Incoming
+import sommelier.Middleware.{Incoming, Outgoing}
 
 package object sommelier
 {
@@ -49,11 +49,13 @@ package object sommelier
   object Middleware
   {
     case class Incoming(matcher: RequestMatcher, handle: Request => Result[Request]) extends Middleware
+    case class Outgoing(matcher: RequestMatcher, handle: (Request, Response) => Result[Response]) extends Middleware
   }
 
   implicit class MiddlewareMaker(matcher: RequestMatcher)
   {
     def incoming(handle: Request => Result[Request]): Middleware = Incoming(matcher, handle)
+    def outgoing(handle: (Request, Response) => Result[Response]): Middleware = Outgoing(matcher, handle)
   }
 
   sealed trait Method
