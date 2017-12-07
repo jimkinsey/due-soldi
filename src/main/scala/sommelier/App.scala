@@ -84,9 +84,12 @@ object App
       200 ("i know nothing about security")
     }
 
-  // TESTS!!!
-  // todo middleware
   // todo controllers
-  // todo tests
+  // todo more tests
+  // todo restructure - DSL on sommelier package object, implementation stuff in packages
+  // todo event stuff
+  // todo does the outgoing middleware reject properly?
+  // todo ? should the authorization / accept be matchers at all? maybe just "unpacker"-type things?
+  // todo stress testing
 
 }
