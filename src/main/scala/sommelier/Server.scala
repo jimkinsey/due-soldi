@@ -12,6 +12,7 @@ trait Server
 {
   def port: Int
   def halt(): Unit
+  def subscribe: Subscriber => Unit
 }
 
 object Server
@@ -27,6 +28,8 @@ object Server
         socketPort
       }
 
+      implicit val bus: EventBus = new EventBus
+
       val serverPort = port.getOrElse(randomPort)
       val server = HttpServer.create(new InetSocketAddress(serverPort), 0)
       server.createContext("/", (httpExchange: HttpExchange) => {
@@ -38,8 +41,10 @@ object Server
       new Server {
         val port: Int = serverPort
         def halt(): Unit = {
+          bus.publish(HaltRequested)
           server.stop(0)
         }
+        val subscribe: (Subscriber) => Unit = bus.subscribe
       }
     })
   }

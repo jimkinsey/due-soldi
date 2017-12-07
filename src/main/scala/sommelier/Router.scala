@@ -16,16 +16,20 @@ object Router
 {
   def complete(routes: Seq[Route], middleware: Seq[Middleware])
               (context: HttpMessageContext)
-              (implicit executionContext: ExecutionContext): Unit = {
+              (implicit executionContext: ExecutionContext, bus: EventBus): Unit = {
 
     def handleException: PartialFunction[Throwable, Result[Response]] = {
       case ex =>
+        bus.publish(ExceptionWhileRouting(context.get, ex))
         SyncResult.Accepted(Response(500, Some("Internal Server Error")))
     }
 
     def sendResponse(result: Result[Response]): Unit = result match {
       case sync: SyncResult[Response] =>
-        sync.recover(rejection => rejection.response).map(context.send)
+        sync.recover(rejection => rejection.response).map { response =>
+          bus.publish(Completed(context.get, response))
+          context.send(response)
+        }
       case AsyncResult(async) =>
         async.recover(handleException).map(sendResponse)
     }
