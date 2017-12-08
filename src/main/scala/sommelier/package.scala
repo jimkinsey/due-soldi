@@ -50,8 +50,10 @@ package object sommelier
   sealed trait Middleware
   object Middleware
   {
-    case class Incoming(matcher: RequestMatcher, handle: Request => Result[Request]) extends Middleware
-    case class Outgoing(matcher: RequestMatcher, handle: (Request, Response) => Result[Response]) extends Middleware
+    type IncomingHandler = Request => Result[Request]
+    type OutgoingHandler = (Request, Response) => Result[Response]
+    case class Incoming(matcher: RequestMatcher, handle: IncomingHandler) extends Middleware
+    case class Outgoing(matcher: RequestMatcher, handle: OutgoingHandler) extends Middleware
   }
 
   implicit class MiddlewareMaker(matcher: RequestMatcher)
