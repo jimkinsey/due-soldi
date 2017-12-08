@@ -4,6 +4,7 @@ import sommelier.ApplyMiddleware.{applyIncoming, applyOutgoing}
 import sommelier.ApplyRoutes.applyRoutes
 
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.Duration
 import scala.util.Try
 
 trait HttpMessageContext
@@ -17,6 +18,7 @@ object Router
   def complete(routes: Seq[Route], middleware: Seq[Middleware])
               (context: HttpMessageContext)
               (implicit executionContext: ExecutionContext, bus: EventBus): Unit = {
+    val start = System.nanoTime()
 
     def handleException: PartialFunction[Throwable, Result[Response]] = {
       case ex =>
@@ -27,7 +29,7 @@ object Router
     def sendResponse(result: Result[Response]): Unit = result match {
       case sync: SyncResult[Response] =>
         sync.recover(rejection => rejection.response).map { response =>
-          bus.publish(Completed(context.get, response))
+          bus.publish(Completed(context.get, response, Duration.fromNanos(System.nanoTime())))
           context.send(response)
         }
       case AsyncResult(async) =>

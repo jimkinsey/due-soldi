@@ -1,6 +1,8 @@
 import sommelier.{Middleware, Request, Result}
 import sommelier.Middleware.{Incoming, Outgoing}
 
+import scala.concurrent.duration.Duration
+
 package object sommelier
 {
   case class Context(request: Request, matcher: RequestMatcher)
@@ -92,7 +94,7 @@ package object sommelier
   }
 
   case class ExceptionWhileRouting(request: Request, exception: Throwable)
-  case class Completed(request: Request, response: Response)
+  case class Completed(request: Request, response: Response, duration: Duration)
   case object HaltRequested
 
 }
