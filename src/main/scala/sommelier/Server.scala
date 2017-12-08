@@ -17,7 +17,7 @@ trait Server
 
 object Server
 {
-  def start(routes: Seq[Route], middleware: Seq[Middleware] = Seq.empty, host: String = "localhost", port: Option[Int] = None)
+  def start(controllers: Seq[Controller] = Seq.empty, routes: Seq[Route] = Seq.empty, middleware: Seq[Middleware] = Seq.empty, host: String = "localhost", port: Option[Int] = None)
            (implicit executionContext: ExecutionContext): Try[Server] = {
     Try({
       // might need to look into synchronising this
@@ -28,12 +28,15 @@ object Server
         socketPort
       }
 
+      val allRoutes = routes ++ controllers.flatMap(_.routes)
+      val allMiddleware = middleware ++ controllers.flatMap(_.middleware)
+
       implicit val bus: EventBus = new EventBus
 
       val serverPort = port.getOrElse(randomPort)
       val server = HttpServer.create(new InetSocketAddress(serverPort), 0)
       server.createContext("/", (httpExchange: HttpExchange) => {
-        Router.complete(routes, middleware)(new HttpExchangeMessageContext(httpExchange))
+        Router.complete(allRoutes, allMiddleware)(new HttpExchangeMessageContext(httpExchange))
       })
       server.setExecutor(null); // creates a default executor
       server.start()

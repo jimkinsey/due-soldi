@@ -189,6 +189,23 @@ extends TestSuite
           }
         }
       }
+      "can be configured with controllers for neater routing" - {
+        withServer({ sommelier.Server.start(
+          Seq(new Controller {
+            AnyRequest >-- { req => req body "in->" }
+            AnyRequest ->- { ctx => 200 body s"${ctx.request.body.getOrElse("")}handled->" }
+            AnyRequest --> { (req, res) => res body s"${res.body.getOrElse("")}out" }
+          })
+        )}) { server =>
+          for {
+            response <- Http.default(url(s"http://localhost:${server.port}/"))
+          } yield {
+            assert(
+              response.getResponseBody == "in->handled->out"
+            )
+          }
+        }
+      }
     }
   }
 
