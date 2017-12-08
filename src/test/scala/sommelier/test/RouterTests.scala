@@ -4,9 +4,11 @@ import sommelier.{Completed, EventBus, ExceptionWhileRouting, HttpMessageContext
 import utest._
 import sommelier.Routing._
 import sommelier.Unpacking._
+import sommelier.test.RouterTests.SeqMatchers.Pred
 
 import scala.collection.mutable
 import scala.concurrent.Future
+import scala.concurrent.duration.Duration
 
 object RouterTests
 extends TestSuite
@@ -84,14 +86,21 @@ extends TestSuite
           ),
           middleware = Seq.empty
         )(new RecordingContext(request))
-        assert(bus.published contains Completed(request, 200("OK")))
+        val published = bus.published
+        assert(published containsA[Completed](_.request == request, _.response == 200("OK"), _.duration > Duration.Zero))
       }
     }
   }
 
-  implicit class SeqMatchers[T](seq: Seq[T])
+  object SeqMatchers
   {
-    def containsA[T1 >: T](pred: T1 => Boolean): Boolean = seq.exists(pred)
+    type Pred[T] = T => Boolean
+  }
+
+  implicit class SeqMatchers(seq: Seq[_])
+  {
+    def containsA[T](preds: Pred[T]*): Boolean =
+      preds.forall(pred => seq.collectFirst { case x: T if pred(x) => true } .isDefined)
   }
 
   class RecordingBus() extends EventBus
