@@ -40,7 +40,7 @@ object FurnitureTests
           runningApp
         ) { implicit env =>
           for {
-            response <- get("/furniture/1.0.0/two-legged-table.txt")
+            response <- get("/furniture/100/two-legged-table.txt")
           } yield {
             assert(response.status == 404)
           }
@@ -69,7 +69,7 @@ object FurnitureTests
             response <- get(s"/furniture/${file.lastModified()}/cupboard.txt")
           } yield {
             assert(
-              response.headers.toSeq.contains("Cache-Control" -> Seq("max-age=3600")),
+              response.headers.toSeq contains "Cache-control" -> Seq("max-age=3600"),
               response.headers("Expires").head hasDateFormat RFC_1123_DATE_TIME
             )
           }

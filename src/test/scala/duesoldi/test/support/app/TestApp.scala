@@ -2,7 +2,8 @@ package duesoldi.test.support.app
 
 import duesoldi._
 import duesoldi.test.support.httpclient.BasicAuthorization
-import duesoldi.test.support.setup.SyncSetup
+import duesoldi.test.support.setup.{AsyncSetup, SyncSetup}
+import sommelier.{ExceptionWhileRouting, Server}
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
@@ -17,7 +18,7 @@ class TestAppFramework extends utest.runner.Framework
     TestApp.attemptStart
   }
   override def teardown(): Unit = {
-    TestApp.attemptStop()
+    TestApp.attemptStop
   }
 }
 
@@ -41,18 +42,39 @@ object TestApp
 
   def app: Server = running
 
-  def attemptStop(): Future[Unit] = running.stop()
+  def attemptStop(implicit executionContext: ExecutionContext): Future[Unit] = Future { running.halt() }
 
   def attemptStart(implicit executionContext: ExecutionContext): Unit = {
     Await.result(App.start(testEnv)
       .map { s =>
+        s.subscribe {
+          case ExceptionWhileRouting(_, exception) => exception.printStackTrace()
+        }
         running = s
       }, 5.seconds)
   }
 
-  def runningApp(implicit executionContext: ExecutionContext) = new SyncSetup {
+  def runningApp(implicit executionContext: ExecutionContext): SyncSetup = new SyncSetup {
     override def setup(env: Env): Env = {
       Map("PORT" -> app.port.toString, "HOST" -> app.host)
+    }
+  }
+
+  def runningAppForThisTestOnly(implicit executionContext: ExecutionContext): AsyncSetup = new AsyncSetup {
+    var myApp: Server = _
+
+    override def setup(env: Env): Future[Env] = {
+      App.start(env).map { s =>
+        s.subscribe {
+          case ExceptionWhileRouting(_, exception) => exception.printStackTrace()
+        }
+        myApp = s
+        Map("PORT" -> myApp.port.toString, "HOST" -> myApp.host)
+      }
+    }
+
+    override def tearDown: Future[Unit] = {
+      Future { myApp.halt() }
     }
   }
 }

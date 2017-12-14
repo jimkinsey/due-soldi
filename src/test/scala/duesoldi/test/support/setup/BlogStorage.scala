@@ -9,6 +9,7 @@ import duesoldi.test.support.app.ServerRequests
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.implicitConversions
+import scala.util.Success
 
 object BlogStorage
 {

@@ -3,7 +3,7 @@ package duesoldi.test.functional
 import duesoldi.Env
 import duesoldi.test.support.app.ServerRequests._
 import duesoldi.test.support.app.TestApp
-import duesoldi.test.support.app.TestApp.runningApp
+import duesoldi.test.support.app.TestApp.runningAppForThisTestOnly
 import duesoldi.test.support.httpclient.BasicAuthorization
 import duesoldi.test.support.setup.BlogStorage._
 import duesoldi.test.support.setup.Database._
@@ -12,28 +12,27 @@ import duesoldi.test.support.setup.SyncSetup
 import utest._
 
 object AccessRecordingTests
-  extends TestSuite 
+extends TestSuite
 {
   implicit val executionContext = utest.framework.ExecutionContext.RunNow
   val tests = this
   {
     "the access CSV endpoint" - {
-      "returns a 401 for unauthorised access" - {
+      "returns a 403 for unauthorised access" - {
         withSetup(
-          runningApp
+          runningAppForThisTestOnly
         ) { implicit env =>
           for {
             response <- get("/admin/metrics/access.csv", headers = BasicAuthorization("admin", "wrong-password"))
           } yield {
-            assert(response.status == 401)
+            assert(response.status == 403)
           }
         }
       }
-
       "serves a CSV file with a header when there are no metrics recorded" - {
         withSetup(
           database,
-          runningApp
+          runningAppForThisTestOnly
         ) { implicit env =>
           for {
             response <- get("/admin/metrics/access.csv", headers = TestApp.adminAuth)
@@ -46,12 +45,11 @@ object AccessRecordingTests
           }
         }
       }
-
       "serves a CSV file containing a row for each blog entry page request" - {
         withSetup(
           database,
           accessRecordingEnabled,
-          runningApp,
+          runningAppForThisTestOnly,
           blogEntries("id" -> "# Content!")
         ) { implicit env =>
           for {
@@ -64,12 +62,11 @@ object AccessRecordingTests
           }
         }
       }
-
       "serves a CSV file containing a row for each blog index page request" - {
         withSetup(
           database,
           accessRecordingEnabled,
-          runningApp,
+          runningAppForThisTestOnly,
           blogEntry("id" -> "# Content!")
         ) { implicit env =>
           for {
@@ -85,12 +82,11 @@ object AccessRecordingTests
           }
         }
       }
-
       "has no records for periods when access recording is disabled" - {
         withSetup(
           database,
           accessRecordingDisabled,
-          runningApp,
+          runningAppForThisTestOnly,
           blogEntries("id" -> "# Content!")
         ) { implicit env =>
           for {

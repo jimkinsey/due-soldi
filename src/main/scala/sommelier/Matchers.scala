@@ -2,6 +2,8 @@ package sommelier
 
 import java.util.Base64
 
+import sommelier.PathParams.segments
+
 import scala.util.matching.Regex
 
 trait Rejects[T]
@@ -27,14 +29,16 @@ case object ResourceNotFound extends Rejection
 case class PathMatcher(pathPattern: String) extends Rejects[String]
 {
   def rejects(path: String): Option[Rejection] = {
-    val parts = path.split('/')
-    val patternParts = pathPattern.split('/')
+    val patternSegments = segments(pathPattern)
+    val pathSegments = segments(path)
+    val patternSegmentsUpToWildcard = patternSegments.takeWhile(_ != "*")
+    val pathSegmentsUpToWildcard = pathSegments.take(patternSegmentsUpToWildcard.length)
+    val pathSegmentsIncludingRemainder = pathSegmentsUpToWildcard :+ pathSegments.drop(patternSegmentsUpToWildcard.length).mkString("/")
 
-    if (parts.length != patternParts.length) return Some(ResourceNotFound)
-
-    parts.zip(patternParts).foldLeft[Option[Rejection]](None) {
-      case (None, (part, pattern)) if part == pattern => None
-      case (None, (_, pattern)) if pattern.startsWith(":") => None
+    (patternSegments zip pathSegmentsIncludingRemainder).foldLeft[Option[Rejection]](None) {
+      case (None, (pattern, part)) if part == pattern => None
+      case (None, (pattern, part)) if part.nonEmpty && pattern.startsWith(":") => None
+      case (None, ("*", part)) if part.nonEmpty => None
       case _ => Some(ResourceNotFound)
     }
   }

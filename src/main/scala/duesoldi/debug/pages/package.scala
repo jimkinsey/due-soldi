@@ -1,9 +1,7 @@
 package duesoldi.debug
 
-import akka.http.scaladsl.model.HttpRequest
-
 package object pages
 {
-  type MakeHeadersPage = HttpRequest => String
+  type MakeHeadersPage = sommelier.Request => String
   type MakeConfigPage = () => String
 }

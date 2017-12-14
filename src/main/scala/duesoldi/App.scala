@@ -1,20 +1,28 @@
 package duesoldi
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.Http.ServerBinding
-import akka.http.scaladsl.server.Route
-import akka.stream.ActorMaterializer
+import java.time.ZonedDateTime
+
+import duesoldi.app.{RequestId, TrailingSlashRedirection}
+import duesoldi.blog.routes.{BlogEditingController, BlogEntryController, BlogIndexController}
 import duesoldi.config.{Config, EnvironmentalConfig}
-import duesoldi.controller.MasterController
-import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
+import duesoldi.controller.{LearnJapaneseController, RobotsController}
+import duesoldi.debug.routes.DebugController
+import duesoldi.dependencies.Injection.injected
+import duesoldi.events.Events
+import duesoldi.furniture.routes.FurnitureController
 import duesoldi.logging.Logger
+import duesoldi.metrics.routes.MetricsController
+import duesoldi.metrics.storage.AccessRecordStore.Access
+import duesoldi.metrics.storage.{AccessRecordStorage, StoreAccessRecord}
+import sommelier.{Completed, Server}
+import duesoldi.dependencies.DueSoldiDependencies._
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
-import scala.util.{Failure, Success}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Failure
 
-object App {
+object App
+{
   implicit val executionContext: ExecutionContext = concurrent.ExecutionContext.Implicits.global
 
   def main(args: Array[String]) {
@@ -24,36 +32,49 @@ object App {
 
   def start(env: Env): Future[Server] = {
     implicit val config: Config = EnvironmentalConfig(env)
-    implicit val inject: RequestDependencyInjector = new RequestDependencyInjector
     val logger = new Logger("App", config.loggingEnabled)
-    val eventualServer = Server.start(MasterController.routes, config.host, config.port)
-    eventualServer.onComplete {
-      case Success(server) =>
-        logger.info(s"Started server on ${server.host}:${server.port}")
-      case Failure(ex) =>
-        logger.error(s"Failed to start server on ${config.host}:${config.port} - ${ex.getMessage}")
+    val events = new Events // todo use the same model as sommelier
+    AccessRecordStorage.enable(events, injected[StoreAccessRecord])
+
+    Future fromTry {
+      sommelier.Server.start(
+        controllers = Seq(
+          new BlogEntryController(),
+          new BlogIndexController(),
+          new BlogEditingController(),
+          new FurnitureController(),
+          RobotsController,
+          LearnJapaneseController,
+          new DebugController(),
+          new MetricsController()
+        ),
+        middleware =
+          TrailingSlashRedirection.middleware ++
+          RequestId.middleware
+      ) map {
+        server =>
+          logger.info(s"Started server on ${server.host}:${server.port}")
+          server.subscribe {
+            case Completed(req, res, duration) if config.accessRecordingEnabled => {
+              val access = Access(
+                time = ZonedDateTime.now(),
+                path = req.path,
+                referer = req.headers.get("Referer").flatMap(_.headOption),
+                userAgent = req.headers.get("User-Agent").flatMap(_.headOption),
+                duration = duration.length,
+                clientIp = req.headers.get("Cf-Connecting-Ip").flatMap(_.headOption),
+                country = req.headers.get("Cf-Ipcountry").flatMap(_.headOption),
+                statusCode = res.status
+              )
+              events.emit(access)
+            }
+          }
+          server
+      } recoverWith {
+        case exception =>
+          logger.error(s"Failed to start server on ${config.host}:${config.port} - ${exception.getMessage}")
+          Failure(exception)
+      }
     }
-    eventualServer
-  }
-}
-
-object Server {
-  def start(route: Route, host: String, port: Int): Future[Server] = {
-    implicit val system: ActorSystem = ActorSystem("my-system", classLoader = Some(Server.getClass.getClassLoader))
-    implicit val materializer: ActorMaterializer = ActorMaterializer()
-    implicit val executionContext: ExecutionContextExecutor = system.dispatcher
-    Http().bindAndHandle(route, host, port) map { binding => new Server(binding) }
-  }
-}
-
-class Server(binding: ServerBinding)(implicit executionContext: ExecutionContext, actorSystem: ActorSystem) {
-  lazy val port: Int = binding.localAddress.getPort
-  lazy val host: String = binding.localAddress.getHostName
-
-  def stop(): Future[Unit] = {
-    for {
-      _ <- binding.unbind()
-      _ <- actorSystem.terminate()
-    } yield { }
   }
 }

@@ -18,7 +18,7 @@ object Unpacking {
 
   case class BadPathVar(name: String) extends Rejection
   {
-    lazy val response = Response(400, Some(s"Path var $name could not be unpacked"))
+    lazy val response = Response(400)(s"Path var $name could not be unpacked")
   }
 
   def pathParam[T](name: String)(implicit context: Context, unpacker: Unpacker[T]): Result[T] = {
@@ -26,6 +26,21 @@ object Unpacking {
       pattern <- context.matcher.path.map(_.pathPattern) rejectWith  { RouteHasNoPath }
       path = context.request.path
       value <- unpacker.unpack(PathParams(pattern)(path)(name)) rejectWith { BadPathVar(name) }
+    } yield {
+      value
+    }
+  }
+
+  case object NotAWildcardedPath extends Rejection
+  {
+    lazy val response: Response = Response(500)("Path is not wildcarded")
+  }
+
+  def remainingPath(implicit context: Context): Result[String] = {
+    for {
+      pattern <- context.matcher.path.map(_.pathPattern) rejectWith  { RouteHasNoPath }
+      path = context.request.path
+      value <- PathParams(pattern)(path).get("*") rejectWith { NotAWildcardedPath }
     } yield {
       value
     }
@@ -50,33 +65,40 @@ object Unpacking {
 
   case class HeaderNotFound(name: String) extends Rejection
   {
-    val response: Response = Response(400, Some(s"Header '$name' not found in request"))
+    val response: Response = Response(400)(s"Header '$name' not found in request")
   }
 
   case class QueryParamNotFound(name: String) extends Rejection
   {
-    val response: Response = Response(400, Some(s"Query param '$name' not found in request"))
+    val response: Response = Response(400)(s"Query param '$name' not found in request")
   }
 
   case object RequestHasNoBody extends Rejection
   {
-    val response: Response = Response(400, Some("Request has no body"))
+    val response: Response = Response(400)("Request has no body")
   }
 
   case object BodyUnpackFailure extends Rejection
   {
-    val response: Response = Response(500, Some("Failed to unpack the body"))
+    val response: Response = Response(500)("Failed to unpack the body")
   }
 
   implicit val unpackInt: Unpacker[Int] = string => Try(string.toInt).toOption
+  implicit val unpackLong: Unpacker[Long] = string => Try(string.toLong).toOption
   implicit val unpackString: Unpacker[String] = Some(_)
 }
 
 object PathParams
 {
   def apply(pattern: String)(path: String): Map[String,String] = {
-    segments(pattern) zip segments(path) collect {
-      case (PathVariable(key), value) => key -> value
+    val patternSegments = segments(pattern)
+    val pathSegments = segments(path)
+    val patternSegmentsUpToWildcard = patternSegments.takeWhile(_ != "*")
+    val pathSegmentsUpToWildcard = pathSegments.take(patternSegmentsUpToWildcard.length)
+    val pathSegmentsIncludingRemainder = pathSegmentsUpToWildcard :+ pathSegments.drop(patternSegmentsUpToWildcard.length).mkString("/")
+    patternSegments zip pathSegmentsIncludingRemainder collect {
+      case (PathVariable(key), value) if value.nonEmpty => key -> value
+      case wildcardPart @ ("*", remainder) => wildcardPart
     } toMap
   }
 

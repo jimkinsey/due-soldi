@@ -15,7 +15,7 @@ import duesoldi.furniture.CurrentUrlPath
 import duesoldi.furniture.storage.FurnitureFiles
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.markdown.MarkdownParser
-import duesoldi.metrics.storage.{AccessRecordStorage, AccessRecordStore, GetAllAccessRecords}
+import duesoldi.metrics.storage.{AccessRecordStorage, AccessRecordStore, GetAllAccessRecords, StoreAccessRecord}
 import duesoldi.debug.pages.{ConfigPageMaker, _}
 import duesoldi.dependencies.Features.forFeature
 import duesoldi.{Env, blog, markdown}
@@ -47,6 +47,10 @@ object DueSoldiDependencies
 
   implicit val getAccessRecords: Inject[GetAllAccessRecords] = { config =>
     AccessRecordStore.getAll(jdbcPerformQuery[Access](AccessRecordStore.toAccess)(config))
+  }
+
+  implicit lazy val storeAccessRecord: Inject[StoreAccessRecord] = {
+    inject(AccessRecordStore.put _)
   }
 
   implicit def render(implicit executionContext: ExecutionContext): Inject[duesoldi.rendering.Render] = {

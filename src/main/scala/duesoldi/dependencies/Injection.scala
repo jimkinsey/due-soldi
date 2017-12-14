@@ -17,4 +17,6 @@ object Injection
   def inject[IN1, IN2, IN3, IN4, IN5, OUT](fn: (IN1, IN2, IN3, IN4, IN5) => OUT)(implicit in1: Inject[IN1], in2: Inject[IN2], in3: Inject[IN3], in4: Inject[IN4], in5: Inject[IN5]): Inject[OUT] = (config: Config) => fn(in1(config), in2(config), in3(config), in4(config), in5(config))
 
   def inject[IN1, IN2, IN3, IN4, IN5, IN6, OUT](fn: (IN1, IN2, IN3, IN4, IN5, IN6) => OUT)(implicit in1: Inject[IN1], in2: Inject[IN2], in3: Inject[IN3], in4: Inject[IN4], in5: Inject[IN5], in6: Inject[IN6]): Inject[OUT] = (config: Config) => fn(in1(config), in2(config), in3(config), in4(config), in5(config), in6(config))
+
+  def injected[T](implicit inject: Inject[T], config: Config): T = inject(config)
 }

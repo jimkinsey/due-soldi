@@ -1,19 +1,28 @@
 package duesoldi.controller
 
-import akka.http.scaladsl.model.StatusCodes.MovedPermanently
-import akka.http.scaladsl.server.Directives.{path, _}
-import akka.http.scaladsl.server.Route
+import java.io.File
+import java.nio.file.Files
 
-object LearnJapaneseRoutes {
-  val learnJapaneseRoutes: Route =
-    pathPrefix("learn-japanese") {
-      pathEndOrSingleSlash {
-        redirectToTrailingSlashIfMissing(MovedPermanently) {
-          getFromFile(s"src/main/resources/static/learn-japanese/index.html")
-        }
-      } ~
-      path(Remaining) { path =>
-        getFromFile(s"src/main/resources/static/learn-japanese/$path")
-      }
+import sommelier.Controller
+import sommelier.Routing._
+import sommelier.Unpacking._
+
+object LearnJapaneseController
+extends Controller
+{
+  GET("/learn-japanese/") ->- { _ =>
+    200 (fileContent("src/main/resources/static/learn-japanese/")("index.html")) ContentType "text/html; charset=UTF-8"
+  }
+
+  GET("/learn-japanese/*") ->- { implicit context =>
+    for {
+      path <- remainingPath
+    } yield {
+      200 (fileContent("src/main/resources/static/learn-japanese/")(path))
     }
+  }
+
+  def fileContent(basePath: String)(path: String): Array[Byte] = {
+    Files.readAllBytes(new File(basePath + path).toPath)
+  }
 }
