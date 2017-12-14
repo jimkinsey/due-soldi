@@ -69,7 +69,7 @@ object BlogEntryPageTests
           for {
             res <- get("/blog/year-in-review")
           } yield {
-            assert(res.headers("Content-Type") contains "text/html; charset=UTF-8")
+            assert(res.headers("Content-type") contains "text/html; charset=UTF-8")
           }
         }
       }
@@ -189,9 +189,7 @@ object BlogEntryPageTests
             page = new BlogEntryPage(response.body)
             cssResponse <- get(page.cssUrl)
           } yield {
-            assert(
-              cssResponse.status == 200
-            )
+            assert(cssResponse.status == 200)
           }
         }
       }

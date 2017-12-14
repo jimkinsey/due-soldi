@@ -2,50 +2,43 @@ package duesoldi.metrics.routes
 
 import java.time.format.DateTimeFormatter
 
-import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
-import akka.http.scaladsl.server.Directives.{path, _}
-import akka.http.scaladsl.server.Route
-import duesoldi.config.Config.Credentials
-import duesoldi.controller.AdminAuthentication.adminsOnly
+import duesoldi.app.AdminAuth.basicAdminAuth
+import duesoldi.app.TempSommelierIntegration._
+import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
-import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.metrics.storage.GetAllAccessRecords
+import sommelier.Controller
+import sommelier.Routing._
 
 import scala.concurrent.ExecutionContext
 
-object MetricsRoutes
+class MetricsController(implicit executionContext: ExecutionContext, appConfig: Config)
+extends Controller
 {
-  def metricsRoutes(implicit executionContext: ExecutionContext, inject: RequestDependencyInjector): Route =
-    path("admin" / "metrics" / "access.csv") {
-      inject.dependencies[GetAllAccessRecords, Credentials] into { case (getAccessRecords, adminCredentials) =>
-        adminsOnly(adminCredentials) {
-          complete {
-            getAccessRecords().map(
-              { accesses =>
-                val rows = accesses.map { case Access(time, path, referer, userAgent, duration, ip, country, statusCode) =>
-                  Seq(
-                    time.format(DateTimeFormatter.ISO_DATE_TIME),
-                    path,
-                    referer.getOrElse(""),
-                    userAgent.getOrElse(""),
-                    duration.toString,
-                    ip.getOrElse(""),
-                    country.getOrElse(""),
-                    statusCode.toString
-                  ).map(csvFriendly).mkString(",")
-                }
-                HttpResponse(entity = ("Timestamp,Path,Referer,User-Agent,Duration (ms),Client IP,Country,Status Code" +: rows).mkString("\n"))
-              }).recover {
-              case ex =>
-                ex.printStackTrace()
-                HttpResponse(StatusCodes.InternalServerError)
-            }
-          }
+  GET("/admin/metrics/access.csv").Authorization(basicAdminAuth) ->- { implicit context =>
+    for {
+      getAccessRecords <- provided[GetAllAccessRecords]
+      accesses <- getAccessRecords()
+      content = {
+        val rows = accesses.map { case Access(time, path, referer, userAgent, duration, ip, country, statusCode) =>
+          Seq(
+            time.format(DateTimeFormatter.ISO_DATE_TIME),
+            path,
+            referer.getOrElse(""),
+            userAgent.getOrElse(""),
+            duration.toString,
+            ip.getOrElse(""),
+            country.getOrElse(""),
+            statusCode.toString
+          ).map(csvFriendly).mkString(",")
         }
+        ("Timestamp,Path,Referer,User-Agent,Duration (ms),Client IP,Country,Status Code" +: rows).mkString("\n")
       }
+    } yield {
+      200 (content)
     }
+  }
 
   private def csvFriendly(value: String): String = s"""$value""" // TODO quote value or escape commas
-
 }

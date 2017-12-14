@@ -70,7 +70,7 @@ object BlogIndexPageTests
           for {
             response <- get("/blog/")
           } yield {
-            assert(response.headers("Content-Type").contains("text/html; charset=UTF-8"))
+            assert(response.headers("Content-type").contains("text/html; charset=UTF-8"))
           }
         }
       }

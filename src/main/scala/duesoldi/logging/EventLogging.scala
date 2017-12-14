@@ -1,7 +1,7 @@
 package duesoldi.logging
 
 import duesoldi.blog.pages.{EntryPageMaker, IndexPageMaker}
-import duesoldi.blog.routes.BlogIndexRoutes.Event.BlogIndexPageNotRendered
+import duesoldi.blog.routes.BlogIndexController.Event.BlogIndexPageNotRendered
 import duesoldi.events.Events
 import duesoldi.metrics.storage.AccessRecordStorage
 

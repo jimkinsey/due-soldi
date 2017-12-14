@@ -22,6 +22,12 @@ case class Config(
 
 object Config
 {
+  def parse(str: String): Map[String, String] = {
+    str.split(' ').map { case EnvVar(name, value) => name -> value } toMap
+  }
+
+  lazy val EnvVar = """([A-Z_]+)=(.*)""".r
+
   case class Credentials(username: String, password: String)
 
   object Credentials

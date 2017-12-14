@@ -1,8 +1,8 @@
 package sommelier.test
 
 import java.nio.charset.Charset
+import java.util.Base64
 
-import akka.parboiled2.util.Base64
 import dispatch.{Http, url}
 import sommelier._
 import sommelier.Routing._
@@ -16,6 +16,7 @@ object ServerTests
 extends TestSuite
 {
   implicit val executionContext = utest.framework.ExecutionContext.RunNow
+  implicit val bodyToString: Array[Byte] => String = (bytes) => new String(bytes, "UTF-8")
   val tests = this
   {
     "A Sommelier server" - {
@@ -144,7 +145,7 @@ extends TestSuite
             response <- Http.default(
               url(s"http://localhost:${server.port}/path-match-acc-match-auth-fail")
                 .setHeader("Accept", "text/plain")
-                .setHeader("Authorization", s"Basic ${Base64.rfc2045().encodeToString("u:p".getBytes(), false)}")
+                .setHeader("Authorization", s"Basic ${Base64.getEncoder.encodeToString("u:p".getBytes())}")
             )
           } yield {
             assert(
@@ -194,7 +195,7 @@ extends TestSuite
           Seq(new Controller {
             AnyRequest >-- { req => req body "in->" }
             AnyRequest ->- { ctx => 200 body s"${ctx.request.body.getOrElse("")}handled->" }
-            AnyRequest --> { (req, res) => res body s"${res.body.getOrElse("")}out" }
+            AnyRequest --> { (req, res) => res body s"${res.body[String].getOrElse("")}out" }
           })
         )}) { server =>
           for {
@@ -210,7 +211,7 @@ extends TestSuite
   }
 
   def withServer[T](server: => Try[Server])(block: Server => T): T = {
-    val res = server.map(block).getOrElse(???)
+    val res = server.map(block).recover { case e => e.printStackTrace(); ??? } getOrElse ???
     server.map(_.halt())
     res
   }

@@ -14,6 +14,7 @@ object RouterTests
 extends TestSuite
 {
   implicit val executionContext = utest.framework.ExecutionContext.RunNow
+  implicit val bodyToString: Array[Byte] => String = (bytes) => new String(bytes, "UTF-8")
   val tests = this
   {
     "A router" - {
@@ -22,13 +23,13 @@ extends TestSuite
         implicit val bus: RecordingBus = new RecordingBus()
         Router.complete(
           routes = Seq(
-            GET("/") respond { implicit req => body[String] map (body => 200(s"$body->")) }
+            GET("/") respond { implicit req => body[String] map (body => 200(s"${body}->")) }
           ),
           middleware = Seq(
             AnyRequest incoming { req => req body "***" }
           )
         )(context)
-        assert(context.sent containsA[Response](_.body contains "***->"))
+        assert(context.sent containsA[Response](_.body[String] contains "***->"))
       }
       "applies the outgoing middleware after handling the request" - {
         val context = new RecordingContext(Request(Method.GET, "/"))
@@ -38,10 +39,10 @@ extends TestSuite
             GET("/") respond { _ => Future { 200("->") } }
           ),
           middleware = Seq(
-            AnyRequest outgoing { case (req, res) => res body s"${res.body.map(b => s"$b***").getOrElse("")}" }
+            AnyRequest outgoing { case (req, res) => res body s"${res.body[String].map(b => s"$b***").getOrElse("")}" }
           )
         )(context)
-        assert(context.sent containsA[Response](_.body contains "->***"))
+        assert(context.sent containsA[Response](_.body[String] contains "->***"))
       }
       "sends a 500 if there is an exception" - {
         val context = new RecordingContext(Request(Method.GET, "/"))

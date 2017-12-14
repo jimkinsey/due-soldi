@@ -1,30 +1,33 @@
 package duesoldi.debug.routes
 
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.Route
-import duesoldi.config.Config.Credentials
-import duesoldi.controller.AdminAuthentication.adminsOnly
-import duesoldi.dependencies.DueSoldiDependencies._
+import duesoldi.app.AdminAuth.basicAdminAuth
+import duesoldi.app.TempSommelierIntegration._
+import duesoldi.config.Config
 import duesoldi.debug.pages.{MakeConfigPage, MakeHeadersPage}
-import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
+import duesoldi.dependencies.DueSoldiDependencies._
+import sommelier.Controller
+import sommelier.Routing._
 
-object DebugRoutes
+import scala.concurrent.ExecutionContext
+
+class DebugController(implicit executionContext: ExecutionContext, appConfig: Config)
+extends Controller
 {
-  def debugRoutes(implicit inject: RequestDependencyInjector): Route = pathPrefix("admin" / "debug") {
-    inject.dependencies[Credentials,MakeHeadersPage,MakeConfigPage] into { case (credentials, makeHeadersPage, makeConfigPage) =>
-      adminsOnly(credentials) {
-        pathPrefix("headers") {
-          extractRequest { req =>
-            complete {
-              makeHeadersPage(req)
-            }
-          }
-        } ~ pathPrefix("config") {
-          complete {
-            makeConfigPage()
-          }
-        }
-      }
+  GET("/admin/debug/headers").Authorization(basicAdminAuth) ->- { implicit context =>
+    for {
+      makePage <- provided[MakeHeadersPage]
+      page = makePage(context.request)
+    } yield {
+      200 (page) ContentType "text/plain"
+    }
+  }
+
+  GET("/admin/debug/config").Authorization(basicAdminAuth) ->- { implicit context =>
+    for {
+      makePage <- provided[MakeConfigPage]
+      page = makePage()
+    } yield {
+      200 (page) ContentType "text/plain"
     }
   }
 }

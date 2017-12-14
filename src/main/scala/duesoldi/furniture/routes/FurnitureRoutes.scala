@@ -1,36 +1,32 @@
 package duesoldi.furniture.routes
 
+import java.nio.file.Files
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
 
-import akka.http.scaladsl.model.StatusCodes.{BadRequest, NotFound}
-import akka.http.scaladsl.model.headers.RawHeader
-import akka.http.scaladsl.server.Directives.{path, _}
-import akka.http.scaladsl.server.Route
+import duesoldi.app.TempSommelierIntegration._
+import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
-import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
 import duesoldi.furniture.CurrentUrlPath
+import sommelier.Controller
+import sommelier.Routing._
+import sommelier.Unpacking._
 
 import scala.concurrent.ExecutionContext
 
-object FurnitureRoutes
+class FurnitureController(implicit executionContext: ExecutionContext, appConfig: Config)
+extends Controller
 {
-  def furnitureRoutes(implicit executionContext: ExecutionContext, inject: RequestDependencyInjector): Route =
-    path("furniture" / LongNumber / Remaining) { case (version, path) =>
-      inject.dependency[CurrentUrlPath] into { currentVersion =>
-        currentVersion(path) match {
-          case Right((currentPath, file)) if currentPath == s"/furniture/$version/$path" =>
-            respondWithHeaders(
-              RawHeader("Cache-Control", "max-age=3600"),
-              RawHeader("Expires", ZonedDateTime.now().plusHours(1).format(RFC_1123_DATE_TIME))
-            ) {
-              getFromFile(file)
-            }
-          case Right(_) =>
-            complete { BadRequest -> "Invalid path" }
-          case _ =>
-            complete { NotFound -> "File not found" }
-        }
-      }
+  GET("/furniture/:version/*") ->- { implicit context =>
+    for {
+      currentVersion <- provided[CurrentUrlPath]
+      version <- pathParam[Long]("version")
+      path <- remainingPath
+      furniture <- currentVersion(path).rejectWith({ _ => 404 }).validate(_._1 == s"/furniture/$version/$path")({ 400 ("Invalid path") })
+      fileContent = Files.readAllBytes(furniture._2.toPath)
+      contentType = Option(Files.probeContentType(furniture._2.toPath)).getOrElse("application/octet-stream")
+    } yield {
+      200 (fileContent) ContentType contentType header("Cache-Control" -> "max-age=3600") header("Expires" -> ZonedDateTime.now().plusHours(1).format(RFC_1123_DATE_TIME))
     }
+  }
 }

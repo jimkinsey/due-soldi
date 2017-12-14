@@ -10,8 +10,6 @@ resolvers +=
   "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-http-core" % "10.0.10",
-  "com.typesafe.akka" %% "akka-http" % "10.0.10",
   "org.postgresql" % "postgresql" % "9.4.1212",
   "org.typelevel" %% "cats-core" % "1.0.0-MF",
   "com.vladsch.flexmark" % "flexmark" % "0.27.0",

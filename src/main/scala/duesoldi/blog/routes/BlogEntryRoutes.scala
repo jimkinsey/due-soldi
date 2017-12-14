@@ -1,35 +1,30 @@
 package duesoldi.blog.routes
 
-import akka.http.scaladsl.model.HttpCharsets._
-import akka.http.scaladsl.model.MediaTypes._
-import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.model._
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.Route
-import duesoldi.blog.pages.MakeEntryPage
+import duesoldi.app.TempSommelierIntegration._
 import duesoldi.blog.pages.EntryPageMaker.Failure
+import duesoldi.blog.pages.MakeEntryPage
+import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
-import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
+import sommelier.Controller
+import sommelier.Routing._
+import sommelier.Unpacking._
 
 import scala.concurrent.ExecutionContext
 
-object BlogEntryRoutes
+class BlogEntryController(implicit executionContext: ExecutionContext, appConfig: Config)
+extends Controller
 {
-  def blogEntryRoutes(implicit executionContext: ExecutionContext, inject: RequestDependencyInjector): Route =
-    path("blog" / Segment) { entryId =>
-      inject.dependency[MakeEntryPage] into { makeEntryPage =>
-        complete {
-          makeEntryPage(entryId) map {
-            case Right(html) =>
-              HttpResponse(OK, entity = HttpEntity(ContentType(`text/html`, `UTF-8`), html))
-            case Left(Failure.EntryNotFound(id)) =>
-              HttpResponse(NotFound)
-            case Left(Failure.InvalidId(id)) =>
-              HttpResponse(BadRequest)
-            case Left(failure: Failure.RenderFailure) =>
-              HttpResponse(InternalServerError)
-          }
-        }
+  GET("/blog/:id") ->- { implicit context =>
+    for {
+      id <- pathParam[String]("id") // todo validation here
+      entryPage <- provided[MakeEntryPage]
+      html <- entryPage(id) rejectWith {
+        case Failure.EntryNotFound(_) => 404
+        case Failure.InvalidId(_) => 400
+        case _ => 500
       }
+    } yield {
+      200 (html) ContentType "text/html; charset=UTF-8"
     }
+  }
 }

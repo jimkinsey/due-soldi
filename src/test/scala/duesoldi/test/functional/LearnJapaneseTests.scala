@@ -18,7 +18,7 @@ object LearnJapaneseTests
         } yield {
           assert(
             response.status == 200,
-            response.headers("Content-Type") contains "text/html; charset=UTF-8"
+            response.headers("Content-type") contains "text/html; charset=UTF-8"
           )
         }
       }

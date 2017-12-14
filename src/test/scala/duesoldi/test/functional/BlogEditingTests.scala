@@ -9,13 +9,13 @@ import duesoldi.test.support.setup.Database._
 import duesoldi.test.support.setup.Setup.withSetup
 import utest._
 
-object BlogEditingTests 
+object BlogEditingTests
   extends TestSuite 
 {
   implicit val executionContext = utest.framework.ExecutionContext.RunNow
   val tests = this {
     "making a PUT request with a YAML document" - {
-      "create a blog entry at the specified ID where none already exists" - {
+      "creates a blog entry at the specified ID where none already exists" - {
         withSetup(
           database,
           runningApp
@@ -39,7 +39,7 @@ object BlogEditingTests
           }
         }
       }
-      "return a bad request response when the id is invalid" - {
+      "returns a bad request response when the id is invalid" - {
         withSetup(
           database,
           runningApp
@@ -51,7 +51,7 @@ object BlogEditingTests
           }
         }
       }
-      "return a bad request response when the document does not have a level 1 header" - {
+      "returns a bad request response when the document does not have a level 1 header" - {
         withSetup(
           database,
           runningApp
@@ -63,7 +63,7 @@ object BlogEditingTests
           }
         }
       }
-      "not allow creation where no credentials are supplied" - {
+      "does not allow creation where no credentials are supplied" - {
         withSetup(
           database,
           runningApp
@@ -75,7 +75,7 @@ object BlogEditingTests
           }
         }
       }
-      "not allow creation where the wrong credentials are supplied" - {
+      "does not allow creation where the wrong credentials are supplied" - {
         withSetup(
           database,
           runningApp
@@ -85,11 +85,11 @@ object BlogEditingTests
               body = "# Doesn't matter!",
               headers = BasicAuthorization("not-an-admin", "password"))
           } yield {
-            assert(createResponse.status == 401)
+            assert(createResponse.status == 403)
           }
         }
       }
-      "not allow creation where the blog entry already exists" - {
+      "does not allow creation where the blog entry already exists" - {
         withSetup(
           database,
           runningApp,
@@ -106,7 +106,7 @@ object BlogEditingTests
       }
     }
     "making a DELETE request to a blog entry URL" - {
-      "delete the blog entry at the specified ID where it already exists" - {
+      "deletes the blog entry at the specified ID where it already exists" - {
         withSetup(
           database,
           runningApp,
@@ -133,7 +133,7 @@ object BlogEditingTests
           }
         }
       }
-      "require admin priviliges" - {
+      "requires admin priviliges" - {
         withSetup(
           database,
           runningApp,
@@ -142,7 +142,7 @@ object BlogEditingTests
           for {
             createResponse <- delete("/admin/blog/any-entry", headers = BasicAuthorization("not-an-admin", "password"))
           } yield {
-            assert(createResponse.status == 401)
+            assert(createResponse.status == 403)
           }
         }
       }
@@ -157,7 +157,7 @@ object BlogEditingTests
           for {
             getAllResponse <- get("/admin/blog", headers = TestApp.adminAuth)
           } yield {
-            assert(getAllResponse.status == 204)
+            assert(getAllResponse.body == "")
           }
         }
       }
@@ -192,7 +192,7 @@ object BlogEditingTests
           } yield {
             assert(
               deleteAllResponse.status == 204,
-              getAllResponse.status == 204
+              getAllResponse.body == ""
             )
           }
         }
@@ -214,7 +214,7 @@ object BlogEditingTests
             getThirdResponse <- get("/admin/blog/3", headers = TestApp.adminAuth)
           } yield {
             assert(
-              putAllResponse.status == 204,
+              putAllResponse.status == 201,
               getFirstResponse.status == 200,
               getSecondResponse.status == 200,
               getThirdResponse.status == 200
@@ -294,7 +294,7 @@ object BlogEditingTests
           for {
             getResponse <- get("/admin/blog/does-not-exist", headers = BasicAuthorization("not-admin", "password"))
           } yield {
-            assert(getResponse.status == 401)
+            assert(getResponse.status == 403)
           }
         }
       }

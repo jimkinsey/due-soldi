@@ -25,7 +25,7 @@ object RobotsTests
                 """User-agent: *
                   |Disallow:
                   |""".stripMargin,
-              response.headers.toSeq.contains("Cache-Control" -> Seq(s"max-age=${24 * 60 * 60}"))
+              response.headers.toSeq.contains("Cache-control" -> Seq(s"max-age=${24 * 60 * 60}"))
             )
           }
         }

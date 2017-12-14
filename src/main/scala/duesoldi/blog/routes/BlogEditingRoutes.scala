@@ -1,118 +1,89 @@
 package duesoldi.blog.routes
 
-import akka.http.scaladsl.model.HttpResponse
-import akka.http.scaladsl.server.Directives.{entity, _}
-import akka.http.scaladsl.server.Route
+import duesoldi.app.AdminAuth.basicAdminAuth
 import duesoldi.blog.storage._
-import duesoldi.blog.validation.{ValidateContent, ValidateIdentifier}
+import duesoldi.blog.validation.ValidateIdentifier
 import duesoldi.blog.{EntriesFromYaml, EntriesToYaml, EntryFromYaml, EntryToYaml}
-import duesoldi.config.Config.Credentials
-import duesoldi.controller.AdminAuthentication.adminsOnly
+import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
-import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
+import sommelier.Controller
 
 import scala.concurrent.ExecutionContext
 
-object BlogEditingRoutes
+class BlogEditingController(implicit executionContext: ExecutionContext, appConfig: Config)
+extends Controller
 {
-  import cats.instances.all._
-  import duesoldi.transformers.TransformerOps._
+  import duesoldi.app.TempSommelierIntegration._
+  import sommelier.Routing._
+  import sommelier.Unpacking._
 
-  def blogEditingRoutes(implicit executionContext: ExecutionContext,
-                        inject: RequestDependencyInjector): Route =
-    pathPrefix("admin" / "blog") {
-      inject.dependencies[Credentials, ValidateIdentifier] into { case (credentials, validateIdentifier) =>
-        adminsOnly(credentials) {
-          path(Segment) { id =>
-            put {
-              entity(as[String]) { content =>
-                inject.dependencies[PutBlogEntry, ValidateContent, EntryFromYaml, GetBlogEntry] into { case (putEntry, validateContent, parse, getEntry) =>
-                  complete {
-                    (for {
-                      _ <- validateIdentifier(id).failOnSomeWith(reason => HttpResponse(400, entity = s"Identifier invalid: $reason"))
-                      _ <- getEntry(id).failOnSomeWith(_ => HttpResponse(409, entity = s"Entry with ID '$id' already exists"))
-                      entry <- parse(content).failWith(f => HttpResponse(400, entity = s"Failed to parse this content [$f] [$content]"))
-                      _ <- validateContent(entry.content).failOnSomeWith(reason => HttpResponse(400, entity = s"Content invalid: $reason"))
-                      result <- putEntry(entry).failWith(_ => HttpResponse(500, entity = "Failed to store entry"))
-                    } yield {
-                      HttpResponse(201)
-                    }).value
-                  }
-                }
-              }
-            } ~ delete {
-              inject.dependency[DeleteBlogEntry] into { deleteEntry =>
-                complete {
-                  (for {
-                    _ <- validateIdentifier(id).failOnSomeWith(_ => {
-                      HttpResponse(400, entity = "Invalid ID")
-                    })
-                    _ <- deleteEntry(id).failWith(_ => {
-                      HttpResponse(500, entity = "Failed to delete blog entry")
-                    })
-                  } yield {
-                    HttpResponse(204)
-                  }).value
-                }
-              }
-            } ~ get {
-              inject.dependencies[GetBlogEntry, EntryToYaml] into { case (getEntry, format) =>
-                complete {
-                  (for {
-                    _ <- validateIdentifier(id).failOnSomeWith(_ => {
-                      HttpResponse(400, entity = "Invalid ID")
-                    })
-                    entry <- getEntry(id).failWith({
-                      HttpResponse(404)
-                    })
-                    yaml = format(entry)
-                  } yield {
-                    HttpResponse(200, entity = yaml)
-                  }).value
-                }
-              }
-            }
-          } ~ pathEndOrSingleSlash {
-            get {
-              inject.dependencies[GetAllBlogEntries, EntriesToYaml] into { case (getEntries, format) =>
-                complete {
-                  for {
-                    entries <- getEntries()
-                  } yield {
-                    if (entries.isEmpty) {
-                      HttpResponse(204)
-                    } else {
-                      HttpResponse(200, entity = format(entries))
-                    }
-                  }
-                }
-              }
-            } ~ delete {
-              inject.dependency[DeleteAllBlogEntries] into { deleteEntries =>
-                complete {
-                  for {
-                    _ <- deleteEntries()
-                  } yield {
-                    HttpResponse(204)
-                  }
-                }
-              }
-            } ~ put {
-              inject.dependencies[EntriesFromYaml, PutBlogEntries] into { case (parse, store) =>
-                entity(as[String]) { content =>
-                  complete {
-                    (for {
-                      entries <- parse(content).failWith(_ => HttpResponse(400, entity = "Failed to parse provided entries"))
-                      res <- store(entries).failWith(_ => HttpResponse(500, entity = "Failed to store entries"))
-                    } yield {
-                      HttpResponse(204)
-                    }).value
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+  PUT("/admin/blog/:id").Authorization(basicAdminAuth) ->- { implicit context =>
+    for {
+      validateIdentifier <- provided[ValidateIdentifier]
+      parse <- provided[EntryFromYaml]
+      putEntry <- provided[PutBlogEntry]
+      getEntry <- provided[GetBlogEntry]
+      id <- pathParam[String]("id").validate(id => validateIdentifier(id).isEmpty) { 400 ("Invalid identifier") }
+      content <- body[String]
+      _ <- getEntry(id).map(_.toLeft(false)) rejectWith { _ => 409 (s"Entry with ID '$id' already exists")}
+      entry <- parse(content) rejectWith { failure => 400 (s"Failed to parse this content [$failure] [$content]")}
+      _ <- putEntry(entry) rejectWith { _ => 500 ("Failed to store entry") }
+    } yield {
+      201
     }
+  }
+
+  DELETE("/admin/blog/:id").Authorization(basicAdminAuth) ->- { implicit context =>
+    for {
+      validateIdentifier <- provided[ValidateIdentifier]
+      deleteEntry <- provided[DeleteBlogEntry]
+      id <- pathParam[String]("id").validate(id => validateIdentifier(id).isEmpty) { 400 ("Invalid identifier") }
+      _ <- deleteEntry(id) rejectWith { _ => 500 ("Failed to delete blog entry")}
+    } yield {
+      204
+    }
+  }
+
+  GET("/admin/blog/:id").Authorization(basicAdminAuth) ->- { implicit context =>
+    for {
+      validateIdentifier <- provided[ValidateIdentifier]
+      getEntry <- provided[GetBlogEntry]
+      format <- provided[EntryToYaml]
+      id <- pathParam[String]("id").validate(id => validateIdentifier(id).isEmpty) { 400 ("Invalid identifier") }
+      entry <- getEntry(id) rejectWith { 404 }
+    } yield {
+      200 (format(entry))
+    }
+  }
+
+  GET("/admin/blog").Authorization(basicAdminAuth) ->- { implicit context =>
+    for {
+      getEntries <- provided[GetAllBlogEntries]
+      format <- provided[EntriesToYaml]
+      entries <- getEntries()
+    } yield {
+      200 (format(entries))
+    }
+  }
+
+  PUT("/admin/blog").Authorization(basicAdminAuth) ->- { implicit context =>
+    for {
+      putEntries <- provided[PutBlogEntries]
+      parse <- provided[EntriesFromYaml]
+      content <- body[String]
+      entries <- parse(content) rejectWith { failure => 400 (s"Failed to parse document - $failure") }
+      _ <- putEntries(entries) rejectWith { failure => 500 (s"Failed to store entries - $failure") }
+    } yield {
+      201
+    }
+  }
+
+  DELETE("/admin/blog").Authorization(basicAdminAuth) ->- { implicit context =>
+    for {
+      deleteEntries <- provided[DeleteAllBlogEntries]
+      _ <- deleteEntries() rejectWith { _ => 500 }
+    } yield {
+      204
+    }
+  }
 }

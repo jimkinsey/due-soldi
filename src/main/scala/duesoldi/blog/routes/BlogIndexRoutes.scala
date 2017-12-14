@@ -1,48 +1,40 @@
 package duesoldi.blog.routes
 
-import akka.http.scaladsl.model.HttpCharsets._
-import akka.http.scaladsl.model.MediaTypes._
-import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.model._
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.Route
 import duesoldi.blog.pages.{IndexPageMaker, MakeIndexPage}
-import duesoldi.blog.routes.BlogIndexRoutes.Event.{BlogIndexPageNotRendered, BlogIndexPageRendered}
+import duesoldi.blog.routes.BlogIndexController.Event.{BlogIndexPageNotRendered, BlogIndexPageRendered}
+import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
-import duesoldi.dependencies.RequestDependencyInjection.RequestDependencyInjector
 import duesoldi.events.Emit
+import sommelier.Controller
+import duesoldi.app.TempSommelierIntegration._
+import sommelier.Routing._
 
 import scala.concurrent.ExecutionContext
 
-object BlogIndexRoutes
+class BlogIndexController(implicit executionContext: ExecutionContext, appConfig: Config)
+extends Controller
 {
-  def blogIndexRoutes(implicit executionContext: ExecutionContext, inject: RequestDependencyInjector): Route =
-    pathPrefix("blog") {
-      pathEndOrSingleSlash {
-        redirectToTrailingSlashIfMissing(MovedPermanently) {
-          inject.dependencies[Emit, MakeIndexPage] into { case (emit, makeIndexPage) =>
-            complete {
-              for {
-                page <- makeIndexPage()
-              } yield {
-                page match {
-                  case Right(html) =>
-                    emit(BlogIndexPageRendered(html))
-                    HttpResponse(OK, entity = HttpEntity(ContentType(`text/html`, `UTF-8`), html))
-                  case Left(failure: IndexPageMaker.Failure.BlogStoreEmpty.type) =>
-                    emit(BlogIndexPageNotRendered(failure))
-                    HttpResponse(NotFound)
-                  case Left(failure) =>
-                    emit(BlogIndexPageNotRendered(failure))
-                    HttpResponse(InternalServerError)
-                }
-              }
-            }
-          }
-        }
+  GET("/blog") ->- { implicit context =>
+    for {
+      makePage <- provided[MakeIndexPage]
+      emit <- provided[Emit]
+      html <- makePage() rejectWith {
+        case failure: IndexPageMaker.Failure.BlogStoreEmpty.type =>
+          emit(BlogIndexPageNotRendered(failure))
+          404
+        case failure =>
+          emit(BlogIndexPageNotRendered(failure))
+          500
       }
+    } yield {
+      emit(BlogIndexPageRendered(html))
+      200 (html) ContentType "text/html; charset=UTF-8"
     }
+  }
+}
 
+object BlogIndexController
+{
   sealed trait Event
   object Event
   {
