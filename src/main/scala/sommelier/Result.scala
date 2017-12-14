@@ -53,6 +53,12 @@ object Result
 {
   implicit class OptionResult[T](opt: Option[T])
   {
-    def rejectWith(ifNone: => Rejection): Result[T] = opt.fold[Result[T]](SyncResult.Rejected[T](ifNone))(SyncResult.Accepted[T])
+    def rejectWith(ifNone: => Rejection): Result[T] =
+      opt.fold[Result[T]](SyncResult.Rejected[T](ifNone))(SyncResult.Accepted[T])
+  }
+  implicit class EitherResult[L,R](either: Either[L,R])
+  {
+    def rejectWith(ifLeft: L => Rejection): Result[R] =
+      either.fold[Result[R]](left => SyncResult.Rejected[R](ifLeft(left)), SyncResult.Accepted[R])
   }
 }

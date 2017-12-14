@@ -1,6 +1,7 @@
 package sommelier.test
 
 import sommelier.PathParams
+import sommelier.PathParams.Failure.PathMatchFailure
 import utest._
 
 object PathParamsTests
@@ -11,23 +12,23 @@ extends TestSuite
     "Path params" - {
       "contains no params when the pattern has no params" - {
         val result = PathParams("/pattern/")("/pattern/")
-        assert(result isEmpty)
+        assert(result == Right(Map.empty))
       }
       "contains params when the pattern has params fulfilled by the path" - {
         val result = PathParams("/:id/foo/:id2")("/42/foo/baz")
-        assert(result == Map("id" -> "42", "id2" -> "baz"))
+        assert(result == Right(Map("id" -> "42", "id2" -> "baz")))
       }
-      "contains only the params which match" - {
+      "fails if the path does not match" - {
         val result = PathParams("/:id/foo/:id2")("/42/foo")
-        assert(result == Map("id" -> "42"))
+        assert(result == Left(PathMatchFailure))
       }
       "contains the rest of the path where a wildcard matches" - {
         val result = PathParams("/prefix/*")("/prefix/the/long/tail")
-        assert(result == Map("*" -> "the/long/tail"))
+        assert(result == Right(Map("*" -> "the/long/tail")))
       }
       "contains the rest of the path where a wildcard matches and the path has vars" - {
         val result = PathParams("/:var/*")("/42/remainder")
-        assert(result == Map("var" -> "42", "*" -> "remainder"))
+        assert(result == Right(Map("var" -> "42", "*" -> "remainder")))
       }
     }
   }

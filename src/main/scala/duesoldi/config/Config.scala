@@ -8,7 +8,7 @@ import scala.concurrent.duration.Duration
 
 case class Config(
   host: String,
-  port: Int,
+  port: Option[Int],
   furniturePath: String,
   adminCredentials: Credentials,
   accessRecordingEnabled: Boolean,
