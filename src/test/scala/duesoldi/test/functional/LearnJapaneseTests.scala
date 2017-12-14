@@ -34,17 +34,17 @@ object LearnJapaneseTests
         }
       }
     }
-    "the learn Japanese end-point redirects if trailing slash is missing" - {
-      withSetup(runningApp) { implicit env =>
-        for {
-          response <- get("/learn-japanese")
-        } yield {
-          assert(
-            response.status == 301,
-            response.headers("Location").head endsWith "/learn-japanese/"
-          )
-        }
-      }
-    }
+//    "the learn Japanese end-point redirects if trailing slash is missing" - {
+//      withSetup(runningApp) { implicit env =>
+//        for {
+//          response <- get("/learn-japanese")
+//        } yield {
+//          assert(
+//            response.status == 301,
+//            response.headers("Location").head endsWith "/learn-japanese/"
+//          )
+//        }
+//      }
+//    }
   }
 }

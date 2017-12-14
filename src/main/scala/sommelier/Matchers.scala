@@ -29,18 +29,8 @@ case object ResourceNotFound extends Rejection
 case class PathMatcher(pathPattern: String) extends Rejects[String]
 {
   def rejects(path: String): Option[Rejection] = {
-    val patternSegments = segments(pathPattern)
-    val pathSegments = segments(path)
-    val patternSegmentsUpToWildcard = patternSegments.takeWhile(_ != "*")
-    val pathSegmentsUpToWildcard = pathSegments.take(patternSegmentsUpToWildcard.length)
-    val pathSegmentsIncludingRemainder = pathSegmentsUpToWildcard :+ pathSegments.drop(patternSegmentsUpToWildcard.length).mkString("/")
-
-    (patternSegments zip pathSegmentsIncludingRemainder).foldLeft[Option[Rejection]](None) {
-      case (None, (pattern, part)) if part == pattern => None
-      case (None, (pattern, part)) if part.nonEmpty && pattern.startsWith(":") => None
-      case (None, ("*", part)) if part.nonEmpty => None
-      case _ => Some(ResourceNotFound)
-    }
+    val result = PathParams(pathPattern)(path)
+    result.swap.map(_ => ResourceNotFound).toOption
   }
 }
 

@@ -39,6 +39,10 @@ extends TestSuite
         val rejection = PathMatcher("/foo/*").rejects("/foo/")
         assert(rejection contains ResourceNotFound)
       }
+      "rejects when the pattern has the same prefix but the path is longer" - {
+        val rejection = PathMatcher("/foo/").rejects("/foo/bar/baz")
+        assert(rejection contains ResourceNotFound)
+      }
       "rejects when the pattern has a trailing var compared to the path" - {
         val rejection = PathMatcher("/foo/:id").rejects("/foo")
         assert(rejection contains ResourceNotFound)

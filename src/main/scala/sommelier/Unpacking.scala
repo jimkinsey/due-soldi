@@ -1,5 +1,7 @@
 package sommelier
 
+import sommelier.PathParams.Failure.PathMatchFailure
+
 import scala.language.postfixOps
 import scala.util.Try
 import scala.util.matching.Regex
@@ -25,7 +27,8 @@ object Unpacking {
     for {
       pattern <- context.matcher.path.map(_.pathPattern) rejectWith  { RouteHasNoPath }
       path = context.request.path
-      value <- unpacker.unpack(PathParams(pattern)(path)(name)) rejectWith { BadPathVar(name) }
+      params <- PathParams(pattern)(path) rejectWith { _ => PathMatchFailure }
+      value <- unpacker.unpack(params(name)) rejectWith { BadPathVar(name) }
     } yield {
       value
     }
@@ -36,11 +39,17 @@ object Unpacking {
     lazy val response: Response = Response(500)("Path is not wildcarded")
   }
 
+  case object PathMatchFailure extends Rejection
+  {
+    lazy val response: Response = Response(500)
+  }
+
   def remainingPath(implicit context: Context): Result[String] = {
     for {
       pattern <- context.matcher.path.map(_.pathPattern) rejectWith  { RouteHasNoPath }
       path = context.request.path
-      value <- PathParams(pattern)(path).get("*") rejectWith { NotAWildcardedPath }
+      params <- PathParams(pattern)(path) rejectWith { _ => PathMatchFailure }
+      value <- params.get("*") rejectWith { NotAWildcardedPath }
     } yield {
       value
     }
@@ -90,19 +99,49 @@ object Unpacking {
 
 object PathParams
 {
-  def apply(pattern: String)(path: String): Map[String,String] = {
-    val patternSegments = segments(pattern)
-    val pathSegments = segments(path)
-    val patternSegmentsUpToWildcard = patternSegments.takeWhile(_ != "*")
-    val pathSegmentsUpToWildcard = pathSegments.take(patternSegmentsUpToWildcard.length)
-    val pathSegmentsIncludingRemainder = pathSegmentsUpToWildcard :+ pathSegments.drop(patternSegmentsUpToWildcard.length).mkString("/")
-    patternSegments zip pathSegmentsIncludingRemainder collect {
-      case (PathVariable(key), value) if value.nonEmpty => key -> value
-      case wildcardPart @ ("*", remainder) => wildcardPart
-    } toMap
+  sealed trait Failure
+  object Failure
+  {
+    case object PathMatchFailure extends Failure
   }
 
-  def segments(path: String): Array[String] = path.split('/')
+  def apply(pattern: String)(path: String): Either[Failure, Map[String,String]] = {
+    val patternSegments = segments(pattern)
+    def firstSegment(path: String): Option[String] = path.split('/').headOption.filter(_.nonEmpty)
+    def remainingAfterFirstSegment(path: String): String = path.split('/').tail.mkString("/")
+    def hasVars(patternSegments: Seq[String]): Boolean = patternSegments.exists(_.startsWith(":")) || patternSegments.contains("*")
+
+    if (!hasVars(patternSegments)) {
+      if (pattern != path) {
+        return Left(Failure.PathMatchFailure)
+      }
+      else {
+        return Right(Map.empty)
+      }
+    }
+
+    val (result, _) = patternSegments.foldLeft[(Either[Failure, Map[String,String]], String)]((Right(Map.empty), path.dropWhile(_ == '/'))) {
+      case ((Right(acc), remaining), segment) if segment.startsWith(":") && firstSegment(remaining).isDefined =>
+        (Right(acc ++ Map(segment.drop(1) -> firstSegment(remaining).get)), remainingAfterFirstSegment(remaining))
+      case ((Right(acc), remaining), "*") if remaining.dropWhile(_ == '/').nonEmpty =>
+        (Right(acc ++ Map("*" -> remaining)), "")
+      case ((acc @ Right(_), remaining), segment) if firstSegment(remaining).contains(segment) =>
+        (acc, remainingAfterFirstSegment(remaining))
+      case (success @ (Right(_), ""), "") =>
+        success
+      case (fail @ (Left(_), _), _) =>
+        fail
+      case ((Right(_), remaining), segment) =>
+        (Left(Failure.PathMatchFailure), path)
+    }
+
+    result
+  }
+
+  def segments(path: String): Seq[String] =
+    path
+      .split('/').toSeq
+      .filter(_.nonEmpty)
 
   lazy val PathVariable: Regex = """^:(.+)$""".r
 }

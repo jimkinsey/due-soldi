@@ -15,7 +15,7 @@ trait HttpMessageContext
 
 object Router
 {
-  def complete(routes: Seq[Route], middleware: Seq[Middleware])
+  def complete(routes: Seq[Route], middleware: Seq[Middleware] = Seq.empty)
               (context: HttpMessageContext)
               (implicit executionContext: ExecutionContext, bus: EventBus): Future[Unit] = {
     Future {

@@ -9,7 +9,7 @@ object EnvironmentalConfig
   def apply(env: Env): Config = {
     Config(
       host = env.getOrElse("HOST", "0.0.0.0"),
-      port = env.get("PORT").map(_.toInt).getOrElse(8080),
+      port = env.get("PORT").map(_.toInt),
       furniturePath = env.getOrElse("FURNITURE_PATH", "src/main/resources/furniture"),
       adminCredentials = Config.Credentials.parsed(env("ADMIN_CREDENTIALS")).right.get,
       accessRecordingEnabled = env.get("ACCESS_RECORDING_ENABLED").map(_.toBoolean).getOrElse(false),
@@ -29,7 +29,7 @@ object EnvironmentalConfig
   def toEnv(config: Config): Env = {
     Map(
       "HOST" -> config.host,
-      "PORT" -> config.port.toString,
+      "PORT" -> config.port.map(_.toString).getOrElse(""),
       "FURNITURE_PATH" -> config.furniturePath,
       "ADMIN_CREDENTIALS" -> s"${config.adminCredentials.username}:${config.adminCredentials.password}",
       "ACCESS_RECORDING_ENABLED" -> config.accessRecordingEnabled.toString,

@@ -50,7 +50,8 @@ object App
         ),
         middleware =
           TrailingSlashRedirection.middleware ++
-          RequestId.middleware
+          RequestId.middleware,
+        port = config.port
       ) map {
         server =>
           logger.info(s"Started server on ${server.host}:${server.port}")

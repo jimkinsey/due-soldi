@@ -14,7 +14,7 @@ import scala.concurrent.ExecutionContext
 class BlogIndexController(implicit executionContext: ExecutionContext, appConfig: Config)
 extends Controller
 {
-  GET("/blog") ->- { implicit context =>
+  GET("/blog/") ->- { implicit context =>
     for {
       makePage <- provided[MakeIndexPage]
       emit <- provided[Emit]

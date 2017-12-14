@@ -64,7 +64,7 @@ object TestApp
     var myApp: Server = _
 
     override def setup(env: Env): Future[Env] = {
-      App.start(env).map { s =>
+      App.start(env ++ Map("PORT" -> "0")).map { s =>
         s.subscribe {
           case ExceptionWhileRouting(_, exception) => exception.printStackTrace()
         }
