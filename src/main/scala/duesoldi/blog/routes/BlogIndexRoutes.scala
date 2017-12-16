@@ -5,9 +5,9 @@ import duesoldi.blog.routes.BlogIndexController.Event.{BlogIndexPageNotRendered,
 import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.events.Emit
-import sommelier.Controller
 import duesoldi.app.TempSommelierIntegration._
-import sommelier.Routing._
+import sommelier.routing.Controller
+import sommelier.routing.Routing._
 
 import scala.concurrent.ExecutionContext
 

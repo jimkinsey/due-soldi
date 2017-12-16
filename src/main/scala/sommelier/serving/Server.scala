@@ -1,10 +1,12 @@
-package sommelier
+package sommelier.serving
 
 import java.net.{InetSocketAddress, ServerSocket}
-import java.util.concurrent.Executor
 
 import com.sun.net.httpserver.{HttpExchange, HttpServer}
+import sommelier.events.{EventBus, HaltRequested, Subscriber}
 import sommelier.implementation.HttpExchangeMessageContext
+import sommelier.routing.Controller
+import sommelier.{Middleware, Route}
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try

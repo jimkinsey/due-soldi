@@ -14,8 +14,9 @@ import duesoldi.logging.Logger
 import duesoldi.metrics.routes.MetricsController
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.metrics.storage.{AccessRecordStorage, StoreAccessRecord}
-import sommelier.{Completed, Server}
+import sommelier.events.Completed
 import duesoldi.dependencies.DueSoldiDependencies._
+import sommelier.serving.Server
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
@@ -37,7 +38,7 @@ object App
     AccessRecordStorage.enable(events, injected[StoreAccessRecord])
 
     Future fromTry {
-      sommelier.Server.start(
+      Server.start(
         controllers = Seq(
           new BlogEntryController(),
           new BlogIndexController(),

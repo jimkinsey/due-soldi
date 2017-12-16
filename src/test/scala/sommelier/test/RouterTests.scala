@@ -1,10 +1,12 @@
 package sommelier.test
 
-import sommelier.{Completed, EventBus, ExceptionWhileRouting, HttpMessageContext, Method, Request, Response, Result, Router}
-import utest._
-import sommelier.Routing._
-import sommelier.Unpacking._
+import sommelier.events.{Completed, EventBus, ExceptionWhileRouting}
+import sommelier.handling.Unpacking._
+import sommelier.routing.Routing._
+import sommelier.serving.{HttpMessageContext, Router}
 import sommelier.test.RouterTests.SeqMatchers.Pred
+import sommelier.{Method, Request, Response, Result}
+import utest._
 
 import scala.collection.mutable
 import scala.concurrent.Future
@@ -31,23 +33,6 @@ extends TestSuite
         )(context)
         assert(context.sent containsA[Response](_.body[String] contains "***->"))
       }
-
-
-
-      "FOOOO" - {
-        val context = new RecordingContext(Request(Method.GET, "/thing/a/path"))
-        implicit val bus: RecordingBus = new RecordingBus()
-        Router.complete(
-          routes = Seq(
-            GET("/thing") respond { _ => 200(s"THING") },
-            GET("/thing/*") respond { implicit context => remainingPath map (path => 200(s"THING($path)")) }
-          )
-        )(context)
-        assert(context.sent containsA[Response](_.body[String] contains "THING(a/path)"))
-      }
-
-
-
       "applies the outgoing middleware after handling the request" - {
         val context = new RecordingContext(Request(Method.GET, "/"))
         implicit val bus: RecordingBus = new RecordingBus()

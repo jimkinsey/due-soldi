@@ -3,10 +3,11 @@ package duesoldi.test.support.app
 import duesoldi._
 import duesoldi.test.support.httpclient.BasicAuthorization
 import duesoldi.test.support.setup.{AsyncSetup, SyncSetup}
-import sommelier.{ExceptionWhileRouting, Server}
+import sommelier.events.ExceptionWhileRouting
+import sommelier.serving.Server
 
-import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 case class ServerStartFailure(attempt: Int) extends Exception
 

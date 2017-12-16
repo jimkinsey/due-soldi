@@ -1,9 +1,9 @@
 package sommelier.test
 
-import sommelier.ApplyMiddleware.applyOutgoing
-import sommelier.{ApplyMiddleware, Method, Request}
+import sommelier.routing.ApplyMiddleware.applyOutgoing
+import sommelier.{Method, Request}
 import sommelier.SyncResult.Accepted
-import sommelier.Routing._
+import sommelier.routing.Routing._
 import sommelier.test.support.CustomMatchers._
 import utest._
 

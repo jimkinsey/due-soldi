@@ -1,8 +1,9 @@
-package sommelier
+package sommelier.routing
 
 import sommelier.Middleware.{Incoming, Outgoing}
+import sommelier.{Middleware, Request, Response, Result, SyncResult}
 
-object ApplyMiddleware
+private[sommelier] object ApplyMiddleware
 {
   def applyIncoming(middleware: Seq[Middleware])(incoming: Request): Result[Request] = {
     middleware.foldLeft[Result[Request]](SyncResult.Accepted(incoming)) {

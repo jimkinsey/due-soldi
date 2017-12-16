@@ -1,7 +1,7 @@
 package duesoldi.controller
 
-import sommelier.Controller
-import sommelier.Routing._
+import sommelier.routing.Controller
+import sommelier.routing.Routing._
 
 object RobotsController
 extends Controller

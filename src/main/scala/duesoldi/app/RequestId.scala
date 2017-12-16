@@ -2,12 +2,12 @@ package duesoldi.app
 
 import java.util.UUID
 
-import sommelier.Controller
+import sommelier.routing.Controller
 
 object RequestId
 extends Controller
 {
-  import sommelier.Routing._
+  import sommelier.routing.Routing._
 
   // todo add func test for this
   AnyRequest >-- { _ header "Request-ID" -> Seq(UUID.randomUUID().toString) }

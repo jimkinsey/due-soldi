@@ -1,10 +1,12 @@
-package sommelier
+package sommelier.serving
 
-import sommelier.ApplyMiddleware.{applyIncoming, applyOutgoing}
-import sommelier.ApplyRoutes.applyRoutes
+import sommelier.events.{Completed, EventBus, ExceptionWhileRouting}
+import sommelier.routing.ApplyMiddleware.{applyIncoming, applyOutgoing}
+import sommelier.routing.ApplyRoutes.applyRoutes
+import sommelier.{AsyncResult, Middleware, Request, Response, Result, Route, SyncResult}
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration.Duration
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 trait HttpMessageContext

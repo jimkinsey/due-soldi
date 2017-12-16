@@ -8,8 +8,8 @@ import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.metrics.storage.GetAllAccessRecords
-import sommelier.Controller
-import sommelier.Routing._
+import sommelier.routing.Controller
+import sommelier.routing.Routing._
 
 import scala.concurrent.ExecutionContext
 

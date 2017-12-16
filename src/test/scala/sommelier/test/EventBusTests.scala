@@ -1,6 +1,6 @@
 package sommelier.test
 
-import sommelier.EventBus
+import sommelier.events.EventBus
 import utest._
 
 import scala.collection.mutable

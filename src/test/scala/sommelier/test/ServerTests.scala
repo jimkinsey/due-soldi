@@ -5,12 +5,14 @@ import java.util.Base64
 
 import dispatch.{Http, url}
 import sommelier._
-import sommelier.Routing._
+import sommelier.routing.Routing._
 import utest._
 
 import scala.concurrent.Future
 import scala.util.Try
-import Unpacking._
+import sommelier.handling.Unpacking._
+import sommelier.routing.{Basic, Controller}
+import sommelier.serving.Server
 
 object ServerTests
 extends TestSuite
@@ -21,7 +23,7 @@ extends TestSuite
   {
     "A Sommelier server" - {
       "returns a 404 when it has no routes" - {
-        withServer({ sommelier.Server.start(routes = Seq.empty) }) { server =>
+        withServer({ Server.start(routes = Seq.empty) }) { server =>
           for {
             response <- Http.default(url(s"http://localhost:${server.port}/any-url"))
           } yield {
@@ -30,7 +32,7 @@ extends TestSuite
         }
       }
       "returns the handled response of the first matching route" - {
-        withServer({ sommelier.Server.start(routes = Seq(
+        withServer({ Server.start(routes = Seq(
           GET("/some-other-resource") respond { _ => 200 },
           GET("/some-resource") respond { _ => 200 }
         ) )}) { server =>
@@ -42,7 +44,7 @@ extends TestSuite
         }
       }
       "returns a 404 if none of the routes match" - {
-        withServer({ sommelier.Server.start(routes = Seq(
+        withServer({ Server.start(routes = Seq(
           GET("/some-other-resource") respond { _ => 200 },
           GET("/yet-another-resource") respond { _ => 200 }
         ) )}) { server =>
@@ -54,7 +56,7 @@ extends TestSuite
         }
       }
       "handles HEAD requests" - {
-        withServer({ sommelier.Server.start(routes = Seq(
+        withServer({ Server.start(routes = Seq(
           GET("/some-resource") respond { _ => 200 ("Some content") }
         ) )}) { server =>
           for {
@@ -69,7 +71,7 @@ extends TestSuite
         }
       }
       "sends the response body" - {
-        withServer({ sommelier.Server.start(routes = Seq(
+        withServer({ Server.start(routes = Seq(
           GET("/some-resource") respond { _ => 200 ("Some content") }
         ) )}) { server =>
           for {
@@ -83,7 +85,7 @@ extends TestSuite
         }
       }
       "sends the response headers" - {
-        withServer({ sommelier.Server.start(routes = Seq(
+        withServer({ Server.start(routes = Seq(
           GET("/ask") respond { _ => 200 ("Some content") header ("X-The-Answer" -> "42") }
         ) )}) { server =>
           for {
@@ -96,7 +98,7 @@ extends TestSuite
         }
       }
       "allows async request handling" - {
-        withServer({ sommelier.Server.start(routes = Seq(
+        withServer({ Server.start(routes = Seq(
           GET("/async") respond { _ => Future { 200 ("hi!") } }
         ) )}) { server =>
           for {
@@ -109,7 +111,7 @@ extends TestSuite
         }
       }
       "returns the response from the rejection when the handler rejects" - {
-        withServer({ sommelier.Server.start(routes = Seq(
+        withServer({ Server.start(routes = Seq(
           GET("/book") respond { _ => reject(451) }
         ) )}) { server =>
           for {
@@ -122,7 +124,7 @@ extends TestSuite
         }
       }
       "returns the response from the rejection when the handler rejects asynchronously" - {
-        withServer({ sommelier.Server.start(routes = Seq(
+        withServer({ Server.start(routes = Seq(
           GET("/book") respond { _ => Future { reject(451) } }
         ) )}) { server =>
           for {
@@ -135,7 +137,7 @@ extends TestSuite
         }
       }
       "when all routes fail, chooses the most appropriate rejection" - {
-        withServer({ sommelier.Server.start(routes = Seq(
+        withServer({ Server.start(routes = Seq(
           GET("/path-fail") respond { _ => 200 },
           GET("/path-match-acc-match-auth-fail") Accept "text/plain" Authorization Basic("u", "x", "r") respond { _ => 200 },
           GET("/path-fail-auth-match") Authorization Basic("u", "p", "r") respond { _ => 200 },
@@ -155,7 +157,7 @@ extends TestSuite
         }
       }
       "applies incoming middleware to any matching incoming request" - {
-        withServer({ sommelier.Server.start(
+        withServer({ Server.start(
           routes = Seq(
             GET("/path") respond { implicit context => body[String] map (content => 200 (content)) }
           ),
@@ -173,7 +175,7 @@ extends TestSuite
         }
       }
       "applies outgoing middleware to the generated response of any matching request" - {
-        withServer({ sommelier.Server.start(
+        withServer({ Server.start(
           routes = Seq(
             GET("/path") respond { _ => 200 }
           ),
@@ -191,7 +193,7 @@ extends TestSuite
         }
       }
       "can be configured with controllers for neater routing" - {
-        withServer({ sommelier.Server.start(
+        withServer({ Server.start(
           Seq(new Controller {
             AnyRequest >-- { req => req body "in->" }
             AnyRequest ->- { ctx => 200 body s"${ctx.request.body.getOrElse("")}handled->" }
