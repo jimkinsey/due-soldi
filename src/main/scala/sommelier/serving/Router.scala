@@ -1,9 +1,11 @@
 package sommelier.serving
 
 import sommelier.events.{Completed, EventBus, ExceptionWhileRouting}
+import sommelier.messaging.{Request, Response}
 import sommelier.routing.ApplyMiddleware.{applyIncoming, applyOutgoing}
 import sommelier.routing.ApplyRoutes.applyRoutes
-import sommelier.{AsyncResult, Middleware, Request, Response, Result, Route, SyncResult}
+import sommelier.routing.{Result, SyncResult}
+import sommelier.{AsyncResult, Middleware, Route, SyncResult}
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}

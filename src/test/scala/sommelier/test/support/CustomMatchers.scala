@@ -1,7 +1,8 @@
 package sommelier.test.support
 
-import sommelier.SyncResult.{Accepted, Rejected}
-import sommelier.{AsyncResult, Response, Result}
+import sommelier.routing.Result
+import sommelier.routing.SyncResult.{Accepted, Rejected}
+import sommelier.{AsyncResult, Response}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration

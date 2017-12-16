@@ -3,6 +3,7 @@ package duesoldi.app
 import duesoldi.config.EnvironmentalConfig.{nonSensitive, toEnv}
 import duesoldi.config.{Config, EnvironmentalConfig}
 import duesoldi.dependencies.Injection.Inject
+import sommelier.routing.Result
 
 object TempSommelierIntegration // FIXME
 {

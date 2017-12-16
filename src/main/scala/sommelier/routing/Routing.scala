@@ -1,7 +1,8 @@
 package sommelier.routing
 
-import sommelier.SyncResult.{Accepted, Rejected}
-import sommelier.{AsyncResult, Context, Method, Rejection, Request, Response, Result, Route, SyncResult}
+import SyncResult.{Accepted, Rejected}
+import sommelier.messaging.{Method, Request, Response}
+import sommelier.{Context, Rejection, Route}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.implicitConversions

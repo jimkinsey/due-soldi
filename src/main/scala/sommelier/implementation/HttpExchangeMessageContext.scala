@@ -3,8 +3,9 @@ package sommelier.implementation
 import java.util.Scanner
 
 import com.sun.net.httpserver.HttpExchange
+import sommelier.messaging.{Method, Request}
 import sommelier.serving.HttpMessageContext
-import sommelier.{Method, Request, Response}
+import sommelier.{Request, Response}
 
 import scala.collection.JavaConverters._
 import scala.util.matching.Regex

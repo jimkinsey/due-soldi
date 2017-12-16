@@ -1,10 +1,11 @@
 package sommelier.test
 
+import sommelier.Middleware
+import sommelier.routing.SyncResult.Accepted
+import sommelier.messaging.{Method, Request}
 import sommelier.routing.ApplyMiddleware.applyIncoming
 import sommelier.routing.Routing._
-import sommelier.SyncResult.Accepted
 import sommelier.test.support.CustomMatchers._
-import sommelier.{Method, Middleware, Request}
 import utest._
 
 import scala.concurrent.Future

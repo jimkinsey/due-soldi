@@ -1,4 +1,6 @@
-package sommelier
+package sommelier.routing
+
+import sommelier.Rejection
 
 import scala.concurrent.{ExecutionContext, Future}
 
