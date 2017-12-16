@@ -1,10 +1,10 @@
 package sommelier.test
 
-import sommelier.Middleware
-import sommelier.routing.SyncResult.Accepted
 import sommelier.messaging.{Method, Request}
 import sommelier.routing.ApplyMiddleware.applyIncoming
+import sommelier.routing.Middleware
 import sommelier.routing.Routing._
+import sommelier.routing.SyncResult.Accepted
 import sommelier.test.support.CustomMatchers._
 import utest._
 

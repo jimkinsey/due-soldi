@@ -1,9 +1,9 @@
 package sommelier.routing
 
-import SyncResult.Rejected
+import sommelier.handling.Context
 import sommelier.messaging.{Request, Response}
 import sommelier.routing.AuthorizationFailed.{Forbidden, Unauthorized}
-import sommelier.{Context, Rejection, Route}
+import sommelier.routing.SyncResult.Rejected
 
 private[sommelier] object ApplyRoutes
 {

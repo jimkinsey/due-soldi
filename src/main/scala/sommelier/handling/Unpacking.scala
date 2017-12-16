@@ -1,15 +1,14 @@
 package sommelier.handling
 
 import sommelier.messaging.Response
-import sommelier.routing.Result
-import sommelier.{Context, Rejection}
+import sommelier.routing.SyncResult.{Accepted, Rejected}
+import sommelier.routing.{AsyncResult, PathParams, Rejection, Result, SyncResult}
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 import scala.util.Try
-import scala.util.matching.Regex
 
 object Unpacking {
-  import Result._
 
   trait Unpacker[T] {
     def unpack(string: String): Option[T]
@@ -97,53 +96,29 @@ object Unpacking {
   implicit val unpackInt: Unpacker[Int] = string => Try(string.toInt).toOption
   implicit val unpackLong: Unpacker[Long] = string => Try(string.toLong).toOption
   implicit val unpackString: Unpacker[String] = Some(_)
-}
 
-object PathParams
-{
-  sealed trait Failure
-  object Failure
+  implicit class OptionRejection[T](opt: Option[T])
   {
-    case object PathMatchFailure extends Failure
+    def rejectWith(ifNone: => Rejection): SyncResult[T] =
+      opt.fold[SyncResult[T]](Rejected(ifNone))(Accepted(_))
   }
 
-  def apply(pattern: String)(path: String): Either[Failure, Map[String,String]] = {
-    val patternSegments = segments(pattern)
-    def firstSegment(path: String): Option[String] = path.split('/').headOption.filter(_.nonEmpty)
-    def remainingAfterFirstSegment(path: String): String = path.split('/').tail.mkString("/")
-    def hasVars(patternSegments: Seq[String]): Boolean = patternSegments.exists(_.startsWith(":")) || patternSegments.contains("*")
-
-    if (!hasVars(patternSegments)) {
-      if (pattern != path) {
-        return Left(Failure.PathMatchFailure)
-      }
-      else {
-        return Right(Map.empty)
-      }
-    }
-
-    val (result, _) = patternSegments.foldLeft[(Either[Failure, Map[String,String]], String)]((Right(Map.empty), path.dropWhile(_ == '/'))) {
-      case ((Right(acc), remaining), segment) if segment.startsWith(":") && firstSegment(remaining).isDefined =>
-        (Right(acc ++ Map(segment.drop(1) -> firstSegment(remaining).get)), remainingAfterFirstSegment(remaining))
-      case ((Right(acc), remaining), "*") if remaining.dropWhile(_ == '/').nonEmpty =>
-        (Right(acc ++ Map("*" -> remaining)), "")
-      case ((acc @ Right(_), remaining), segment) if firstSegment(remaining).contains(segment) =>
-        (acc, remainingAfterFirstSegment(remaining))
-      case (success @ (Right(_), ""), "") =>
-        success
-      case (fail @ (Left(_), _), _) =>
-        fail
-      case ((Right(_), remaining), segment) =>
-        (Left(Failure.PathMatchFailure), path)
-    }
-
-    result
+  implicit class AsyncOptionRejection[T](fOpt: Future[Option[T]])
+  {
+    def rejectWith(ifNone: => Rejection)(implicit executionContext: ExecutionContext): AsyncResult[T] =
+      AsyncResult(fOpt.map(_ rejectWith ifNone))
   }
 
-  def segments(path: String): Seq[String] =
-    path
-      .split('/').toSeq
-      .filter(_.nonEmpty)
+  implicit class EitherRejection[L,R](either: Either[L,R])
+  {
+    def rejectWith(ifLeft: L => Rejection): SyncResult[R] =
+      either.fold[SyncResult[R]](left => Rejected(ifLeft(left)), Accepted(_))
+  }
 
-  lazy val PathVariable: Regex = """^:(.+)$""".r
+  implicit class AsyncEitherRejection[L,R](fEither: Future[Either[L,R]])
+  {
+    def rejectWith(ifLeft: L => Rejection)(implicit executionContext: ExecutionContext): AsyncResult[R] =
+      AsyncResult(fEither.map(_ rejectWith ifLeft))
+  }
 }
+
