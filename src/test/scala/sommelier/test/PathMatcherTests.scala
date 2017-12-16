@@ -1,6 +1,6 @@
 package sommelier.test
 
-import sommelier.{PathMatcher, ResourceNotFound}
+import sommelier.routing.{PathMatcher, ResourceNotFound}
 import utest._
 
 import scala.language.postfixOps

@@ -5,8 +5,8 @@ import duesoldi.app.TempSommelierIntegration._
 import duesoldi.config.Config
 import duesoldi.debug.pages.{MakeConfigPage, MakeHeadersPage}
 import duesoldi.dependencies.DueSoldiDependencies._
-import sommelier.Controller
-import sommelier.Routing._
+import sommelier.routing.Controller
+import sommelier.routing.Routing._
 
 import scala.concurrent.ExecutionContext
 

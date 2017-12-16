@@ -2,7 +2,7 @@ package duesoldi.app
 
 import duesoldi.config.Config
 import duesoldi.config.Config.Credentials
-import sommelier.Basic
+import sommelier.routing.Basic
 
 object AdminAuth
 {

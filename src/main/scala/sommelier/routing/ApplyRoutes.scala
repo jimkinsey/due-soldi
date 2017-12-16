@@ -1,9 +1,10 @@
-package sommelier
+package sommelier.routing
 
-import sommelier.AuthorizationFailed.{Forbidden, Unauthorized}
 import sommelier.SyncResult.Rejected
+import sommelier.routing.AuthorizationFailed.{Forbidden, Unauthorized}
+import sommelier.{Context, Rejection, Request, Response, Result, Route}
 
-object ApplyRoutes
+private[sommelier] object ApplyRoutes
 {
   def applyRoutes(routes: Seq[Route])(request: Request): Result[Response] = {
     routes.toStream.map { route =>

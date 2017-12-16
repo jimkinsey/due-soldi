@@ -8,9 +8,9 @@ import duesoldi.app.TempSommelierIntegration._
 import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.furniture.CurrentUrlPath
-import sommelier.Controller
-import sommelier.Routing._
-import sommelier.Unpacking._
+import sommelier.routing.Routing._
+import sommelier.handling.Unpacking._
+import sommelier.routing.Controller
 
 import scala.concurrent.ExecutionContext
 

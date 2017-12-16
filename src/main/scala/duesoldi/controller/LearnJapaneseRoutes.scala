@@ -3,9 +3,9 @@ package duesoldi.controller
 import java.io.File
 import java.nio.file.Files
 
-import sommelier.Controller
-import sommelier.Routing._
-import sommelier.Unpacking._
+import sommelier.routing.Routing._
+import sommelier.handling.Unpacking._
+import sommelier.routing.Controller
 
 object LearnJapaneseController
 extends Controller

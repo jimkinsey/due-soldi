@@ -1,11 +1,11 @@
 package duesoldi.app
 
-import sommelier.Controller
+import sommelier.routing.Controller
 
 object TrailingSlashRedirection
 extends Controller
 {
-  import sommelier.Routing._
+  import sommelier.routing.Routing._
 
   AnyRequest >-- { request =>
     request.path match {

@@ -1,7 +1,7 @@
 package sommelier.test
 
-import sommelier.ApplyMiddleware.applyIncoming
-import sommelier.Routing._
+import sommelier.routing.ApplyMiddleware.applyIncoming
+import sommelier.routing.Routing._
 import sommelier.SyncResult.Accepted
 import sommelier.test.support.CustomMatchers._
 import sommelier.{Method, Middleware, Request}

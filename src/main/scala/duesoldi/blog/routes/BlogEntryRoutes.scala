@@ -5,9 +5,9 @@ import duesoldi.blog.pages.EntryPageMaker.Failure
 import duesoldi.blog.pages.MakeEntryPage
 import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
-import sommelier.Controller
-import sommelier.Routing._
-import sommelier.Unpacking._
+import sommelier.routing.Routing._
+import sommelier.handling.Unpacking._
+import sommelier.routing.Controller
 
 import scala.concurrent.ExecutionContext
 

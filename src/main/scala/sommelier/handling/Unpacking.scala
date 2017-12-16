@@ -1,6 +1,6 @@
-package sommelier
+package sommelier.handling
 
-import sommelier.PathParams.Failure.PathMatchFailure
+import sommelier.{Context, Rejection, Response, Result}
 
 import scala.language.postfixOps
 import scala.util.Try

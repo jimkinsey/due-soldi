@@ -6,8 +6,8 @@ import duesoldi.dependencies.Injection.Inject
 
 object TempSommelierIntegration // FIXME
 {
-  import sommelier.Routing._
-  import sommelier.Unpacking._
+  import sommelier.routing.Routing._
+  import sommelier.handling.Unpacking._
   import sommelier._
 
   def requestConfig(implicit appConfig: Config, context: Context): Result[Config] =
