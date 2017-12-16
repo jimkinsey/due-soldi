@@ -8,6 +8,7 @@ import duesoldi.events.Emit
 import duesoldi.app.TempSommelierIntegration._
 import sommelier.routing.Controller
 import sommelier.routing.Routing._
+import sommelier.handling.Unpacking._
 
 import scala.concurrent.ExecutionContext
 

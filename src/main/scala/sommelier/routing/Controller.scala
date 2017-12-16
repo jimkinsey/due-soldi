@@ -1,8 +1,7 @@
 package sommelier.routing
 
-import sommelier.Middleware.{Incoming, IncomingHandler, Outgoing, OutgoingHandler}
+import sommelier.routing.Middleware.{Incoming, IncomingHandler, Outgoing, OutgoingHandler}
 import sommelier.routing.Routing.Handler
-import sommelier.{Middleware, Route}
 
 import scala.collection.mutable
 

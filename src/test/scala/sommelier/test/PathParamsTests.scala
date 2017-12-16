@@ -1,7 +1,7 @@
 package sommelier.test
 
-import sommelier.handling.PathParams
-import sommelier.handling.PathParams.Failure.PathMatchFailure
+import sommelier.routing.PathParams
+import sommelier.routing.PathParams.Failure.PathMatchFailure
 import utest._
 
 object PathParamsTests

@@ -5,8 +5,7 @@ import java.net.{InetSocketAddress, ServerSocket}
 import com.sun.net.httpserver.{HttpExchange, HttpServer}
 import sommelier.events.{EventBus, HaltRequested, Subscriber}
 import sommelier.implementation.HttpExchangeMessageContext
-import sommelier.routing.Controller
-import sommelier.{Middleware, Route}
+import sommelier.routing.{Controller, Middleware, Route}
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try

@@ -1,7 +1,5 @@
 package sommelier.routing
 
-import sommelier.Rejection
-
 import scala.concurrent.{ExecutionContext, Future}
 
 sealed trait Result[+T]
@@ -49,18 +47,4 @@ extends Result[T]
   override def recover[T1 >: T](fn: (Rejection) => T1) = AsyncResult(result.map(_ recover fn))
   override def validate(pred: T => Boolean)(rejection: => Rejection): Result[T] =
     AsyncResult(result.map(_.validate(pred)(rejection)))
-}
-
-object Result
-{
-  implicit class OptionResult[T](opt: Option[T])
-  {
-    def rejectWith(ifNone: => Rejection): Result[T] =
-      opt.fold[Result[T]](SyncResult.Rejected[T](ifNone))(SyncResult.Accepted[T])
-  }
-  implicit class EitherResult[L,R](either: Either[L,R])
-  {
-    def rejectWith(ifLeft: L => Rejection): Result[R] =
-      either.fold[Result[R]](left => SyncResult.Rejected[R](ifLeft(left)), SyncResult.Accepted[R])
-  }
 }

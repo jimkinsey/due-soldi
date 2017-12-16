@@ -1,7 +1,7 @@
 package sommelier.routing
 
-import sommelier.Middleware.{Incoming, Outgoing}
-import sommelier.{Middleware, Request, Response}
+import sommelier.routing.Middleware.{Incoming, Outgoing}
+import sommelier.{Request, Response}
 
 private[sommelier] object ApplyMiddleware
 {
