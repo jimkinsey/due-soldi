@@ -1,6 +1,8 @@
 package sommelier.handling
 
-import sommelier.{Context, Rejection, Response, Result}
+import sommelier.messaging.Response
+import sommelier.routing.Result
+import sommelier.{Context, Rejection}
 
 import scala.language.postfixOps
 import scala.util.Try

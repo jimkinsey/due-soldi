@@ -2,10 +2,11 @@ package sommelier.test
 
 import sommelier.events.{Completed, EventBus, ExceptionWhileRouting}
 import sommelier.handling.Unpacking._
+import sommelier.messaging.{Method, Request, Response}
+import sommelier.routing.Result
 import sommelier.routing.Routing._
 import sommelier.serving.{HttpMessageContext, Router}
 import sommelier.test.RouterTests.SeqMatchers.Pred
-import sommelier.{Method, Request, Response, Result}
 import utest._
 
 import scala.collection.mutable

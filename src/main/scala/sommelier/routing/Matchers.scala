@@ -2,8 +2,9 @@ package sommelier.routing
 
 import java.util.Base64
 
+import sommelier.Rejection
 import sommelier.handling.PathParams
-import sommelier.{Method, Rejection, Request, Response}
+import sommelier.messaging.{Method, Request, Response}
 
 import scala.util.matching.Regex
 
