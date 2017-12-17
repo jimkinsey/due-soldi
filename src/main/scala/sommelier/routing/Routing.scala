@@ -9,7 +9,7 @@ import scala.language.implicitConversions
 
 object Routing
 {
-  type Handler = (Context => Result[Response])
+  type Handler = (Context => Result[Response]) // fixme does this belong here?
 
   lazy val GET = RequestMatcher(method = Some(MethodMatcher(Method.GET)))
   lazy val POST = RequestMatcher(method = Some(MethodMatcher(Method.POST)))
@@ -18,7 +18,7 @@ object Routing
 
   val AnyRequest = RequestMatcher()
 
-  implicit class RouteMaker(matcher: RequestMatcher) {
+  implicit class RouteMaker(matcher: RequestMatcher) { // fixme reconcile with controllers
     def respond(handler: Handler) = Route(matcher, handler)
   }
 

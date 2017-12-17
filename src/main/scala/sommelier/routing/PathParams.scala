@@ -1,7 +1,5 @@
 package sommelier.routing
 
-import scala.util.matching.Regex
-
 object PathParams
 {
   sealed trait Failure
@@ -11,12 +9,7 @@ object PathParams
   }
 
   def apply(pattern: String)(path: String): Either[Failure, Map[String,String]] = {
-    val patternSegments = segments(pattern)
-    def firstSegment(path: String): Option[String] = path.split('/').headOption.filter(_.nonEmpty)
-    def remainingAfterFirstSegment(path: String): String = path.split('/').tail.mkString("/")
-    def hasVars(patternSegments: Seq[String]): Boolean = patternSegments.exists(_.startsWith(":")) || patternSegments.contains("*")
-
-    if (!hasVars(patternSegments)) {
+    if (!isVariable(pattern)) {
       if (pattern != path) {
         return Left(Failure.PathMatchFailure)
       }
@@ -25,13 +18,13 @@ object PathParams
       }
     }
 
-    val (result, _) = patternSegments.foldLeft[(Either[Failure, Map[String,String]], String)]((Right(Map.empty), path.dropWhile(_ == '/'))) {
-      case ((Right(acc), remaining), segment) if segment.startsWith(":") && firstSegment(remaining).isDefined =>
-        (Right(acc ++ Map(segment.drop(1) -> firstSegment(remaining).get)), remainingAfterFirstSegment(remaining))
-      case ((Right(acc), remaining), "*") if remaining.dropWhile(_ == '/').nonEmpty =>
-        (Right(acc ++ Map("*" -> remaining)), "")
-      case ((acc @ Right(_), remaining), segment) if firstSegment(remaining).contains(segment) =>
-        (acc, remainingAfterFirstSegment(remaining))
+    val (result, _) = segments(pattern).foldLeft[(Either[Failure, Map[String,String]], String)]((Right(Map.empty), path.dropWhile(_ == '/'))) {
+      case ((acc @ Right(_), Remainder(varValue, tail)), Var(name)) =>
+        (acc.map(_ ++ Map(name -> varValue)), tail)
+      case ((acc @ Right(_), WildcardValue(value)), Wildcard(_)) =>
+        (acc.map(_ ++ Map("*" -> value)), "")
+      case ((acc @ Right(_), Remainder(value, tail)), literal) if literal == value =>
+        (acc, tail)
       case (success @ (Right(_), ""), "") =>
         success
       case (fail @ (Left(_), _), _) =>
@@ -43,10 +36,41 @@ object PathParams
     result
   }
 
+  def isVariable(pattern: String): Boolean =
+    segments(pattern).exists { segment =>
+      segment.startsWith(":") || segment == "*"
+    }
+
   def segments(path: String): Seq[String] =
     path
       .split('/').toSeq
       .filter(_.nonEmpty)
 
-  lazy val PathVariable: Regex = """^:(.+)$""".r
+  object Var
+  {
+    def unapply(segment: String): Option[String] = {
+      if (segment.startsWith(":")) Some(segment.drop(1)) else None
+    }
+  }
+
+  object Wildcard
+  {
+    def unapply(segment: String): Option[String] = {
+      if (segment == "*") Some(segment) else None
+    }
+  }
+
+  object Remainder
+  {
+    def unapply(path: String): Option[(String, String)] = {
+      segments(path).headOption map { (_, segments(path).tail.mkString("/")) }
+    }
+  }
+
+  object WildcardValue
+  {
+    def unapply(path: String): Option[String] = {
+      if (path.dropWhile(_ == '/').nonEmpty) Some(path.dropWhile(_ == '/')) else None
+    }
+  }
 }
