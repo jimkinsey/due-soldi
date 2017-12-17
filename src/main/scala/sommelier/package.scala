@@ -20,3 +20,5 @@ package object sommelier
   router("blog entry").reverse("id" -> "foo).path // reverse results in a request?
 
  */
+// todo abstract completely from implementation
+// rejection should always be a response...? or extend Response?
