@@ -153,6 +153,16 @@ code {
     padding: 1em;
 }
 
+code {
+    display: block;
+    text-align: left;
+    white-space: pre-line;
+    margin: 2em;
+    font-weight: bold;
+    border: 1px solid black;
+    padding: 1em;
+}
+
 @media only screen and (min-width: 768px) {
     h1 {
         color: inherit;
