@@ -2,8 +2,8 @@ body {
     font-family: serif;
     font-weight: lighter;
     letter-spacing: 0.7;
-    background-color: rgb(255,255,250);
-    background: linear-gradient(to right, rgb(255,255,250) 80%, rgb(255,255,230) 99.5%, rgb(128,64,0));
+    background-color: white;
+    background: linear-gradient(to right, rgb(255,255,255) 80%, rgb(230,230,230) 99.5%);
     color: rgb(50,35,0);
     margin: 0.25em;
     line-height: 1.5em;
@@ -12,6 +12,10 @@ body {
 
 body article {
     text-align: justify;
+}
+
+body article, header, footer, h1, h2, h3, h4, h5, h6, p, nav, a {
+    filter: blur(0.25px);
 }
 
 header, footer, h1, h2, h3, h4, h5, h6 {
@@ -113,17 +117,16 @@ nav ol li a:before {
 
 a {
     text-decoration: none;
-    color: #3388ff;
+    color: #333333;
 }
 
 a:visited {
-    color: #8833ff;
+    color: #888888;
 }
 
 img {
     max-width: 100%;
-    filter: contrast(1) saturate(4.1) sepia(.3);
-
+    filter: blur(0.25px) contrast(3) saturate(4.1) grayscale(1.0) opacity(.75);
 }
 
 code {
@@ -193,10 +196,10 @@ code {
     }
 
     nav ol li a {
-        color: #3388ff;
+        color: #333333;
     }
 
     nav ol li a:visited {
-        color: #8833ff;
+        color: #888888;
     }
 }
