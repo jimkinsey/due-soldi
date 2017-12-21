@@ -99,6 +99,19 @@ nav ol li a:before {
     font-size: smaller;
 }
 
+#blurb img#portrait {
+    display: inline-block;
+    float: left;
+    max-width: 40%;
+    margin-right: 1em;
+    filter: blur(0.5px) brightness(1.5) contrast(5) grayscale(1.0) opacity(.75);
+}
+
+#blurb p {
+    display: inline-block;
+    max-width: 50%;
+}
+
 #blog-index article header h2 {
     font-size: 1.5em;
     border: none;
@@ -129,9 +142,6 @@ img {
     filter: blur(0.25px) contrast(3) saturate(4.1) grayscale(1.0) opacity(.75);
 }
 
-img#portrait {
-    filter: blur(0.5px) brightness(1.5) contrast(5) grayscale(1.0) opacity(.75);
-}
 
 code {
     display: block;
@@ -183,6 +193,17 @@ code {
         color: inherit;
         font-size: medium;
         padding: 0;
+    }
+
+    #blurb img#portrait {
+        max-width: 100%;
+        display: inline;
+        margin-right: 0;
+    }
+
+    #blurb p {
+        max-width: 100%;
+        display: block;
     }
 
     footer {
