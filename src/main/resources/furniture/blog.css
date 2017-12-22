@@ -15,7 +15,7 @@ body article {
 }
 
 body article, header, footer, h1, h2, h3, h4, h5, h6, p, nav, a {
-    filter: blur(0.25px);
+    filter: blur(0.1q);
 }
 
 header, footer, h1, h2, h3, h4, h5, h6 {
@@ -139,7 +139,7 @@ a:visited {
 
 img {
     max-width: 100%;
-    filter: blur(0.25px) contrast(3) saturate(4.1) grayscale(1.0) opacity(.75);
+    filter: blur(0.1q) contrast(3) saturate(4.1) grayscale(1.0) opacity(.75);
 }
 
 
