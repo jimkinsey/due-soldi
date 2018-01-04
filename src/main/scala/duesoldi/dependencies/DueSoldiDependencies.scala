@@ -9,20 +9,20 @@ import duesoldi.blog.storage._
 import duesoldi.blog.validation.{ValidBlogContent, ValidIdentifier}
 import duesoldi.config.Config
 import duesoldi.config.Config.Credentials
+import duesoldi.debug.pages.{ConfigPageMaker, _}
+import duesoldi.dependencies.Features.forFeature
 import duesoldi.dependencies.Injection._
 import duesoldi.events.Events
 import duesoldi.furniture.CurrentUrlPath
 import duesoldi.furniture.storage.FurnitureFiles
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.markdown.MarkdownParser
-import duesoldi.metrics.storage.{AccessRecordStorage, AccessRecordStore, GetAllAccessRecords, StoreAccessRecord}
-import duesoldi.debug.pages.{ConfigPageMaker, _}
-import duesoldi.dependencies.Features.forFeature
-import duesoldi.{Env, blog, markdown}
-import duesoldi.rendering.Renderer
 import duesoldi.metrics.storage.AccessRecordStore.Access
+import duesoldi.metrics.storage.{AccessRecordStorage, AccessRecordStore, GetAllAccessRecords, StoreAccessRecord}
+import duesoldi.rendering.Renderer
 import duesoldi.storage.JDBCConnection.{ConnectionDetails, PerformQuery, PerformUpdate}
 import duesoldi.storage._
+import duesoldi.{Env, blog, markdown}
 
 import scala.concurrent.ExecutionContext
 
@@ -62,10 +62,6 @@ object DueSoldiDependencies
   implicit val validateBlogContent: Inject[duesoldi.blog.validation.ValidateContent] = _ => ValidBlogContent.apply
 
   implicit val entryPageModel: Inject[BuildEntryPageModel] = inject(EntryPageModel.pageModel _)
-
-  implicit def makeEntryPage(implicit executionContext: ExecutionContext): Inject[MakeEntryPage] = {
-    inject(EntryPageMaker.entryPage _)
-  }
 
   implicit val indexPageModel:  Inject[BuildIndexPageModel] = _ => IndexPageModel.pageModel
 
