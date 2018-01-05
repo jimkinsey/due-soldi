@@ -1,14 +1,14 @@
 package duesoldi.blog.routes
 
-import duesoldi.blog.pages.{IndexPageMaker, MakeIndexPage}
-import duesoldi.blog.routes.BlogIndexController.Event.{BlogIndexPageNotRendered, BlogIndexPageRendered}
+import duesoldi.app.TempSommelierIntegration._
+import duesoldi.blog.pages.BuildIndexPageModel
+import duesoldi.blog.storage.GetAllBlogEntries
 import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
-import duesoldi.events.Emit
-import duesoldi.app.TempSommelierIntegration._
+import duesoldi.rendering.Render
+import sommelier.handling.Unpacking._
 import sommelier.routing.Controller
 import sommelier.routing.Routing._
-import sommelier.handling.Unpacking._
 
 import scala.concurrent.ExecutionContext
 
@@ -17,30 +17,15 @@ extends Controller
 {
   GET("/blog/") ->- { implicit context =>
     for {
-      makePage <- provided[MakeIndexPage]
-      emit <- provided[Emit]
-      html <- makePage() rejectWith {
-        case failure: IndexPageMaker.Failure.BlogStoreEmpty.type =>
-          emit(BlogIndexPageNotRendered(failure))
-          404
-        case failure =>
-          emit(BlogIndexPageNotRendered(failure))
-          500
-      }
+      getEntries <- provided[GetAllBlogEntries]
+      rendered <- provided[Render]
+      pageModel <- provided[BuildIndexPageModel]
+
+      entries <- getEntries().rejectWith({ _ => 500 }).validate(_.nonEmpty)({ 404 })
+      model = pageModel(entries)
+      html <- rendered("blog-index", model) rejectWith { _ => 500 }
     } yield {
-      emit(BlogIndexPageRendered(html))
       200 (html) ContentType "text/html; charset=UTF-8"
     }
   }
 }
-
-object BlogIndexController
-{
-  sealed trait Event
-  object Event
-  {
-    case class BlogIndexPageRendered(html: String) extends Event
-    case class BlogIndexPageNotRendered(reason: IndexPageMaker.Failure) extends Event
-  }
-}
-

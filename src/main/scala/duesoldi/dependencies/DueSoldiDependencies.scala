@@ -65,10 +65,6 @@ object DueSoldiDependencies
 
   implicit val indexPageModel:  Inject[BuildIndexPageModel] = _ => IndexPageModel.pageModel
 
-  implicit def makeIndexPage(implicit executionContext: ExecutionContext): Inject[MakeIndexPage] = {
-    inject(IndexPageMaker.makeIndexPage _)
-  }
-
   implicit def makeHeadersPage: Inject[MakeHeadersPage] = _ => HeadersPageMaker.makeHeadersPage
 
   implicit def makeConfigPage: Inject[MakeConfigPage] = ConfigPageMaker.makeConfigPage
