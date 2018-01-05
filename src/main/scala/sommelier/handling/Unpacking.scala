@@ -120,5 +120,11 @@ object Unpacking {
     def rejectWith(ifLeft: L => Rejection)(implicit executionContext: ExecutionContext): AsyncResult[R] =
       AsyncResult(fEither.map(_ rejectWith ifLeft))
   }
+
+  implicit class FutureRejection[T](fT: Future[T])
+  {
+    def rejectWith(ifFailure: Throwable => Rejection)(implicit executionContext: ExecutionContext): AsyncResult[T] =
+      AsyncResult(fT.map(Accepted(_)))
+  }
 }
 
