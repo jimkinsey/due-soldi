@@ -2,13 +2,13 @@ package duesoldi.yaml
 
 object Yaml
 {
-  def obj(yamlString: String): Either[Yaml.Failure, Map[String,Any]] = {
+  def obj(yamlString: String): Either[Failure, Map[String,Any]] = {
     val iterator = yamlString.lines
     val pairs = for {
       line <- iterator
       key = line.takeWhile(_ != ':')
       afterKey = line.drop(key.length + 1).dropWhile(_ == ' ').trim
-      value = afterKey match {
+      value <- afterKey match {
         case "|" if iterator.hasNext => Some(iterator.takeWhile(_.matches("""^\s+.+$""")).map(deindent).mkString("\n"))
         case str if str.nonEmpty => Some(str)
         case _ => None
@@ -16,7 +16,7 @@ object Yaml
     } yield {
       key -> value
     }
-    Right(pairs.collect({ case (key, Some(value)) => key -> value }).toMap)
+    Right(pairs.toMap)
   }
 
   def deindent(yamlString: String): String = {
