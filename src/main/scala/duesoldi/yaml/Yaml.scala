@@ -1,32 +1,31 @@
 package duesoldi.yaml
 
-import duesoldi.json.CirceJson
-import io.circe.yaml.parser
-
-import scala.util.Try
-
 object Yaml
 {
   def obj(yamlString: String): Either[Yaml.Failure, Map[String,Any]] = {
-    for {
-      firstTry <- Try(parser.parse(yamlString)).toEither.left.map(Failure.Unexpected)
-      json <- firstTry.left.map(_ => Failure.Malformed)
-      obj <- json.asObject.toRight({ Failure.NotAnObject })
-      map = CirceJson.toMap(obj)
+    val iterator = yamlString.lines
+    val pairs = for {
+      line <- iterator
+      key = line.takeWhile(_ != ':')
+      afterKey = line.drop(key.length + 1).dropWhile(_ == ' ').trim
+      value = afterKey match {
+        case "|" if iterator.hasNext => Some(iterator.takeWhile(_.matches("""^\s+.+$""")).map(deindent).mkString("\n"))
+        case str if str.nonEmpty => Some(str)
+        case _ => None
+      }
     } yield {
-      map
+      key -> value
     }
+    Right(pairs.collect({ case (key, Some(value)) => key -> value }).toMap)
+  }
+
+  def deindent(yamlString: String): String = {
+    val indent = yamlString.lines.toSeq.head.takeWhile(_.isWhitespace).length
+    yamlString.lines.map(_.drop(indent)).mkString("\n")
   }
 
   def arr(yamlString: String): Either[Failure, Seq[Any]] = {
-    for {
-      firstTry <- Try(parser.parse(yamlString)).toEither.left.map(Failure.Unexpected)
-      json <- firstTry.left.map(_ => Failure.Malformed)
-      arr <- json.asArray.toRight({ Failure.NotAnArray })
-      seq = CirceJson.toSeq(arr)
-    } yield {
-      seq
-    }
+    Right(yamlString.split("""\s*-\s*\n""").toSeq.filter(_.nonEmpty).map(deindent).map(item => obj(item).right.get))
   }
 
   sealed trait Failure
