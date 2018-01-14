@@ -145,8 +145,9 @@ object BlogEntryPageTests
         ) { implicit env =>
           for {
             response <- get("/blog/top-content")
+            footer = new BlogEntryPage(response.body).footer
           } yield {
-            assert(new BlogEntryPage(response.body).footer.copyrightNotice.contains("© 2016-2017 Jim Kinsey"))
+            assert(footer.copyrightNotice.exists(_ matches """© \d\d\d\d-\d\d\d\d Jim Kinsey"""))
           }
         }
       }

@@ -82,8 +82,9 @@ object BlogIndexPageTests
         ) { implicit env =>
           for {
             response <- get("/blog/")
+            footer = new BlogIndexPage(response.body).footer
           } yield {
-            assert(new BlogIndexPage(response.body).footer.copyrightNotice.contains("© 2016-2017 Jim Kinsey"))
+            assert(footer.copyrightNotice.exists(_ matches """© \d\d\d\d-\d\d\d\d Jim Kinsey"""))
           }
         }
       }
