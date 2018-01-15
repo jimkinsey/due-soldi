@@ -65,7 +65,11 @@ object Unpacking {
     }
   }
 
-  def header(name: String)(implicit context: Context): Result[Seq[String]] = {
+  def header(name: String)(implicit context: Context): Result[String] = {
+    context.request.headers.get(name).flatMap(_.headOption) rejectWith { HeaderNotFound(name) }
+  }
+
+  def headers(name: String)(implicit context: Context): Result[Seq[String]] = {
     context.request.headers.get(name) rejectWith { HeaderNotFound(name) }
   }
 
