@@ -36,7 +36,7 @@ extends Controller
         ("Timestamp,Path,Referer,User-Agent,Duration (ms),Client IP,Country,Status Code" +: rows).mkString("\n")
       }
     } yield {
-      200 (content)
+      200 (content) header("Cache-control" -> "no-cache")
     }
   }
 
