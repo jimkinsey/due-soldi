@@ -63,7 +63,7 @@ object App
                 path = req.path,
                 referer = req.headers.get("Referer").flatMap(_.headOption),
                 userAgent = req.headers.get("User-agent").flatMap(_.headOption),
-                duration = duration.length,
+                duration = duration.toMillis,
                 clientIp = req.headers.get("Cf-connecting-ip").flatMap(_.headOption),
                 country = req.headers.get("Cf-ipcountry").flatMap(_.headOption),
                 statusCode = res.status
