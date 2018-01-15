@@ -82,6 +82,27 @@ extends TestSuite
           }
         }
       }
+      "includes data from the CDN headers in the records" - {
+        withSetup(
+          database,
+          accessRecordingEnabled,
+          runningAppForThisTestOnly,
+          blogEntry("id" -> "# Content!")
+        ) { implicit env =>
+          for {
+            _ <- get("/blog/", headers =
+              "Cf-Connecting-Ip" -> "1.2.3.4",
+              "Cf-Ipcountry" -> "IS"
+            )
+            response <- get("/admin/metrics/access.csv", headers = TestApp.adminAuth)
+          } yield {
+            assert(
+              response.body.lines exists(_.contains("1.2.3.4")),
+              response.body.lines exists(_.contains("IS"))
+            )
+          }
+        }
+      }
       "has no records for periods when access recording is disabled" - {
         withSetup(
           database,

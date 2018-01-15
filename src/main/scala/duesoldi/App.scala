@@ -62,10 +62,10 @@ object App
                 time = ZonedDateTime.now(),
                 path = req.path,
                 referer = req.headers.get("Referer").flatMap(_.headOption),
-                userAgent = req.headers.get("User-Agent").flatMap(_.headOption),
+                userAgent = req.headers.get("User-agent").flatMap(_.headOption),
                 duration = duration.length,
-                clientIp = req.headers.get("Cf-Connecting-Ip").flatMap(_.headOption),
-                country = req.headers.get("Cf-Ipcountry").flatMap(_.headOption),
+                clientIp = req.headers.get("Cf-connecting-ip").flatMap(_.headOption),
+                country = req.headers.get("Cf-ipcountry").flatMap(_.headOption),
                 statusCode = res.status
               )
               events.emit(access)
