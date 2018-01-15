@@ -9,6 +9,8 @@ object EventLogging
     events.respondTo {
       case AccessRecordStorage.Event.RecordFailure(cause) =>
         logger.error(s"Failed to record access - ${cause.getMessage}")
+      case AccessRecordStorage.Event.RecordSuccess =>
+        logger.info("Successfully recorded access")
     }
   }
 }

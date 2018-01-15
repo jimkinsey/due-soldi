@@ -70,6 +70,7 @@ object App
                 country = req.headers.lowKeys.get("cf-ipcountry").flatMap(_.headOption),
                 statusCode = res.status
               )
+              logger.info(s"Recording access $access")
               events.emit(access)
             }
           }
