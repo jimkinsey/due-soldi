@@ -4,7 +4,7 @@ import java.nio.file.Files
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME
 
-import duesoldi.app.TempSommelierIntegration._
+import duesoldi.app.RequestDependencies._
 import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.furniture.CurrentUrlPath

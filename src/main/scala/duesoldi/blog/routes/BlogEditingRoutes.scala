@@ -1,22 +1,21 @@
 package duesoldi.blog.routes
 
 import duesoldi.app.AdminAuth.basicAdminAuth
+import duesoldi.app.RequestDependencies._
 import duesoldi.blog.storage._
 import duesoldi.blog.validation.ValidateIdentifier
 import duesoldi.blog.{EntriesFromYaml, EntriesToYaml, EntryFromYaml, EntryToYaml}
 import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
+import sommelier.handling.Unpacking._
 import sommelier.routing.Controller
+import sommelier.routing.Routing._
 
 import scala.concurrent.ExecutionContext
 
 class BlogEditingController(implicit executionContext: ExecutionContext, appConfig: Config)
 extends Controller
 {
-  import duesoldi.app.TempSommelierIntegration._
-  import sommelier.routing.Routing._
-  import sommelier.handling.Unpacking._
-
   PUT("/admin/blog/:id").Authorization(basicAdminAuth) ->- { implicit context =>
     for {
       validateIdentifier <- provided[ValidateIdentifier]

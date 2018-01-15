@@ -1,7 +1,7 @@
 package duesoldi.debug.routes
 
 import duesoldi.app.AdminAuth.basicAdminAuth
-import duesoldi.app.TempSommelierIntegration._
+import duesoldi.app.RequestDependencies._
 import duesoldi.config.Config
 import duesoldi.debug.pages.{MakeConfigPage, MakeHeadersPage}
 import duesoldi.dependencies.DueSoldiDependencies._

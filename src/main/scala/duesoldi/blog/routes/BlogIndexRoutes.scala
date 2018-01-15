@@ -1,6 +1,6 @@
 package duesoldi.blog.routes
 
-import duesoldi.app.TempSommelierIntegration._
+import duesoldi.app.RequestDependencies._
 import duesoldi.blog.pages.BuildIndexPageModel
 import duesoldi.blog.storage.GetAllBlogEntries
 import duesoldi.config.Config
