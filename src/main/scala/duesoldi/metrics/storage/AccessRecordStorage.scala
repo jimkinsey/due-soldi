@@ -13,8 +13,11 @@ object AccessRecordStorage
     events.respondTo {
       case access: Access => store(access).onComplete {
         case Failure(ex) =>
+          System.err.println(s"FAILED TO RECORD ACCESS $access")
+          ex.printStackTrace()
           events.emit(RecordFailure(ex))
         case _ =>
+          System.out.println(s"RECORDED ACCESS $access")
           events.emit(RecordSuccess)
       }
     }
