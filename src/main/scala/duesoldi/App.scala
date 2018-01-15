@@ -18,6 +18,8 @@ import sommelier.events.Completed
 import duesoldi.dependencies.DueSoldiDependencies._
 import sommelier.serving.Server
 
+import duesoldi.collections.MapEnhancements._
+
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Failure
@@ -61,11 +63,11 @@ object App
               val access = Access(
                 time = ZonedDateTime.now(),
                 path = req.path,
-                referer = req.headers.get("Referer").flatMap(_.headOption),
-                userAgent = req.headers.get("User-agent").flatMap(_.headOption),
+                referer = req.headers.lowKeys.get("referer").flatMap(_.headOption),
+                userAgent = req.headers.lowKeys.get("user-agent").flatMap(_.headOption),
                 duration = duration.toMillis,
-                clientIp = req.headers.get("Cf-connecting-ip").flatMap(_.headOption),
-                country = req.headers.get("Cf-ipcountry").flatMap(_.headOption),
+                clientIp = req.headers.lowKeys.get("cf-connecting-ip").flatMap(_.headOption),
+                country = req.headers.lowKeys.get("cf-ipcountry").flatMap(_.headOption),
                 statusCode = res.status
               )
               events.emit(access)
