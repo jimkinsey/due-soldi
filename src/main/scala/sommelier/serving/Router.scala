@@ -1,6 +1,7 @@
 package sommelier.serving
 
-import sommelier.events.{Completed, EventBus, ExceptionWhileRouting}
+import dearboy.EventBus
+import sommelier.events.{Completed, ExceptionWhileRouting}
 import sommelier.messaging.{Request, Response}
 import sommelier.routing.ApplyMiddleware.{applyIncoming, applyOutgoing}
 import sommelier.routing.ApplyRoutes.applyRoutes

@@ -1,6 +1,7 @@
 package sommelier.test
 
-import sommelier.events.{Completed, EventBus, ExceptionWhileRouting}
+import dearboy.EventBus
+import sommelier.events.{Completed, ExceptionWhileRouting}
 import sommelier.handling.Unpacking._
 import sommelier.messaging.{Method, Request, Response}
 import sommelier.routing.Result

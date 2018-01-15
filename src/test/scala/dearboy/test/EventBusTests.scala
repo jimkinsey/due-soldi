@@ -1,6 +1,6 @@
-package sommelier.test
+package dearboy.test
 
-import sommelier.events.EventBus
+import dearboy.EventBus
 import utest._
 
 import scala.collection.mutable

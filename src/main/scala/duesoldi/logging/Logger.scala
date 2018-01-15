@@ -4,8 +4,8 @@ import java.io.PrintStream
 import java.time.format.DateTimeFormatter
 import java.time.{ZoneOffset, ZonedDateTime}
 
-class Logger(name: String, loggingEnabled: Boolean = true) {
-
+class Logger(name: String, loggingEnabled: Boolean = true)
+{
   def info(message: => String) { log(message, System.out) }
   def error(message: => String) { log(message, System.err) }
 

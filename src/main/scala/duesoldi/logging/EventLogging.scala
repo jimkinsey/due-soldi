@@ -1,16 +1,14 @@
 package duesoldi.logging
 
-import duesoldi.events.Events
+import dearboy.EventBus
 import duesoldi.metrics.storage.AccessRecordStorage
 
 object EventLogging
 {
-  def enable(events: Events, logger: Logger) {
-    events.respondTo {
+  def enable(events: EventBus, logger: Logger) {
+    events.subscribe {
       case AccessRecordStorage.Event.RecordFailure(cause) =>
         logger.error(s"Failed to record access - ${cause.getMessage}")
-      case AccessRecordStorage.Event.RecordSuccess =>
-        logger.info("Successfully recorded access")
     }
   }
 }

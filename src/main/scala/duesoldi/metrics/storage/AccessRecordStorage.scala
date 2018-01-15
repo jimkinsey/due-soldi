@@ -1,6 +1,6 @@
 package duesoldi.metrics.storage
 
-import duesoldi.events.Events
+import dearboy.EventBus
 import duesoldi.metrics.storage.AccessRecordStorage.Event.{RecordFailure, RecordSuccess}
 import duesoldi.metrics.storage.AccessRecordStore.Access
 
@@ -9,16 +9,13 @@ import scala.util.Failure
 
 object AccessRecordStorage
 {
-  def enable(events: Events, store: StoreAccessRecord)(implicit executionContext: ExecutionContext) {
-    events.respondTo {
+  def enable(events: EventBus, store: StoreAccessRecord)(implicit executionContext: ExecutionContext) {
+    events.subscribe {
       case access: Access => store(access).onComplete {
         case Failure(ex) =>
-          System.err.println(s"FAILED TO RECORD ACCESS $access")
-          ex.printStackTrace()
-          events.emit(RecordFailure(ex))
+          events.publish(RecordFailure(ex))
         case _ =>
-          System.out.println(s"RECORDED ACCESS $access")
-          events.emit(RecordSuccess)
+          events.publish(RecordSuccess)
       }
     }
   }

@@ -2,6 +2,7 @@ package duesoldi.dependencies
 
 import java.sql.ResultSet
 
+import dearboy.EventBus
 import duesoldi.blog.model.BlogEntry
 import duesoldi.blog.pages._
 import duesoldi.blog.serialisation.EntryYaml
@@ -12,7 +13,6 @@ import duesoldi.config.Config.Credentials
 import duesoldi.debug.pages.{ConfigPageMaker, _}
 import duesoldi.dependencies.Features.forFeature
 import duesoldi.dependencies.Injection._
-import duesoldi.events.Events
 import duesoldi.furniture.CurrentUrlPath
 import duesoldi.furniture.storage.FurnitureFiles
 import duesoldi.logging.{EventLogging, Logger}
@@ -33,16 +33,16 @@ object DueSoldiDependencies
       new Logger(config.loggerName, config.loggingEnabled)
   }
 
-  implicit def emit(implicit executionContext: ExecutionContext): Inject[duesoldi.events.Emit] = {
+  implicit def emit(implicit executionContext: ExecutionContext): Inject[dearboy.Publish] = {
     config =>
-      val events = new Events
+      val events = new EventBus
       if (config.loggingEnabled) {
         EventLogging.enable(events, logger(config))
       }
       if (config.accessRecordingEnabled) {
         AccessRecordStorage.enable(events, AccessRecordStore.put(jdbcPerformUpdate(config)))
       }
-      events emit _
+      events publish _
   }
 
   implicit val getAccessRecords: Inject[GetAllAccessRecords] = { config =>

@@ -2,13 +2,13 @@ package duesoldi
 
 import java.time.ZonedDateTime
 
+import dearboy.EventBus
 import duesoldi.app.{RequestId, TrailingSlashRedirection}
 import duesoldi.blog.routes.{BlogEditingController, BlogEntryController, BlogIndexController}
 import duesoldi.config.{Config, EnvironmentalConfig}
 import duesoldi.controller.{LearnJapaneseController, RobotsController}
 import duesoldi.debug.routes.DebugController
 import duesoldi.dependencies.Injection.injected
-import duesoldi.events.Events
 import duesoldi.furniture.routes.FurnitureController
 import duesoldi.logging.Logger
 import duesoldi.metrics.routes.MetricsController
@@ -17,7 +17,6 @@ import duesoldi.metrics.storage.{AccessRecordStorage, StoreAccessRecord}
 import sommelier.events.Completed
 import duesoldi.dependencies.DueSoldiDependencies._
 import sommelier.serving.Server
-
 import duesoldi.collections.MapEnhancements._
 
 import scala.collection.JavaConverters._
@@ -36,7 +35,7 @@ object App
   def start(env: Env): Future[Server] = {
     implicit val config: Config = EnvironmentalConfig(env)
     val logger = new Logger("App", config.loggingEnabled)
-    val events = new Events // todo use the same model as sommelier
+    val events = new EventBus
     AccessRecordStorage.enable(events, injected[StoreAccessRecord])
 
     Future fromTry {
@@ -70,8 +69,7 @@ object App
                 country = req.headers.lowKeys.get("cf-ipcountry").flatMap(_.headOption),
                 statusCode = res.status
               )
-              logger.info(s"Recording access $access")
-              events.emit(access)
+              events.publish(access)
             }
           }
           server

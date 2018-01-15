@@ -3,7 +3,8 @@ package sommelier.serving
 import java.net.{InetSocketAddress, ServerSocket}
 
 import com.sun.net.httpserver.{HttpExchange, HttpServer}
-import sommelier.events.{EventBus, HaltRequested, Subscriber}
+import dearboy.{EventBus, Subscriber}
+import sommelier.events.HaltRequested
 import sommelier.implementation.HttpExchangeMessageContext
 import sommelier.routing.{Controller, Middleware, Route}
 
