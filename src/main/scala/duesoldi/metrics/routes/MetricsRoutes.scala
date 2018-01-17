@@ -40,5 +40,11 @@ extends Controller
     }
   }
 
-  private def csvFriendly(value: String): String = s"""$value""" // TODO quote value or escape commas
+  private def csvFriendly(value: String): String =
+    if (value.contains("\"") || value.contains(",")) {
+      s""""${value.replace("\"", "\"\"").trim}""""
+    }
+    else {
+      value.trim
+    }
 }
