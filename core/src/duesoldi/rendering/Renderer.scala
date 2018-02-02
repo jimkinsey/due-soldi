@@ -14,7 +14,11 @@ object Renderer
       .withHelpers(
         "furniture" -> { (path, _) => Future.successful(furniturePath(path).map(_._1)) }
       )
+<<<<<<< 91ca2762ffb85b4f0925a0af496d15c8450c39af:core/src/duesoldi/rendering/Renderer.scala
       .withTemplatePath("core/resources/templates")
+=======
+      .withTemplatePath("/Users/jimkinsey/Documents/github/due-soldi/core/resources/templates")
+>>>>>>> Initial investigation of using Mill to build the app:core/src/duesoldi/rendering/Renderer.scala
       .withoutCache
       .renderTemplate
   }
