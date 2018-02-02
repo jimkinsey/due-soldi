@@ -23,3 +23,4 @@ object core extends ScalaModule {
     def testFramework = "duesoldi.test.support.app.TestAppFramework"
   }
 }
+
