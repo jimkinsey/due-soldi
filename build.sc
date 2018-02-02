@@ -12,15 +12,13 @@ object core extends ScalaModule {
     ivy"org.postgresql:postgresql:9.4.1212",
     ivy"com.vladsch.flexmark:flexmark:0.27.0",
     ivy"com.github.jimkinsey::bhuj:0.2-SNAPSHOT",
-    ivy"com.h2database:h2:1.4.193",
-    ivy"net.databinder.dispatch::dispatch-core:0.13.2",
-    ivy"org.jsoup:jsoup:1.10.3",
-    ivy"com.lihaoyi::utest:0.5.4"
   )
   object test extends Tests{
     def ivyDeps = Agg(
-      ivy"com.lihaoyi::utest:0.6.0",
-      ivy"com.lihaoyi:mill-bridge_2.12.4:0.1" // FIXME
+      ivy"com.h2database:h2:1.4.193",
+      ivy"net.databinder.dispatch::dispatch-core:0.13.2",
+      ivy"org.jsoup:jsoup:1.10.3",
+      ivy"com.lihaoyi::utest:0.6.0"
     )
     def testFramework = "duesoldi.test.support.app.TestAppFramework"
   }
