@@ -6,7 +6,6 @@ import java.util.UUID
 import javax.sql.DataSource
 
 import duesoldi._
-import duesoldi.metrics.storage.AccessRecordStore
 import duesoldi.test.support.database.ScriptRunner
 import org.h2.jdbcx.JdbcConnectionPool
 
@@ -24,7 +23,7 @@ object Database
     override def setup(env: Env) = {
       val ds: DataSource = JdbcConnectionPool.create(s"jdbc:h2:mem:test-$id;DB_CLOSE_DELAY=-1", "user", "password")
       connection = ds.getConnection()
-      new ScriptRunner(connection, true, true).runScript(new InputStreamReader(AccessRecordStore.getClass.getResourceAsStream("/database/init.sql")))
+      new ScriptRunner(connection, true, true).runScript(new InputStreamReader(getClass.getResourceAsStream("/database/init.sql")))
       Map(
         "JDBC_DATABASE_URL" -> connection.getMetaData.getURL,
         "JDBC_DATABASE_USERNAME" -> "user",
