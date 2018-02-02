@@ -9,13 +9,14 @@ object Renderer
 {
   import bhuj.context.ContextImplicits._
 
-  def render(furniturePath: CurrentUrlPath)(implicit ec: ExecutionContext): Render =
+  def render(furniturePath: CurrentUrlPath)(implicit ec: ExecutionContext): Render = {
     mustacheRenderer
       .withHelpers(
         "furniture" -> { (path, _) => Future.successful(furniturePath(path).map(_._1)) }
       )
-      .withTemplatePath("src/main/resources/templates")
+      .withTemplatePath("/Users/jimkinsey/Documents/github/due-soldi/core/resources/templates")
       .withoutCache
       .renderTemplate
+  }
 
 }

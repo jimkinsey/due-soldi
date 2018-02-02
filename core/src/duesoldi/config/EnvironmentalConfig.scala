@@ -10,7 +10,7 @@ object EnvironmentalConfig
     Config(
       host = env.getOrElse("HOST", "0.0.0.0"),
       port = env.get("PORT").map(_.toInt),
-      furniturePath = env.getOrElse("FURNITURE_PATH", "src/main/resources/furniture"),
+      furniturePath = env.getOrElse("FURNITURE_PATH", "core/resources/furniture"),
       adminCredentials = Config.Credentials.parsed(env("ADMIN_CREDENTIALS")).right.get,
       accessRecordingEnabled = env.get("ACCESS_RECORDING_ENABLED").map(_.toBoolean).getOrElse(false),
       jdbcConnectionDetails = JDBCConnection.ConnectionDetails(

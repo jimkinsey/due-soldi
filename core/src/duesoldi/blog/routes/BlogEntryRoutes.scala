@@ -27,7 +27,7 @@ extends Controller
       id <- pathParam[String]("id").validate(validId) { 400 }
       entry <- getEntry(id) rejectWith { 404 }
       model = pageModel(entry)
-      html <- rendered("blog-entry", model) rejectWith { _ => 500 }
+      html <- rendered("blog-entry", model) rejectWith { failure => println(s"FAILED TO RENDER $failure"); 500 }
     } yield {
       200 (html) ContentType "text/html; charset=UTF-8"
     }

@@ -1,0 +1,26 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Jim Kinsey's Blog</title>
+    <link href="{{#furniture}}blog.css{{/furniture}}" rel="stylesheet"/>
+  </head>
+  <body>
+    <header>
+      <h1>Latest Blog Entries</h1>
+    </header>
+    <section id="blog-index">
+      {{#entries}}
+        <article>
+          <header>
+            <small><time>{{lastModified}}</time></small>
+            <h2><a href="/blog/{{id}}">{{title}}</a></h2>
+          </header>
+        </article>
+      {{/entries}}
+    </section>
+    {{> blog-blurb}}
+    <footer>
+      <small id="copyright">&copy; 2013-2018 Jim Kinsey</small>
+    </footer>
+  </body>
+</html>
