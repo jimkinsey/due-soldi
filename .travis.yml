@@ -1,7 +1,7 @@
 language: scala
 scala:
 - 2.11.8
-script: sbt clean test
+script: bazel --batch build src/main:Blog
 jdk:
 - oraclejdk8
 sudo: false

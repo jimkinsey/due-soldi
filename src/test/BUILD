@@ -2,13 +2,13 @@ load("@io_bazel_rules_scala//scala:scala.bzl", "scala_library", "scala_binary", 
 
 java_library(
     name = "ScriptRunner",
-    srcs = glob(["src/test/scala/**/*.java"]),
+    srcs = glob(["scala/**/*.java"]),
 )
 
 scala_binary(
     name = "Test",
-    srcs = glob(["src/test/scala/**/*.scala"]),
-    main_class = "RunTests",
+    srcs = glob(["scala/**/*.scala"]),
+    main_class = "test.RunTests",
     deps = [
         "//src/main:Blog",
         "ScriptRunner",
@@ -20,5 +20,6 @@ scala_binary(
         "@dispatch//jar",
         "@jsoup//jar",
         "@utest//jar:file",
+        "@utest//jar",
     ],
 )
