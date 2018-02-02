@@ -1,3 +1,5 @@
+package test
+
 import utest._
 
 object RunTests {
