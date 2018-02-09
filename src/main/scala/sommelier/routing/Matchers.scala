@@ -51,8 +51,8 @@ case class RequestMatcher(
   }
 
   def rejects(request: Request): Option[Rejection] = {
-    method.flatMap(_.rejects(request.method)) orElse
     path.flatMap(_.rejects(request.path)) orElse
+    method.flatMap(_.rejects(request.method)) orElse
     accept.flatMap(_.rejects(request.accept.getOrElse(""))) orElse // FIXME
     authorization.flatMap(_.rejects(request))
   }

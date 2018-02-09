@@ -9,9 +9,7 @@ package object sommelier
 
 // todo more tests
 // todo restructure - DSL on sommelier package object, implementation stuff in packages
-// todo stress testing
-// todo events = dearboy, injection = hornetfish
-// todo why 405 instead of 404 on so many paths?
+// todo injection = hornetfish
 // todo reversible / named routes:
 /* is this possible?:
 

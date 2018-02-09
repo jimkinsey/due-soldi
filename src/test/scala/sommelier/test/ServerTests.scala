@@ -55,6 +55,17 @@ extends TestSuite
           }
         }
       }
+      "prefers to reject by path than by method" - {
+        withServer({ Server.start(routes = Seq(
+          PUT("/some-other-resource") respond { _ => 200 }
+        ) )}) { server =>
+          for {
+            response <- Http.default(url(s"http://localhost:${server.port}/some-resource"))
+          } yield {
+            assert(response.getStatusCode == 404)
+          }
+        }
+      }
       "handles HEAD requests" - {
         withServer({ Server.start(routes = Seq(
           GET("/some-resource") respond { _ => 200 ("Some content") }
