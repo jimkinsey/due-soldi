@@ -119,6 +119,22 @@ extends TestSuite
           }
         }
       }
+      "returns no records if the start timestamp parameter is in the future" - {
+        withSetup(
+          database,
+          accessRecordingEnabled,
+          runningAppForThisTestOnly,
+          blogEntries("id" -> "# Content!")
+        ) { implicit env =>
+          for {
+            _ <- get("/blog/")
+            _ <- get("/blog/id")
+            response <- get("/admin/metrics/access.csv?start=2099-10-12T00:00:00Z", headers = TestApp.adminAuth)
+          } yield {
+            assert(response.body.lines.toList.tail.isEmpty)
+          }
+        }
+      }
     }
   }
 

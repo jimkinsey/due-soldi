@@ -1,5 +1,7 @@
 package sommelier.handling
 
+import java.time.ZonedDateTime
+
 import sommelier.messaging.Response
 import sommelier.routing.SyncResult.{Accepted, Rejected}
 import sommelier.routing.{AsyncResult, PathParams, Rejection, Result, SyncResult}
@@ -100,6 +102,7 @@ object Unpacking {
   implicit val unpackInt: Unpacker[Int] = string => Try(string.toInt).toOption
   implicit val unpackLong: Unpacker[Long] = string => Try(string.toLong).toOption
   implicit val unpackString: Unpacker[String] = Some(_)
+  implicit val unpackZonedDateTime: Unpacker[ZonedDateTime] = string => Try(ZonedDateTime.parse(string)).toOption
 
   implicit class OptionRejection[T](opt: Option[T])
   {
@@ -130,5 +133,17 @@ object Unpacking {
     def rejectWith(ifFailure: Throwable => Rejection)(implicit executionContext: ExecutionContext): AsyncResult[T] =
       AsyncResult(fT.map(Accepted(_)))
   }
+
+  implicit class SeqResult[T](result: Result[Seq[T]])
+  {
+    def optional: Result[Seq[T]] = result.recover(_ => Seq.empty)
+    def firstValue: Result[Option[T]] = result.map(_.headOption)
+  }
+
+  implicit class OptionResult[T](result: Result[Option[T]])
+  {
+    def defaultTo(ifEmpty: => T): Result[T] = result.map(_.getOrElse(ifEmpty))
+  }
+
 }
 
