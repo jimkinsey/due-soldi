@@ -18,7 +18,7 @@ import duesoldi.furniture.storage.FurnitureFiles
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.markdown.MarkdownParser
 import duesoldi.metrics.storage.AccessRecordStore.Access
-import duesoldi.metrics.storage.{AccessRecordStorage, AccessRecordStore, GetAllAccessRecords, StoreAccessRecord}
+import duesoldi.metrics.storage.{AccessRecordStorage, AccessRecordStore, GetAccessRecords, StoreAccessRecord}
 import duesoldi.rendering.Renderer
 import duesoldi.storage.JDBCConnection.{ConnectionDetails, PerformQuery, PerformUpdate}
 import duesoldi.storage._
@@ -45,7 +45,7 @@ object DueSoldiDependencies
       events publish _
   }
 
-  implicit val getAccessRecords: Inject[GetAllAccessRecords] = { config =>
+  implicit val getAccessRecords: Inject[GetAccessRecords] = { config =>
     AccessRecordStore.getAll(jdbcPerformQuery[Access](AccessRecordStore.toAccess)(config))
   }
 

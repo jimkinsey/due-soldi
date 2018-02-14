@@ -24,8 +24,8 @@ object AccessRecordStore
     )
   }
 
-  def getAll(performQuery: PerformQuery[Access]): GetAllAccessRecords = () => Future.fromTry {
-    performQuery("SELECT timestamp, path, referer, user_agent, duration, client_ip, country, status_code FROM access_record", Seq.empty)
+  def getAll(performQuery: PerformQuery[Access]): GetAccessRecords = (start: ZonedDateTime) => Future.fromTry {
+    performQuery("SELECT timestamp, path, referer, user_agent, duration, client_ip, country, status_code FROM access_record WHERE timestamp > ?", Seq(Timestamp.from(start.toInstant)))
   }
 
   def put(performUpdate: PerformUpdate): StoreAccessRecord = (access) => Future.fromTry {
