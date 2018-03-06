@@ -137,6 +137,26 @@ object BlogEntryPageTests
           }
         }
       }
+      "may inlude inline HTML blocks" - {
+        withSetup(
+          database,
+          runningApp,
+          blogEntries("has-html" ->
+            """# HTML
+              |
+              |<p>
+              |hello
+              |</p>
+            """.stripMargin)
+        ) { implicit env =>
+          for {
+            pageResponse <- get("/blog/has-html")
+            paragraphs = new BlogEntryPage(pageResponse.body).content.paragraphs
+          } yield {
+            assert(paragraphs contains "<p> hello </p>")
+          }
+        }
+      }
       "has a copyright notice" - {
         withSetup(
           database,

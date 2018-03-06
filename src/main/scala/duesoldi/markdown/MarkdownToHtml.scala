@@ -21,6 +21,7 @@ object MarkdownToHtml
       case BlockQuote(content)          => s"<blockquote>${html(content)}</blockquote>"
       case HorizontalRule               => "<hr/>"
       case Image(alt, src, title)       => s"""<img src="$src" alt="$alt" title="${title.getOrElse("")}" />"""
+      case HtmlBlock(html)              => html
     } mkString
   }
 }
