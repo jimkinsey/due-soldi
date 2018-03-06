@@ -34,7 +34,7 @@ object MarkdownParser
       case text: Flexmark.Text           => Text(text.getChars)
       case strong: Flexmark.Strong       => Strong(strong.getChildChars)
       case emphasis: Flexmark.Emphasis   => Emphasis(emphasis.getChildChars)
-      case code: Flexmark.Code           => Code(code.getChars)
+      case code: Flexmark.Code           => Code(code.getContentChars)
       case code: Flexmark.InlineCode     => InlineCode(code.getText)
       case link: Flexmark.Link           => InlineLink(link.getText, link.getUrl, Option(link.getTitle))
       case list: Flexmark.BulletList     => UnorderedList(list.getChildren.map(c => stripRootPara(translated(c.getChildren))))

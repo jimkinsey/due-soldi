@@ -9,7 +9,11 @@ object Yaml
       key = line.takeWhile(_ != ':')
       afterKey = line.drop(key.length + 1).dropWhile(_ == ' ').trim
       value <- afterKey match {
-        case "|" if iterator.hasNext => Some(iterator.takeWhile(_.matches("""^\s+.+$""")).map(deindent).mkString("\n"))
+        case "|" if iterator.hasNext => {
+          val firstLine = iterator.next()
+          val remainingLines = iterator.takeWhile(indentedBy(indentOf(firstLine))).toList
+          Some(deindent(firstLine +: remainingLines mkString "\n"))
+        }
         case str if str.nonEmpty => Some(str)
         case _ => None
       }
@@ -18,6 +22,10 @@ object Yaml
     }
     Right(pairs.toMap)
   }
+
+  def indentOf(line: String): Int = line.takeWhile(_.isWhitespace).length
+
+  def indentedBy(indent: Int)(str: String): Boolean = str.take(indent).forall(_.isWhitespace)
 
   def deindent(yamlString: String): String = {
     val indent = yamlString.lines.toSeq.head.takeWhile(_.isWhitespace).length
