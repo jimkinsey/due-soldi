@@ -161,6 +161,10 @@ code.block {
     padding: 1em;
 }
 
+div.embedded-video {
+    margin: 1em;
+}
+
 @media only screen and (min-width: 768px) {
     h1 {
         color: inherit;
