@@ -71,6 +71,9 @@ object App
               )
               events.publish(access)
             }
+            case sommelier.events.ExceptionWhileRouting(req, exception) => {
+              logger.error(s"Exception while handling ${req.method} ${req.path} - ${exception.getMessage}")
+            }
           }
           server
       } recoverWith {
