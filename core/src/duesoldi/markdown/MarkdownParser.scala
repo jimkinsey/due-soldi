@@ -40,6 +40,7 @@ object MarkdownParser
       case list: Flexmark.BulletList     => UnorderedList(list.getChildren.map(c => stripRootPara(translated(c.getChildren))))
       case list: Flexmark.OrderedList    => OrderedList(list.getChildren.map(c => stripRootPara(translated(c.getChildren))))
       case image: Flexmark.Image         => Image(image.getText, image.getUrl, Option(image.getTitle))
+      case htmlBlock: Flexmark.HtmlBlock => HtmlBlock(htmlBlock.getContentChars)
       case _: Flexmark.LineBreak         => LineBreak
       case _: Flexmark.HorizontalRule    => HorizontalRule
       case _                             => UnsupportedNode(node.getChars, node.getNodeName)
@@ -67,5 +68,6 @@ object MarkdownParser
     type LineBreak = ast.SoftLineBreak
     type HorizontalRule = ast.ThematicBreak
     type Image = ast.Image
+    type HtmlBlock = ast.HtmlBlock
   }
 }

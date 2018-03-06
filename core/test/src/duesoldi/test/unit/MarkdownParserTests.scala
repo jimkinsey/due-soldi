@@ -132,5 +132,17 @@ extends TestSuite
     {
       assert(parseMarkdown("# here me raw").raw == "# here me raw")
     }
+    'inline_html
+    {
+      val actual = parseMarkdown(
+        """<blink>
+          |  Hey!
+          |</blink>""".stripMargin).nodes
+      val expected = Seq(HtmlBlock(
+        """<blink>
+          |  Hey!
+          |</blink>""".stripMargin))
+      assert(actual == expected)
+    }
   }
 }

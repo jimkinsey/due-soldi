@@ -23,6 +23,7 @@ object MarkdownDocument {
   case object LineBreak extends Node
   case object HorizontalRule extends Node
   case class Image(alt: String, src: String, title: Option[String]) extends Node
+  case class HtmlBlock(html: String) extends Node
 
   def text(nodes: Seq[Node]): String = nodes.foldLeft("") {
     case (acc, container: Container) => acc + text(container.items)
