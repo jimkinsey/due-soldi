@@ -34,7 +34,13 @@ extends TestSuite
     }
     'code_blocks
     {
-      assert(parseMarkdown("    markdown(").nodes == Seq(Code("markdown(")))
+      val actual = parseMarkdown(
+        """    10 PRINT "HELLO"
+          |    20 GOTO 10"""".stripMargin).nodes.toList
+      val expected = Seq(Code(
+        """10 PRINT "HELLO"
+          |20 GOTO 10"""".stripMargin))
+      assert(actual == expected)
     }
     'inline_code
     {

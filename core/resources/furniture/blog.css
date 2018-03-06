@@ -142,24 +142,18 @@ img {
     filter: blur(0.1q) contrast(3) saturate(4.1) grayscale(1.0) opacity(.75);
 }
 
-
 code {
-    display: block;
-    text-align: left;
-    white-space: pre-line;
-    margin: 2em;
     font-weight: bold;
-    border: 1px solid black;
-    padding: 1em;
 }
 
-code {
+code.block {
     display: block;
     text-align: left;
-    white-space: pre-line;
-    margin: 2em;
+    white-space: pre-wrap;
+    margin: 1em;
     font-weight: bold;
     border: 1px solid black;
+    border-radius: 1em;
     padding: 1em;
 }
 

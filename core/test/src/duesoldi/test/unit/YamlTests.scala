@@ -39,6 +39,34 @@ extends TestSuite
           """10 PRINT "Hello"
             |20 GOTO 10""".stripMargin))
       }
+      "preserves indentation in multiline strings" - {
+        val yaml = Yaml.obj(
+          """content: |
+            |  Example:
+            |
+            |      10 PRINT "Hello, World!"""".stripMargin)
+        assert(yaml isRightOf Map("content" ->
+          """Example:
+            |
+            |    10 PRINT "Hello, World!"""".stripMargin
+        ))
+      }
+      "preserves nested indentation in multiline strings" - {
+        val yaml = Yaml.obj(
+          """content: |
+            |  Example:
+            |
+            |      func DoIt() {
+            |          fmt.Println("Hello")
+            |      }"""".stripMargin)
+        assert(yaml isRightOf Map("content" ->
+          """Example:
+            |
+            |    func DoIt() {
+            |        fmt.Println("Hello")
+            |    }"""".stripMargin
+        ))
+      }
       "allows blank lines between fields" - {
         val yaml = Yaml.obj(
           """a: 1
