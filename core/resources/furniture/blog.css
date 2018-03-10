@@ -27,6 +27,11 @@ header, footer, h1, h2, h3, h4, h5, h6 {
     text-align: left;
 }
 
+h1, h2, h3, p, small {
+    line-height: 1.5;
+    line-height: calc(100% + 8px);
+}
+
 header, footer {
     font-weight: lighter;
     font-size: small;
