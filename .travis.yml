@@ -1,18 +1,16 @@
 language: scala
 scala:
-- 2.11.8
-script: sbt clean test
+- 2.12.1
+script:
+- curl -L -o ~/bin/mill https://github.com/lihaoyi/mill/releases/download/0.1.6/0.1.6 && chmod +x ~/bin/mill
+- export PATH=~/bin/mill:$PATH
+- ./build
 jdk:
 - oraclejdk8
-sudo: false
+sudo: required
 cache:
   directories:
-  - "$HOME/.ivy2/cache"
-  - "$HOME/.sbt/boot/"
-  - "$HOME/.sbt/launchers/"
-before_cache:
-- find $HOME/.ivy2 -name "ivydata-*.properties" -delete
-- find $HOME/.sbt -name "*.lock" -delete
+  - $HOME/.coursier
 notifications:
   email:
     recipients:
