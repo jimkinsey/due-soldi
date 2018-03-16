@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
-./sbt compile stage
+set -euxo pipefail
+./build
 heroku local web
 
