@@ -20,7 +20,7 @@ object core extends ScalaModule {
       ivy"org.jsoup:jsoup:1.10.3",
       ivy"com.lihaoyi::utest:0.6.0"
     )
-    def testFramework = "duesoldi.test.support.app.TestAppFramework"
+    def testFrameworks = Seq("duesoldi.test.support.app.TestAppFramework")
   }
 }
 
