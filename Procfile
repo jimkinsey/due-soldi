@@ -1,1 +1,1 @@
-web: target/universal/stage/bin/due-soldi
+web: java -cp out/core/assembly/dest/out.jar duesoldi.App
