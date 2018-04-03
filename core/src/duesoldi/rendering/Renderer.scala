@@ -14,7 +14,7 @@ object Renderer
       .withHelpers(
         "furniture" -> { (path, _) => Future.successful(furniturePath(path).map(_._1)) }
       )
-      .withTemplatePath("/Users/jimkinsey/Documents/github/due-soldi/core/resources/templates")
+      .withTemplatePath("core/resources/templates")
       .withoutCache
       .renderTemplate
   }
