@@ -38,6 +38,10 @@ object App
     val events = new EventBus
     AccessRecordStorage.enable(events, injected[StoreAccessRecord])
 
+    events.subscribe {
+      case message => logger.info(s"GOT EVENT: $message")
+    }
+
     Future fromTry {
       Server.start(
         controllers = Seq(
