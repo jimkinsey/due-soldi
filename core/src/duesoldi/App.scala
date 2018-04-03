@@ -78,6 +78,9 @@ object App
             case sommelier.events.ExceptionWhileRouting(req, exception) => {
               logger.error(s"Exception while handling ${req.method} ${req.path} - ${exception.getMessage}")
             }
+            case other => {
+              events.publish("Unexpected event from server" -> other)
+            }
           }
           server
       } recoverWith {
