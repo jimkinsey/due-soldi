@@ -13,7 +13,7 @@ import duesoldi.config.Config.Credentials
 import duesoldi.debug.pages.{ConfigPageMaker, _}
 import duesoldi.dependencies.Features.forFeature
 import duesoldi.dependencies.Injection._
-import duesoldi.furniture.CurrentUrlPath
+import duesoldi.furniture.CurrentPathAndContent
 import duesoldi.furniture.storage.FurnitureFiles
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.markdown.MarkdownParser
@@ -109,7 +109,7 @@ object DueSoldiDependencies
 
   implicit lazy val parseMarkdown: Inject[markdown.Parse] = _ => MarkdownParser.parseMarkdown
 
-  implicit lazy val currentFurniturePath: Inject[CurrentUrlPath] = config => FurnitureFiles.currentUrlPath(config.furniturePath)
+  implicit lazy val furniturePathAndContent: Inject[CurrentPathAndContent] = _ => FurnitureFiles.currentPathAndContent
 
   implicit lazy val getBlogEntryTwitterCard: Inject[GetEntryTwitterMetadata] = {
     forFeature("TWITTER_CARDS")(ifOn = BlogEntryTwitterMetadata.getTwitterCard, ifOff = BlogEntryTwitterMetadata.noTwitterCard)

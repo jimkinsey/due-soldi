@@ -3,29 +3,36 @@ package duesoldi.furniture.storage
 import java.io._
 import java.util
 
-import duesoldi.furniture.{CurrentUrlPath, FurnitureNotFound}
+import duesoldi.furniture.{CurrentPathAndContent, Furniture, FurnitureLoadError}
+
+import scala.util.Try
 
 object FurnitureFiles
 {
-  def currentUrlPath(furnitureBasePath: String): CurrentUrlPath = (unversionedPath) => {
-    val is: InputStream = getClass.getClassLoader.getResourceAsStream(s"furniture/$unversionedPath")
+  val currentPathAndContent: CurrentPathAndContent = (unversionedPath) => {
+    Resources.loadBytes(s"furniture/$unversionedPath")
+      .toEither
+      .left.map(_ => FurnitureLoadError)
+      .map(bytes => Furniture(s"/furniture/${util.Arrays.hashCode(bytes)}/$unversionedPath", bytes))
+  }
+}
 
-    import java.io.ByteArrayOutputStream
-    val buffer = new ByteArrayOutputStream
+object Resources
+{
+  def loadBytes(path: String): Try[Array[Byte]] = Try {
+    val is: InputStream = getClass.getClassLoader.getResourceAsStream(path)
 
-    var nRead: Int = 0
+    val buffer = new java.io.ByteArrayOutputStream
     val data = new Array[Byte](16384)
-
+    var nRead: Int = 0
     while ( {
       nRead != -1
     }) {
       buffer.write(data, 0, nRead)
       nRead = is.read(data, 0, data.length)
     }
-
     buffer.flush()
 
-    val bytes = buffer.toByteArray
-    Right[FurnitureNotFound, (String, Array[Byte])](s"/furniture/${util.Arrays.hashCode(bytes)}/$unversionedPath" -> bytes)
+    buffer.toByteArray
   }
 }

@@ -10,7 +10,6 @@ object EnvironmentalConfig
     Config(
       host = env.getOrElse("HOST", "0.0.0.0"),
       port = env.get("PORT").map(_.toInt),
-      furniturePath = env.getOrElse("FURNITURE_PATH", "core/resources/furniture"),
       adminCredentials = Config.Credentials.parsed(env("ADMIN_CREDENTIALS")).right.get,
       accessRecordingEnabled = env.get("ACCESS_RECORDING_ENABLED").map(_.toBoolean).getOrElse(false),
       jdbcConnectionDetails = JDBCConnection.ConnectionDetails(
@@ -30,7 +29,6 @@ object EnvironmentalConfig
     Map(
       "HOST" -> config.host,
       "PORT" -> config.port.map(_.toString).getOrElse(""),
-      "FURNITURE_PATH" -> config.furniturePath,
       "ADMIN_CREDENTIALS" -> s"${config.adminCredentials.username}:${config.adminCredentials.password}",
       "ACCESS_RECORDING_ENABLED" -> config.accessRecordingEnabled.toString,
       "JDBC_DATABASE_URL" -> config.jdbcConnectionDetails.url,

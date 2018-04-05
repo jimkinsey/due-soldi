@@ -1,11 +1,9 @@
 package duesoldi
 
-import java.io.File
-
 package object furniture
 {
-  case class FurnitureNotFound(path: String)
+  case object FurnitureLoadError
+  case class Furniture(path: String, content: Array[Byte])
 
-  type CurrentUrlPath = (String) => Either[FurnitureNotFound, (String, Array[Byte])]
-//  type FurnitureFile = (String) => Either[FurnitureNotFound, File]
+  type CurrentPathAndContent = (String) => Either[FurnitureLoadError.type, Furniture]
 }
