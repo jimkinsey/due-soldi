@@ -38,10 +38,6 @@ object App
     val events = new EventBus
     AccessRecordStorage.enable(events, injected[StoreAccessRecord])
 
-    events.subscribe {
-      case message => logger.info(s"GOT EVENT: $message")
-    }
-
     Future fromTry {
       Server.start(
         controllers = Seq(
@@ -77,9 +73,6 @@ object App
             }
             case sommelier.events.ExceptionWhileRouting(req, exception) => {
               logger.error(s"Exception while handling ${req.method} ${req.path} - ${exception.getMessage}")
-            }
-            case other => {
-              events.publish("Unexpected event from server" -> other)
             }
           }
           server
