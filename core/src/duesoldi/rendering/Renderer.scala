@@ -1,9 +1,7 @@
 package duesoldi.rendering
 
-import java.io.{BufferedReader, InputStreamReader}
-
-import bhuj.Mustache
 import duesoldi.furniture.CurrentPathAndContent
+import duesoldi.resources.Resources
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
@@ -16,10 +14,9 @@ object Renderer
     new Mustache(getTemplate, Map("furniture" -> { (path: String, _: String => bhuj.Result) => Future.successful(furniturePath(path).map(_.path)) }) ).renderTemplate
   }
 
-  def getTemplate(name: String): Future[Option[String]] = Future.fromTry( Try {
-    val stream = this.getClass.getClassLoader.getResourceAsStream(s"templates/$name.mustache")
-    val reader = new BufferedReader(new InputStreamReader(stream))
-    Option(reader.lines().toArray.mkString("\n"))
-  })
-
+  def getTemplate(name: String): Future[Option[String]] = Future.fromTry(
+    Resources
+      .loadBytes(s"templates/$name.mustache")
+      .flatMap(bytes => Try { Some(new String(bytes, "UTF-8")) })
+  )
 }
