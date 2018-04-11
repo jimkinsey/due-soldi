@@ -2,8 +2,8 @@ package cicerone.test
 
 import cicerone._
 import cicerone.test.support.CustomMatchers._
-import cicerone.test.support.TestServer.withServer
 import cicerone.test.support.StreamHelpers._
+import cicerone.test.support.TestServer.{GET, POST, withServer}
 
 import utest._
 
@@ -20,7 +20,7 @@ extends TestSuite
         }
       }
       "includes the status code in the response" - {
-        withServer { case ("GET", "/foo") => (200, "OK") } { server =>
+        withServer { case GET("/foo") => (200, "OK") } { server =>
           for {
             response <- new Client() GET s"http://localhost:${server.port}/foo"
           } yield {
@@ -29,7 +29,7 @@ extends TestSuite
         }
       }
       "includes headers in the response" - {
-        withServer { case ("GET", "/headers") => (200, "OK", Map("a" -> Seq("1"))) } { server =>
+        withServer { case GET("/headers") => (200, "OK", Map("a" -> Seq("1"))) } { server =>
           for {
             response <- new Client() GET s"http://localhost:${server.port}/headers"
           } yield {
@@ -38,11 +38,20 @@ extends TestSuite
         }
       }
       "includes the body in the response" - {
-        withServer { case ("GET", "/body") => (200, "OK") } { server =>
+        withServer { case GET("/body") => (200, "OK") } { server =>
           for {
             response <- new Client() GET s"http://localhost:${server.port}/body"
           } yield {
             assert(response isRightWhere(_.body.asString == "OK"))
+          }
+        }
+      }
+      "sends the body for a POST" - {
+        withServer { case req @ POST("/post") => (201, req.body.getOrElse("")) } { server =>
+          for {
+            response <- new Client() POST(s"http://localhost:${server.port}/post", "Hello!")
+          } yield {
+            assert(response isRightWhere(_.body.asString == "Hello!"))
           }
         }
       }

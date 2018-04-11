@@ -1,23 +1,35 @@
 package cicerone.test.support
 
+import java.io.InputStream
+import java.net.{InetSocketAddress, ServerSocket}
+
+import com.sun.net.httpserver.{HttpExchange, HttpServer}
 import com.sun.net.httpserver.HttpHandler
+import duesoldi.streams.InputStreams
+
+import StreamHelpers._
 
 import scala.util.{Failure, Success, Try}
 
 object TestServer
 {
-  import java.net.{InetSocketAddress, ServerSocket}
-
-  import com.sun.net.httpserver.{HttpExchange, HttpServer}
-
-  type Request = (String, String)
   type Headers = Map[String, Seq[String]]
 
   implicit def tuple2ToResponse(tuple: (Int, String)): Response = Response(tuple._1, Some(tuple._2))
   implicit def tuple3ToResponse(tuple: (Int, String, Headers)): Response = Response(tuple._1, Some(tuple._2), tuple._3)
 
+  case class Request(method: String, path: String, body: Option[String] = None, headers: Headers = Map.empty)
   case class Response(status: Int, body: Option[String] = None, headers: Headers = Map.empty)
   case class ServerInfo(port: Int)
+
+  object GET
+  {
+    def unapply(request: Request): Option[String] = if (request.method == "GET") Some(request.path) else None
+  }
+  object POST
+  {
+    def unapply(request: Request): Option[String] = if (request.method == "POST") Some(request.path) else None
+  }
 
   def withServer[T](routing: PartialFunction[Request, Response])(block: ServerInfo => T): T = {
     val server = {
@@ -29,7 +41,8 @@ object TestServer
 
     server.createContext("/", new HttpHandler {
       override def handle(httpExchange: HttpExchange): Unit = {
-        val request: Request = (httpExchange.getRequestMethod, httpExchange.getRequestURI.getPath)
+        val body = InputStreams.toByteStream(httpExchange.getRequestBody).asString
+        val request: Request = Request(httpExchange.getRequestMethod, httpExchange.getRequestURI.getPath, Some(body)) // TODO, headers
         if (routing.isDefinedAt(request)) {
           Try {
             val Response(status, body, headers) = routing(request)
