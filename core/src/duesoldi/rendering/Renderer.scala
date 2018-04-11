@@ -1,5 +1,7 @@
 package duesoldi.rendering
 
+import bhuj.Mustache
+
 import duesoldi.furniture.CurrentPathAndContent
 import duesoldi.resources.Resources
 
