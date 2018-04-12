@@ -22,18 +22,14 @@ object TestServer
   case class Response(status: Int, body: Option[String] = None, headers: Headers = Map.empty)
   case class ServerInfo(port: Int)
 
-  object GET
+  sealed abstract class MethodMatcher(method: String)
   {
-    def unapply(request: Request): Option[String] = if (request.method == "GET") Some(request.path) else None
+    def unapply(request: Request): Option[String] = if (request.method == method) Some(request.path) else None
   }
-  object POST
-  {
-    def unapply(request: Request): Option[String] = if (request.method == "POST") Some(request.path) else None
-  }
-  object PUT
-  {
-    def unapply(request: Request): Option[String] = if (request.method == "PUT") Some(request.path) else None
-  }
+  object GET extends MethodMatcher("GET")
+  object POST extends MethodMatcher("POST")
+  object PUT extends MethodMatcher("PUT")
+  object DELETE extends MethodMatcher("DELETE")
 
   def withServer[T](routing: PartialFunction[Request, Response])(block: ServerInfo => T): T = {
     val server = {

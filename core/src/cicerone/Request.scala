@@ -8,6 +8,7 @@ case class RequestBuilder(method: String = "GET", url: String = "http://localhos
   def POST(url: String): RequestBuilder = copy(method = "POST", url = url)
   def POST(url: String, body: String): RequestBuilder = copy(method = "POST", url = url, body = Some(body))
   def PUT(url: String, body: String): RequestBuilder = copy(method = "PUT", url = url, body = Some(body))
+  def DELETE(url: String): RequestBuilder = copy(method = "DELETE", url = url)
 
   lazy val build: Request = Request(method, url, body)
 }
