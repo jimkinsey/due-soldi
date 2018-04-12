@@ -19,6 +19,12 @@ extends TestSuite
           assert(res isLeftOf ConnectionFailure)
         }
       }
+      "returns a failure when the URL is malformed" - {
+        val result = new Client() GET "ptth\\:blah blah"
+        result map { res =>
+          assert(res isLeftOf MalformedURL)
+        }
+      }
       "includes the status code in the response" - {
         withServer { case GET("/foo") => (200, "OK") } { server =>
           for {
