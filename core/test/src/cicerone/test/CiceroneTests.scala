@@ -31,6 +31,15 @@ extends TestSuite
           }
         }
       }
+      "supports PUT requests" - {
+        withServer { case PUT("/foo") => (201, "Created") } { server =>
+          for {
+            response <- http PUT(s"http://localhost:${server.port}/foo", "Hello!") send
+          } yield {
+            assert(response isRightWhere(_.status == 201))
+          }
+        }
+      }
     }
 
   }

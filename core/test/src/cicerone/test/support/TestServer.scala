@@ -30,6 +30,10 @@ object TestServer
   {
     def unapply(request: Request): Option[String] = if (request.method == "POST") Some(request.path) else None
   }
+  object PUT
+  {
+    def unapply(request: Request): Option[String] = if (request.method == "PUT") Some(request.path) else None
+  }
 
   def withServer[T](routing: PartialFunction[Request, Response])(block: ServerInfo => T): T = {
     val server = {
