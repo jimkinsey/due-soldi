@@ -1,12 +1,11 @@
 package cicerone
 
-import java.net.{HttpURLConnection, MalformedURLException, SocketTimeoutException, URL}
+import java.net._
 
 import duesoldi.streams.InputStreams
 
 import scala.concurrent.duration.Duration
 import scala.util.Try
-
 import scala.collection.JavaConverters._
 
 private[cicerone] object HttpConnection
@@ -75,6 +74,7 @@ private[cicerone] object HttpConnection
       .toEither
       .left.map {
         case _: SocketTimeoutException => ConnectionFailure
+        case _: ConnectException => ConnectionFailure
         case exception: Exception => UnexpectedException(exception)
       }
       .swap
