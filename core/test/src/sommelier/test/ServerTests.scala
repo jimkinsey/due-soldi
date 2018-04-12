@@ -1,9 +1,12 @@
 package sommelier.test
 
-import java.nio.charset.Charset
 import java.util.Base64
 
-import dispatch.{Http, url}
+import sommelier.test.support.CustomMatchers._
+import sommelier.test.support.StreamHelpers._
+
+import cicerone._
+
 import sommelier._
 import sommelier.routing.Routing._
 import utest._
@@ -25,9 +28,9 @@ extends TestSuite
       "returns a 404 when it has no routes" - {
         withServer({ Server.start(routes = Seq.empty) }) { server =>
           for {
-            response <- Http.default(url(s"http://localhost:${server.port}/any-url"))
+            response <- http GET s"http://localhost:${server.port}/any-url" send
           } yield {
-            assert(response.getStatusCode == 404)
+            assert(response isRightWhere(_.status == 404))
           }
         }
       }
@@ -37,9 +40,9 @@ extends TestSuite
           GET("/some-resource") respond { _ => 200 }
         ) )}) { server =>
           for {
-            response <- Http.default(url(s"http://localhost:${server.port}/some-resource"))
+            response <- http GET s"http://localhost:${server.port}/some-resource" send
           } yield {
-            assert(response.getStatusCode == 200)
+            assert(response isRightWhere(_.status == 200))
           }
         }
       }
@@ -49,9 +52,9 @@ extends TestSuite
           GET("/yet-another-resource") respond { _ => 200 }
         ) )}) { server =>
           for {
-            response <- Http.default(url(s"http://localhost:${server.port}/some-resource"))
+            response <- http GET s"http://localhost:${server.port}/some-resource" send
           } yield {
-            assert(response.getStatusCode == 404)
+            assert(response isRightWhere(_.status == 404))
           }
         }
       }
@@ -60,9 +63,9 @@ extends TestSuite
           PUT("/some-other-resource") respond { _ => 200 }
         ) )}) { server =>
           for {
-            response <- Http.default(url(s"http://localhost:${server.port}/some-resource"))
+            response <- http GET s"http://localhost:${server.port}/some-resource" send
           } yield {
-            assert(response.getStatusCode == 404)
+            assert(response isRightWhere(_.status == 404))
           }
         }
       }
@@ -71,12 +74,12 @@ extends TestSuite
           GET("/some-resource") respond { _ => 200 ("Some content") }
         ) )}) { server =>
           for {
-            response <- Http.default(url(s"http://localhost:${server.port}/some-resource").setMethod("HEAD"))
+            response <- http HEAD s"http://localhost:${server.port}/some-resource" send
           } yield {
             assert(
-              response.getStatusCode == 200,
-              response.hasResponseBody == false,
-              response.getHeaders("Content-Length").isEmpty
+              response isRightWhere(_.status == 200),
+              response isRightWhere(_.body.isEmpty),
+              response isRightWhere(_.headers.get("Content-Length").isEmpty)
             )
           }
         }
@@ -86,11 +89,11 @@ extends TestSuite
           GET("/some-resource") respond { _ => 200 ("Some content") }
         ) )}) { server =>
           for {
-            response <- Http.default(url(s"http://localhost:${server.port}/some-resource"))
+            response <- http GET s"http://localhost:${server.port}/some-resource" send
           } yield {
             assert(
-              response.getResponseBody(Charset.forName("UTF-8")) == "Some content",
-              response.getHeaders("Content-Length").get(0).toInt == "Some content".getBytes("UTF-8").length
+              response isRightWhere(_.body.asString == "Some content"),
+              response isRightWhere(_.headers("Content-length").head.toInt == "Some content".getBytes("UTF-8").length)
             )
           }
         }
@@ -100,10 +103,10 @@ extends TestSuite
           GET("/ask") respond { _ => 200 ("Some content") header ("X-The-Answer" -> "42") }
         ) )}) { server =>
           for {
-            response <- Http.default(url(s"http://localhost:${server.port}/ask"))
+            response <- http GET s"http://localhost:${server.port}/ask" send
           } yield {
             assert(
-              response.getHeader("X-The-Answer") == "42"
+              response isRightWhere(_.headers.get("X-the-answer") contains Seq("42"))
             )
           }
         }
@@ -113,10 +116,10 @@ extends TestSuite
           GET("/async") respond { _ => Future { 200 ("hi!") } }
         ) )}) { server =>
           for {
-            response <- Http.default(url(s"http://localhost:${server.port}/async"))
+            response <- http GET s"http://localhost:${server.port}/async" send
           } yield {
             assert(
-              response.getStatusCode == 200
+              response isRightWhere(_.status == 200)
             )
           }
         }
@@ -126,10 +129,10 @@ extends TestSuite
           GET("/book") respond { _ => reject(451) }
         ) )}) { server =>
           for {
-            response <- Http.default(url(s"http://localhost:${server.port}/book"))
+            response <- http GET s"http://localhost:${server.port}/book" send
           } yield {
             assert(
-              response.getStatusCode == 451
+              response isRightWhere(_.status == 451)
             )
           }
         }
@@ -139,10 +142,10 @@ extends TestSuite
           GET("/book") respond { _ => Future { reject(451) } }
         ) )}) { server =>
           for {
-            response <- Http.default(url(s"http://localhost:${server.port}/book"))
+            response <- http GET s"http://localhost:${server.port}/book" send
           } yield {
             assert(
-              response.getStatusCode == 451
+              response isRightWhere(_.status == 451)
             )
           }
         }
@@ -155,14 +158,12 @@ extends TestSuite
           GET("/path-match-acc-fail-auth-match") Accept "text/css" Authorization Basic("u", "p", "r") respond { _ => 200 }
         ) )}) { server =>
           for {
-            response <- Http.default(
-              url(s"http://localhost:${server.port}/path-match-acc-match-auth-fail")
-                .setHeader("Accept", "text/plain")
-                .setHeader("Authorization", s"Basic ${Base64.getEncoder.encodeToString("u:p".getBytes())}")
-            )
+            response <- http.GET(s"http://localhost:${server.port}/path-match-acc-match-auth-fail")
+                .header("Accept", "text/plain")
+                .header("Authorization", s"Basic ${Base64.getEncoder.encodeToString("u:p".getBytes())}") send
           } yield {
             assert(
-              response.getStatusCode == 403
+              response isRightWhere(_.status == 403)
             )
           }
         }
@@ -177,10 +178,10 @@ extends TestSuite
           )
         )}) { server =>
           for {
-            response <- Http.default(url(s"http://localhost:${server.port}/path"))
+            response <- http GET s"http://localhost:${server.port}/path" send
           } yield {
             assert(
-              response.getResponseBody == "Handled"
+              response isRightWhere(_.body.asString == "Handled")
             )
           }
         }
@@ -195,10 +196,10 @@ extends TestSuite
           )
         )}) { server =>
           for {
-            response <- Http.default(url(s"http://localhost:${server.port}/path"))
+            response <- http GET s"http://localhost:${server.port}/path" send
           } yield {
             assert(
-              response.getResponseBody == "Handled"
+              response isRightWhere(_.body.asString == "Handled")
             )
           }
         }
@@ -212,10 +213,10 @@ extends TestSuite
           })
         )}) { server =>
           for {
-            response <- Http.default(url(s"http://localhost:${server.port}/"))
+            response <- http GET s"http://localhost:${server.port}/" send
           } yield {
             assert(
-              response.getResponseBody == "in->handled->out"
+              response isRightWhere(_.body.asString == "in->handled->out")
             )
           }
         }
