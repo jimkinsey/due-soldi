@@ -30,7 +30,7 @@ private[cicerone] object HttpConnection
     Try {
       connection.setRequestMethod(request.method)
       request.headers.foreach { case (key, values) =>
-        connection.setRequestProperty(key, values.head)
+        connection.setRequestProperty(key, values.mkString(","))
       }
       request.body.map(_.getBytes()).foreach { bytes =>
         connection.setDoOutput(true)

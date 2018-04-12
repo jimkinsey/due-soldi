@@ -55,11 +55,20 @@ extends TestSuite
         }
       }
       "sends request headers" - {
-        withServer { case req @ GET("/headers") => (201, req.headers("The-answer").head) } { server =>
+        withServer { case req @ GET("/headers") => (200, req.headers("The-answer").head) } { server =>
           for {
             response <- new Client() send http.GET(s"http://localhost:${server.port}/headers").header("The-Answer" -> "42")
           } yield {
-            assert(response isRightWhere(_.body.asString contains "42"))
+            assert(response isRightWhere(_.body.asString == "42"))
+          }
+        }
+      }
+      "sends request headers where there are multiple values for a key" - {
+        withServer { case req @ GET("/headers") => (200, req.headers("X").mkString(",")) } { server =>
+          for {
+            response <- new Client() send http.GET(s"http://localhost:${server.port}/headers").header("x" -> "42").header("x" -> "43")
+          } yield {
+            assert(response isRightWhere(_.body.asString == "42,43"))
           }
         }
       }
