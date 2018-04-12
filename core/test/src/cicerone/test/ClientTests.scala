@@ -54,6 +54,15 @@ extends TestSuite
           }
         }
       }
+      "sends request headers" - {
+        withServer { case req @ GET("/headers") => (201, req.headers("The-answer").head) } { server =>
+          for {
+            response <- new Client() send http.GET(s"http://localhost:${server.port}/headers").header("The-Answer" -> "42")
+          } yield {
+            assert(response isRightWhere(_.body.asString contains "42"))
+          }
+        }
+      }
       "sends the body for a POST" - {
         withServer { case req @ POST("/post") => (201, req.body.getOrElse("")) } { server =>
           for {

@@ -6,6 +6,7 @@ import cicerone.test.support.StreamHelpers._
 import com.sun.net.httpserver.{HttpExchange, HttpHandler, HttpServer}
 import duesoldi.streams.InputStreams
 
+import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
 object TestServer
@@ -39,7 +40,13 @@ object TestServer
     server.createContext("/", new HttpHandler {
       override def handle(httpExchange: HttpExchange): Unit = {
         val body = InputStreams.toByteStream(httpExchange.getRequestBody).asString
-        val request: Request = Request(httpExchange.getRequestMethod, httpExchange.getRequestURI.getPath, Some(body)) // TODO, headers
+        val headers: Headers = {
+          val rawHeaders = httpExchange.getRequestHeaders.entrySet().asScala
+          rawHeaders.foldLeft[Headers](Map.empty) {
+            case (acc, entry) => acc ++ Map(entry.getKey -> entry.getValue.asScala)
+          }
+        }
+        val request: Request = Request(httpExchange.getRequestMethod, httpExchange.getRequestURI.getPath, Some(body), headers)
         if (routing.isDefinedAt(request)) {
           Try {
             val Response(status, body, headers) = routing(request)
@@ -56,7 +63,7 @@ object TestServer
             }
           } recover {
             case exception =>
-              println(s"Test server routing failed - ${exception.getMessage}")
+              exception.printStackTrace()
               httpExchange.sendResponseHeaders(500, -1)
           }
         }

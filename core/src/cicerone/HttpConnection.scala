@@ -29,6 +29,9 @@ private[cicerone] object HttpConnection
   def applyRequest(connection: HttpURLConnection, request: Request): Option[Failure] = {
     Try {
       connection.setRequestMethod(request.method)
+      request.headers.foreach { case (key, values) =>
+        connection.setRequestProperty(key, values.head)
+      }
       request.body.map(_.getBytes()).foreach { bytes =>
         connection.setDoOutput(true)
         connection.getOutputStream.write(bytes)
@@ -48,16 +51,16 @@ private[cicerone] object HttpConnection
       val headers: Headers = connection.getHeaderFields.asScala.filter(_._1 != null).foldLeft[Headers](Map.empty) {
         case (acc, (key, values)) => acc ++ Map(key -> values.asScala)
       }
-      val bodyStream = connection.getResponseCode match {
+      val bodyStream = Option(connection.getResponseCode match {
         case code if code >= 400 => connection.getErrorStream
         case _ => connection.getInputStream
-      }
+      })
       Response(
         status = connection.getResponseCode,
         headers = headers,
-        body = InputStreams.toByteStream(bodyStream, onClose = {
+        body = bodyStream.map(stream => InputStreams.toByteStream(stream, onClose = {
           connection.disconnect()
-        })
+        })).getOrElse(Stream.empty)
       )
     }
       .toEither
