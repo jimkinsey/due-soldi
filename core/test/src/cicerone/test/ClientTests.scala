@@ -5,6 +5,8 @@ import cicerone.test.support.CustomMatchers._
 import cicerone.test.support.StreamHelpers._
 import cicerone.test.support.TestServer.{GET, POST, withServer}
 
+import scala.concurrent.duration._
+
 import utest._
 
 object ClientTests
@@ -14,7 +16,7 @@ extends TestSuite
   val tests = this {
     "A client" - {
       "returns a failure when it cannot connect" - {
-        val result = new Client().send(http GET "http://127.0.0.3")
+        val result = new Client(connectTimeout = 1.millisecond).send(http GET "http://127.0.0.3")
         result map { res =>
           assert(res isLeftOf ConnectionFailure)
         }
