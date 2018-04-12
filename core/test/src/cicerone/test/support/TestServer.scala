@@ -15,6 +15,7 @@ object TestServer
 
   implicit def tuple2ToResponse(tuple: (Int, String)): Response = Response(tuple._1, Some(tuple._2))
   implicit def tuple3ToResponse(tuple: (Int, String, Headers)): Response = Response(tuple._1, Some(tuple._2), tuple._3)
+  implicit def statusAndHeaderToResponse(statusAndHeader: (Int, (String, String))): Response = Response(statusAndHeader._1, headers = Map(statusAndHeader._2._1 -> Seq(statusAndHeader._2._2)))
 
   case class Request(method: String, path: String, body: Option[String] = None, headers: Headers = Map.empty)
   case class Response(status: Int, body: Option[String] = None, headers: Headers = Map.empty)
@@ -55,8 +56,8 @@ object TestServer
                 httpExchange.getResponseHeaders.add(key, value)
               }
             }
-            httpExchange.sendResponseHeaders(status, body.map(_.getBytes.length.toLong).getOrElse(0L))
-            if (request.method != "HEAD") {
+            httpExchange.sendResponseHeaders(status, body.map(_.getBytes.length.toLong).getOrElse(-1))
+            if (request.method != "HEAD" && body.exists(_.nonEmpty)) {
               body.foreach { content =>
                 val bodyOut = httpExchange.getResponseBody
                 bodyOut.write(content.getBytes)

@@ -18,5 +18,9 @@ case class RequestBuilder(method: String = "GET", url: String = "http://localhos
     }
   }
 
+  def headers(headers: Headers): RequestBuilder = {
+    copy(headers = headers)
+  }
+
   lazy val build: Request = Request(method, url, body, headers)
 }

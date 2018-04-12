@@ -11,7 +11,7 @@ import scala.collection.JavaConverters._
 
 private[cicerone] object HttpConnection
 {
-  case class Configuration(connectTimeout: Duration = Duration(5, "seconds"))
+  case class Configuration(connectTimeout: Duration = Duration(5, "seconds"), followRedirects: Boolean = false)
 
   def open(url: String): Either[Failure, HttpURLConnection] = {
     Try(new URL(url).openConnection().asInstanceOf[HttpURLConnection])
@@ -24,6 +24,7 @@ private[cicerone] object HttpConnection
 
   def configure(connection: HttpURLConnection, configuration: Configuration): Unit = {
     connection.setConnectTimeout(configuration.connectTimeout.toMillis.toInt)
+    connection.setInstanceFollowRedirects(configuration.followRedirects)
   }
 
   def applyRequest(connection: HttpURLConnection, request: Request): Option[Failure] = {

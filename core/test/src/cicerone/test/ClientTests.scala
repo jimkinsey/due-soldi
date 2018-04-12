@@ -1,8 +1,10 @@
 package cicerone.test
 
+import cicerone.HttpConnection.Configuration
 import cicerone._
 import cicerone.test.support.CustomMatchers._
 import cicerone.test.support.StreamHelpers._
+import cicerone.test.support.TestServer
 import cicerone.test.support.TestServer.{GET, POST, withServer}
 
 import scala.concurrent.duration._
@@ -16,7 +18,7 @@ extends TestSuite
   val tests = this {
     "A client" - {
       "returns a failure when it cannot connect" - {
-        val result = new Client(connectTimeout = 1.millisecond).send(http GET "http://127.0.0.3")
+        val result = new Client(Configuration(connectTimeout = 1.millisecond)).send(http GET "http://127.0.0.3")
         result map { res =>
           assert(res isLeftOf ConnectionFailure)
         }
@@ -105,6 +107,27 @@ extends TestSuite
             response <- new Client() send(http GET s"http://localhost:${server.port}/error")
           } yield {
             assert(response isRightWhere(_.body.asString == "Internal Server Error"))
+          }
+        }
+      }
+      "does not follow redirects by default" - {
+        withServer { case GET("/redirect") => (302, "Location" -> "/other") } { server =>
+          for {
+            response <- new Client() send(http GET s"http://localhost:${server.port}/redirect")
+          } yield {
+            assert(response isRightWhere(_.status == 302))
+          }
+        }
+      }
+      "follows redirects when configured to" - {
+        withServer {
+          case GET("/redirect") => (302, "Location" -> "/other")
+          case GET("/other") => (200, "Redirected!")
+        } { server =>
+          for {
+            response <- new Client(Configuration(followRedirects = true)) send(http GET s"http://localhost:${server.port}/redirect")
+          } yield {
+            assert(response isRightWhere(_.body.asString == "Redirected!"))
           }
         }
       }

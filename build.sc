@@ -16,7 +16,6 @@ object core extends ScalaModule {
   object test extends Tests{
     def ivyDeps = Agg(
       ivy"com.h2database:h2:1.4.193",
-      ivy"net.databinder.dispatch::dispatch-core:0.13.2",
       ivy"org.jsoup:jsoup:1.10.3",
       ivy"com.lihaoyi::utest:0.6.0"
     )
