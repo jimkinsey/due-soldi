@@ -5,6 +5,7 @@ case class Request(method: String, url: String, body: Option[String] = None, hea
 case class RequestBuilder(method: String = "GET", url: String = "http://localhost", body: Option[String] = None, headers: Headers = Map.empty)
 {
   def GET(url: String): RequestBuilder = copy(method = "GET", url = url)
+  def HEAD(url: String): RequestBuilder = copy(method = "HEAD", url = url)
   def POST(url: String): RequestBuilder = copy(method = "POST", url = url)
   def POST(url: String, body: String): RequestBuilder = copy(method = "POST", url = url, body = Some(body))
   def PUT(url: String, body: String): RequestBuilder = copy(method = "PUT", url = url, body = Some(body))

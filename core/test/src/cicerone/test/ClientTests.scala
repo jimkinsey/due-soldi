@@ -54,6 +54,15 @@ extends TestSuite
           }
         }
       }
+      "does not include the body for a HEAD" - {
+        withServer { case GET("/body") => (200, "OK") } { server =>
+          for {
+            response <- new Client() send(http HEAD s"http://localhost:${server.port}/body")
+          } yield {
+            assert(response isRightWhere(_.body.asString == ""))
+          }
+        }
+      }
       "sends request headers" - {
         withServer { case req @ GET("/headers") => (200, req.headers("The-answer").head) } { server =>
           for {

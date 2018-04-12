@@ -20,11 +20,11 @@ object TestServer
   case class Response(status: Int, body: Option[String] = None, headers: Headers = Map.empty)
   case class ServerInfo(port: Int)
 
-  sealed abstract class MethodMatcher(method: String)
+  sealed abstract class MethodMatcher(methods: String*)
   {
-    def unapply(request: Request): Option[String] = if (request.method == method) Some(request.path) else None
+    def unapply(request: Request): Option[String] = if (methods contains request.method) Some(request.path) else None
   }
-  object GET extends MethodMatcher("GET")
+  object GET extends MethodMatcher("GET", "HEAD")
   object POST extends MethodMatcher("POST")
   object PUT extends MethodMatcher("PUT")
   object DELETE extends MethodMatcher("DELETE")
@@ -56,10 +56,12 @@ object TestServer
               }
             }
             httpExchange.sendResponseHeaders(status, body.map(_.getBytes.length.toLong).getOrElse(0L))
-            body.foreach { content =>
-              val bodyOut = httpExchange.getResponseBody
-              bodyOut.write(content.getBytes)
-              bodyOut.close()
+            if (request.method != "HEAD") {
+              body.foreach { content =>
+                val bodyOut = httpExchange.getResponseBody
+                bodyOut.write(content.getBytes)
+                bodyOut.close()
+              }
             }
           } recover {
             case exception =>

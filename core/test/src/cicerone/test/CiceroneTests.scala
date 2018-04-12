@@ -22,6 +22,15 @@ extends TestSuite
           }
         }
       }
+      "supports HEAD requests" - {
+        withServer { case GET("/foo") => (200, "OK") } { server =>
+          for {
+            response <- http HEAD s"http://localhost:${server.port}/foo" send
+          } yield {
+            assert(response isRightWhere(_.status == 200))
+          }
+        }
+      }
       "supports POST requests" - {
         withServer { case POST("/foo") => (201, "Created") } { server =>
           for {
