@@ -14,13 +14,13 @@ extends TestSuite
   val tests = this {
     "A client" - {
       "returns a failure when it cannot connect" - {
-        val result = new Client() GET "http://127.0.0.3"
+        val result = new Client().send(http GET "http://127.0.0.3")
         result map { res =>
           assert(res isLeftOf ConnectionFailure)
         }
       }
       "returns a failure when the URL is malformed" - {
-        val result = new Client() GET "ptth\\:blah blah"
+        val result = new Client() send(http GET "ptth\\:blah blah")
         result map { res =>
           assert(res isLeftOf MalformedURL)
         }
@@ -28,7 +28,7 @@ extends TestSuite
       "includes the status code in the response" - {
         withServer { case GET("/foo") => (200, "OK") } { server =>
           for {
-            response <- new Client() GET s"http://localhost:${server.port}/foo"
+            response <- new Client() send(http GET s"http://localhost:${server.port}/foo")
           } yield {
             assert(response isRightWhere(_.status == 200))
           }
@@ -37,7 +37,7 @@ extends TestSuite
       "includes headers in the response" - {
         withServer { case GET("/headers") => (200, "OK", Map("a" -> Seq("1"))) } { server =>
           for {
-            response <- new Client() GET s"http://localhost:${server.port}/headers"
+            response <- new Client() send(http GET s"http://localhost:${server.port}/headers")
           } yield {
             assert(response isRightWhere(_.headers("A") == Seq("1")))
           }
@@ -46,7 +46,7 @@ extends TestSuite
       "includes the body in the response" - {
         withServer { case GET("/body") => (200, "OK") } { server =>
           for {
-            response <- new Client() GET s"http://localhost:${server.port}/body"
+            response <- new Client() send(http GET s"http://localhost:${server.port}/body")
           } yield {
             assert(response isRightWhere(_.body.asString == "OK"))
           }
@@ -55,7 +55,7 @@ extends TestSuite
       "sends the body for a POST" - {
         withServer { case req @ POST("/post") => (201, req.body.getOrElse("")) } { server =>
           for {
-            response <- new Client() POST(s"http://localhost:${server.port}/post", "Hello!")
+            response <- new Client() send(http POST(s"http://localhost:${server.port}/post", "Hello!"))
           } yield {
             assert(response isRightWhere(_.body.asString == "Hello!"))
           }

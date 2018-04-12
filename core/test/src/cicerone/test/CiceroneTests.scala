@@ -16,7 +16,7 @@ extends TestSuite
       "supports GET requests" - {
         withServer { case GET("/foo") => (200, "OK") } { server =>
           for {
-            response <- http GET s"http://localhost:${server.port}/foo"
+            response <- http GET s"http://localhost:${server.port}/foo" send
           } yield {
             assert(response isRightWhere(_.status == 200))
           }
@@ -25,12 +25,13 @@ extends TestSuite
       "supports POST requests" - {
         withServer { case POST("/foo") => (201, "Created") } { server =>
           for {
-            response <- http POST(s"http://localhost:${server.port}/foo", "Hello!")
+            response <- http POST(s"http://localhost:${server.port}/foo", "Hello!") send
           } yield {
             assert(response isRightWhere(_.status == 201))
           }
         }
       }
     }
+
   }
 }
