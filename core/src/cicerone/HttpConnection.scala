@@ -48,10 +48,14 @@ private[cicerone] object HttpConnection
       val headers: Headers = connection.getHeaderFields.asScala.filter(_._1 != null).foldLeft[Headers](Map.empty) {
         case (acc, (key, values)) => acc ++ Map(key -> values.asScala)
       }
+      val bodyStream = connection.getResponseCode match {
+        case code if code >= 400 => connection.getErrorStream
+        case _ => connection.getInputStream
+      }
       Response(
         status = connection.getResponseCode,
         headers = headers,
-        body = InputStreams.toByteStream(connection.getInputStream, onClose = {
+        body = InputStreams.toByteStream(bodyStream, onClose = {
           connection.disconnect()
         })
       )

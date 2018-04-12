@@ -63,6 +63,24 @@ extends TestSuite
           }
         }
       }
+      "includes the response body for a 4XX error" - {
+        withServer { case GET("/does-not-exist") => (404, "Not Found") } { server =>
+          for {
+            response <- new Client() send(http GET s"http://localhost:${server.port}/does-not-exist")
+          } yield {
+            assert(response isRightWhere(_.body.asString == "Not Found"))
+          }
+        }
+      }
+      "includes the response body for a 5XX error" - {
+        withServer { case GET("/error") => (500, "Internal Server Error") } { server =>
+          for {
+            response <- new Client() send(http GET s"http://localhost:${server.port}/error")
+          } yield {
+            assert(response isRightWhere(_.body.asString == "Internal Server Error"))
+          }
+        }
+      }
     }
   }
 }

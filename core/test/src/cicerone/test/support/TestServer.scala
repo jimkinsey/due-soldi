@@ -1,13 +1,10 @@
 package cicerone.test.support
 
-import java.io.InputStream
 import java.net.{InetSocketAddress, ServerSocket}
 
-import com.sun.net.httpserver.{HttpExchange, HttpServer}
-import com.sun.net.httpserver.HttpHandler
+import cicerone.test.support.StreamHelpers._
+import com.sun.net.httpserver.{HttpExchange, HttpHandler, HttpServer}
 import duesoldi.streams.InputStreams
-
-import StreamHelpers._
 
 import scala.util.{Failure, Success, Try}
 

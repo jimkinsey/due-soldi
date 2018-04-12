@@ -43,7 +43,7 @@ extends TestSuite
       "supports DELETE requests" - {
         withServer { case DELETE("/foo") => (204, "") } { server =>
           for {
-            response <- http DELETE(s"http://localhost:${server.port}/foo") send
+            response <- http DELETE s"http://localhost:${server.port}/foo" send
           } yield {
             assert(response isRightWhere(_.status == 204))
           }
