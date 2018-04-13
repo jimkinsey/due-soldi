@@ -1,6 +1,6 @@
-package duesoldi.markdown
+package hammerspace.markdown
 
-import duesoldi.markdown.MarkdownDocument._
+import hammerspace.markdown.MarkdownDocument._
 import scala.language.postfixOps
 
 object MarkdownToHtml

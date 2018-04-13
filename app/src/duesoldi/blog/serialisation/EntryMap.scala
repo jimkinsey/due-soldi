@@ -3,7 +3,7 @@ package duesoldi.blog.serialisation
 import java.time.ZonedDateTime
 
 import duesoldi.blog.model.BlogEntry
-import duesoldi.markdown.MarkdownParser
+import hammerspace.markdown.MarkdownParser
 
 object EntryMap
 {

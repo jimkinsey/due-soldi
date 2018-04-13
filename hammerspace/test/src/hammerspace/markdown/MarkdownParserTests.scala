@@ -1,9 +1,8 @@
-package duesoldi.test.unit
+package hammerspace.markdown
 
-import duesoldi.markdown.MarkdownDocument._
-import duesoldi.markdown.MarkdownParser
+import hammerspace.markdown.MarkdownDocument._
+import hammerspace.markdown.MarkdownParser.parseMarkdown
 import utest._
-import MarkdownParser.parseMarkdown
 
 object MarkdownParserTests
 extends TestSuite

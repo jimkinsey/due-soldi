@@ -1,6 +1,6 @@
 package duesoldi.blog
 
-import duesoldi.markdown.MarkdownDocument
+import hammerspace.markdown.MarkdownDocument
 
 package object validation
 {

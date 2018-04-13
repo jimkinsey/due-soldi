@@ -1,11 +1,11 @@
-package duesoldi.markdown
+package hammerspace.markdown
 
 import com.vladsch.flexmark.{IParse, ast}
 import com.vladsch.flexmark.ast.Node
 import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.util.collection.iteration.ReversiblePeekingIterable
 import com.vladsch.flexmark.util.sequence.BasedSequence
-import duesoldi.markdown.MarkdownDocument._
+import hammerspace.markdown.MarkdownDocument._
 
 import scala.collection.JavaConverters._
 import scala.language.implicitConversions

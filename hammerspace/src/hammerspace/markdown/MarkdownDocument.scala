@@ -1,4 +1,4 @@
-package duesoldi.markdown
+package hammerspace.markdown
 
 object MarkdownDocument {
   sealed trait Node

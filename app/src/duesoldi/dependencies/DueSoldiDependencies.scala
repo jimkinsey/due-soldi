@@ -16,13 +16,13 @@ import duesoldi.dependencies.Injection._
 import duesoldi.furniture.CurrentPathAndContent
 import duesoldi.furniture.storage.FurnitureFiles
 import duesoldi.logging.{EventLogging, Logger}
-import duesoldi.markdown.MarkdownParser
+import hammerspace.markdown.MarkdownParser
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.metrics.storage.{AccessRecordStorage, AccessRecordStore, GetAccessRecords, StoreAccessRecord}
 import duesoldi.rendering.Renderer
 import hammerspace.storage.JDBCConnection.{ConnectionDetails, PerformQuery, PerformUpdate}
 import hammerspace.storage._
-import duesoldi.{Env, blog, markdown}
+import duesoldi.{Env, blog}
 
 import scala.concurrent.ExecutionContext
 
@@ -107,7 +107,7 @@ object DueSoldiDependencies
 
   implicit val deleteAllBlogEntries: Inject[DeleteAllBlogEntries] = inject(BlogStore.deleteAll _)
 
-  implicit lazy val parseMarkdown: Inject[markdown.Parse] = _ => MarkdownParser.parseMarkdown
+  implicit lazy val parseMarkdown: Inject[hammerspace.markdown.Parse] = _ => MarkdownParser.parseMarkdown
 
   implicit lazy val furniturePathAndContent: Inject[CurrentPathAndContent] = _ => FurnitureFiles.currentPathAndContent
 

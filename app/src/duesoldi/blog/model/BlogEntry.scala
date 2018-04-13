@@ -2,7 +2,7 @@ package duesoldi.blog.model
 
 import java.time.ZonedDateTime
 
-import duesoldi.markdown.MarkdownDocument
+import hammerspace.markdown.MarkdownDocument
 
 case class BlogEntry(
   id: String,

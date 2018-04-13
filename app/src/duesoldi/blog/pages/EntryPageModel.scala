@@ -3,7 +3,7 @@ package duesoldi.blog.pages
 import java.time.format.DateTimeFormatter
 
 import duesoldi.blog.model.BlogEntry
-import duesoldi.markdown.{MarkdownDocument, MarkdownToHtml}
+import hammerspace.markdown.{MarkdownDocument, MarkdownToHtml}
 
 object EntryPageModel
 {

@@ -1,6 +1,6 @@
 package duesoldi.blog.validation
 
-import duesoldi.markdown.MarkdownDocument
+import hammerspace.markdown.MarkdownDocument
 
 object ValidIdentifier
 {
