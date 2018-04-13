@@ -8,16 +8,16 @@ import duesoldi.blog.routes.{BlogEditingController, BlogEntryController, BlogInd
 import duesoldi.config.{Config, EnvironmentalConfig}
 import duesoldi.controller.{LearnJapaneseController, RobotsController}
 import duesoldi.debug.routes.DebugController
+import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.dependencies.Injection.injected
 import duesoldi.furniture.routes.FurnitureController
 import duesoldi.logging.Logger
 import duesoldi.metrics.routes.MetricsController
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.metrics.storage.{AccessRecordStorage, StoreAccessRecord}
-import sommelier.events.Completed
-import duesoldi.dependencies.DueSoldiDependencies._
-import sommelier.serving.Server
 import hammerspace.collections.MapEnhancements._
+import sommelier.events.Completed
+import sommelier.serving.Server
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}

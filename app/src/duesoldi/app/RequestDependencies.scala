@@ -1,10 +1,10 @@
 package duesoldi.app
 
+import duesoldi.app.RequestConfig._
 import duesoldi.config.Config
 import duesoldi.dependencies.Injection.Inject
 import sommelier.Context
 import sommelier.routing.Result
-import RequestConfig._
 
 object RequestDependencies
 {

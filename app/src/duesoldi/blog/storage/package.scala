@@ -1,7 +1,6 @@
 package duesoldi.blog
 
 import duesoldi.blog.model.BlogEntry
-import duesoldi.blog.storage.BlogStore
 
 import scala.concurrent.Future
 

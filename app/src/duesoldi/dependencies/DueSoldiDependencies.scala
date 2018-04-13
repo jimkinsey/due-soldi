@@ -16,13 +16,13 @@ import duesoldi.dependencies.Injection._
 import duesoldi.furniture.CurrentPathAndContent
 import duesoldi.furniture.storage.FurnitureFiles
 import duesoldi.logging.{EventLogging, Logger}
-import hammerspace.markdown.MarkdownParser
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.metrics.storage.{AccessRecordStorage, AccessRecordStore, GetAccessRecords, StoreAccessRecord}
 import duesoldi.rendering.Renderer
+import duesoldi.{Env, blog}
+import hammerspace.markdown.MarkdownParser
 import hammerspace.storage.JDBCConnection.{ConnectionDetails, PerformQuery, PerformUpdate}
 import hammerspace.storage._
-import duesoldi.{Env, blog}
 
 import scala.concurrent.ExecutionContext
 

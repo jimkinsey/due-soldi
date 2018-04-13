@@ -7,9 +7,9 @@ import duesoldi.app.RequestDependencies._
 import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.furniture.CurrentPathAndContent
-import sommelier.routing.Routing._
 import sommelier.handling.Unpacking._
 import sommelier.routing.Controller
+import sommelier.routing.Routing._
 
 import scala.concurrent.ExecutionContext
 
