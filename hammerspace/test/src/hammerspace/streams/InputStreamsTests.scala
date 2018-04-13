@@ -1,8 +1,6 @@
-package duesoldi.test.unit
+package hammerspace.streams
 
 import java.io.ByteArrayInputStream
-
-import duesoldi.streams.InputStreams
 
 import utest._
 

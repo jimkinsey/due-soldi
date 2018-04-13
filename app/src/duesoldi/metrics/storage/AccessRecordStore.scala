@@ -3,7 +3,7 @@ package duesoldi.metrics.storage
 import java.sql.{ResultSet, Timestamp}
 import java.time.{ZoneId, ZonedDateTime}
 
-import duesoldi.storage.JDBCConnection.{PerformQuery, PerformUpdate}
+import hammerspace.storage.JDBCConnection.{PerformQuery, PerformUpdate}
 
 import scala.concurrent.Future
 

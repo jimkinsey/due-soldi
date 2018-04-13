@@ -1,8 +1,8 @@
-package duesoldi.storage
+package hammerspace.storage
 
 import java.sql.{Connection, DriverManager, PreparedStatement, ResultSet}
 
-import duesoldi.exceptions._
+import hammerspace.exceptions._
 
 import scala.util.Try
 

@@ -1,6 +1,6 @@
 package duesoldi.resources
 
-import duesoldi.streams.InputStreams
+import hammerspace.streams.InputStreams
 
 import scala.util.Try
 

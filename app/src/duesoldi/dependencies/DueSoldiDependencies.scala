@@ -20,8 +20,8 @@ import duesoldi.markdown.MarkdownParser
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.metrics.storage.{AccessRecordStorage, AccessRecordStore, GetAccessRecords, StoreAccessRecord}
 import duesoldi.rendering.Renderer
-import duesoldi.storage.JDBCConnection.{ConnectionDetails, PerformQuery, PerformUpdate}
-import duesoldi.storage._
+import hammerspace.storage.JDBCConnection.{ConnectionDetails, PerformQuery, PerformUpdate}
+import hammerspace.storage._
 import duesoldi.{Env, blog, markdown}
 
 import scala.concurrent.ExecutionContext

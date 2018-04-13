@@ -7,7 +7,7 @@ import duesoldi.blog.model.BlogEntry
 import duesoldi.blog.storage.BlogStore.DeleteResult.Deleted
 import duesoldi.blog.storage.BlogStore.PutResult.Created
 import duesoldi.markdown
-import duesoldi.storage.JDBCConnection.{PerformQuery, PerformUpdate}
+import hammerspace.storage.JDBCConnection.{PerformQuery, PerformUpdate}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}

@@ -1,4 +1,4 @@
-package duesoldi
+package hammerspace
 
 import scala.util.{Failure, Success, Try}
 

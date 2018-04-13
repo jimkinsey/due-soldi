@@ -2,9 +2,7 @@ package duesoldi.config
 
 import duesoldi.config.Config.Credentials
 import duesoldi.config.Config.Credentials.ParseFailure.Malformed
-import duesoldi.storage.JDBCConnection
-
-import scala.concurrent.duration.Duration
+import hammerspace.storage.JDBCConnection
 
 case class Config(
   host: String,

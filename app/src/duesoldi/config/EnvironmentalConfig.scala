@@ -2,7 +2,7 @@ package duesoldi.config
 
 import duesoldi._
 import duesoldi.dependencies.Features
-import duesoldi.storage.JDBCConnection
+import hammerspace.storage.JDBCConnection
 
 object EnvironmentalConfig
 {
