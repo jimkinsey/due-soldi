@@ -2,7 +2,7 @@ package cicerone
 
 import java.net._
 
-import duesoldi.streams.InputStreams
+import hammerspace.streams.InputStreams
 
 import scala.concurrent.duration.Duration
 import scala.util.Try

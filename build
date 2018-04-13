@@ -1,3 +1,4 @@
 #!/bin/bash
 set -euxo pipefail
-mill all core.{test,assembly}
+mill all _.test
+mill all core.assembly

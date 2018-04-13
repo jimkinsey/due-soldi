@@ -3,9 +3,9 @@ package cicerone.test
 import cicerone.HttpConnection.Configuration
 import cicerone._
 import cicerone.test.support.CustomMatchers._
-import cicerone.test.support.StreamHelpers._
-import cicerone.test.support.TestServer
+import hammerspace.testing.StreamHelpers._
 import cicerone.test.support.TestServer.{GET, POST, withServer}
+import cicerone.test.support.TestServer
 
 import scala.concurrent.duration._
 

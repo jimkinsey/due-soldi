@@ -3,7 +3,7 @@ package duesoldi.test.support.httpclient
 import cicerone._
 import duesoldi.Env
 
-import cicerone.test.support.StreamHelpers._
+import hammerspace.testing.StreamHelpers._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps

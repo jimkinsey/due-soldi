@@ -1,4 +1,4 @@
-package cicerone.test.support
+package hammerspace.testing
 
 object StreamHelpers
 {
