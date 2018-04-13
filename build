@@ -1,4 +1,4 @@
 #!/bin/bash
 set -euxo pipefail
 mill all _.test
-mill all core.assembly
+mill all app.assembly
