@@ -1,4 +1,4 @@
-package duesoldi.collections
+package hammerspace.collections
 
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME

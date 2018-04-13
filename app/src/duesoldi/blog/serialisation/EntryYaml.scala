@@ -9,8 +9,8 @@ import duesoldi.yaml.Yaml
 
 object EntryYaml
 {
-  import duesoldi.collections.SeqEnhancements._
-  import duesoldi.collections.StandardCoercions._
+  import hammerspace.collections.SeqEnhancements._
+  import hammerspace.collections.StandardCoercions._
 
   def parse(yaml: String): Either[ParseFailure, BlogEntry] =
     for {

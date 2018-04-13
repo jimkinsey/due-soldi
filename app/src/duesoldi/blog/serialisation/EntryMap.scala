@@ -7,8 +7,8 @@ import duesoldi.markdown.MarkdownParser
 
 object EntryMap
 {
-  import duesoldi.collections.MapEnhancements._
-  import duesoldi.collections.StandardCoercions._
+  import hammerspace.collections.MapEnhancements._
+  import hammerspace.collections.StandardCoercions._
 
   type EntryMap = Map[String,Any]
 

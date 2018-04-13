@@ -17,7 +17,7 @@ import duesoldi.metrics.storage.{AccessRecordStorage, StoreAccessRecord}
 import sommelier.events.Completed
 import duesoldi.dependencies.DueSoldiDependencies._
 import sommelier.serving.Server
-import duesoldi.collections.MapEnhancements._
+import hammerspace.collections.MapEnhancements._
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
