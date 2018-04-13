@@ -23,13 +23,34 @@ object cicerone extends ScalaModule {
   }
 }
 
+object dearboy extends ScalaModule {
+  def scalaVersion = "2.12.4"
+  object test extends Tests{
+    def ivyDeps = Agg(
+      ivy"com.lihaoyi::utest:0.6.0"
+    )
+    def testFrameworks = Seq("utest.runner.Framework")
+  }
+}
+
+object sommelier extends ScalaModule {
+  def scalaVersion = "2.12.4"
+  def moduleDeps = Seq(hammerspace, cicerone, dearboy)
+  object test extends Tests{
+    def ivyDeps = Agg(
+      ivy"com.lihaoyi::utest:0.6.0"
+    )
+    def testFrameworks = Seq("utest.runner.Framework")
+  }
+}
+
 object core extends ScalaModule {
   def scalaVersion = "2.12.4"
   def repositories = super.repositories ++ Seq(
     MavenRepository("https://oss.sonatype.org/content/repositories/releases"),
     MavenRepository("https://oss.sonatype.org/content/repositories/snapshots")
   )
-  def moduleDeps = Seq(hammerspace, cicerone)
+  def moduleDeps = Seq(hammerspace, cicerone, dearboy, sommelier)
   def ivyDeps = Agg(
     ivy"org.postgresql:postgresql:9.4.1212",
     ivy"com.vladsch.flexmark:flexmark:0.27.0",
