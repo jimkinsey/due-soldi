@@ -2,14 +2,12 @@ package cicerone.test
 
 import cicerone.HttpConnection.Configuration
 import cicerone._
-import cicerone.test.support.CustomMatchers._
-import hammerspace.testing.StreamHelpers._
 import cicerone.test.support.TestServer.{GET, POST, withServer}
-import cicerone.test.support.TestServer
+import hammerspace.testing.CustomMatchers._
+import hammerspace.testing.StreamHelpers._
+import utest._
 
 import scala.concurrent.duration._
-
-import utest._
 
 object ClientTests
 extends TestSuite

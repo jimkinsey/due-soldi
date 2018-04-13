@@ -2,9 +2,9 @@ package cicerone.test.support
 
 import java.net.{InetSocketAddress, ServerSocket}
 
-import hammerspace.testing.StreamHelpers._
 import com.sun.net.httpserver.{HttpExchange, HttpHandler, HttpServer}
 import hammerspace.streams.InputStreams
+import hammerspace.testing.StreamHelpers._
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}

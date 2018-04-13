@@ -3,7 +3,8 @@ package sommelier.test
 import java.util.Base64
 
 import sommelier.test.support.CustomMatchers._
-import sommelier.test.support.StreamHelpers._
+import hammerspace.testing.CustomMatchers._
+import hammerspace.testing.StreamHelpers._
 
 import cicerone._
 

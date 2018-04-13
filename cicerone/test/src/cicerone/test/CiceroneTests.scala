@@ -1,10 +1,8 @@
 package cicerone.test
 
-import cicerone.test.support.TestServer._
-import cicerone.test.support.CustomMatchers._
-
 import cicerone._
-
+import cicerone.test.support.TestServer._
+import hammerspace.testing.CustomMatchers._
 import utest._
 
 object CiceroneTests
