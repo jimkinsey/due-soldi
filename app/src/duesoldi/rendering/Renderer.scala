@@ -1,9 +1,8 @@
 package duesoldi.rendering
 
 import bhuj.Mustache
-
 import duesoldi.furniture.CurrentPathAndContent
-import duesoldi.resources.Resources
+import hammerspace.resources.Resources
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
@@ -18,7 +17,7 @@ object Renderer
 
   def getTemplate(name: String): Future[Option[String]] = Future.fromTry(
     Resources
-      .loadBytes(s"templates/$name.mustache")
+      .loadBytes(this.getClass, s"templates/$name.mustache")
       .flatMap(bytes => Try { Some(new String(bytes, "UTF-8")) })
   )
 }

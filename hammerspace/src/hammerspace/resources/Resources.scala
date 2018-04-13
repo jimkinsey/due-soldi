@@ -1,4 +1,4 @@
-package duesoldi.resources
+package hammerspace.resources
 
 import hammerspace.streams.InputStreams
 
@@ -6,9 +6,9 @@ import scala.util.Try
 
 object Resources
 {
-  def loadBytes(path: String): Try[Array[Byte]] =
+  def loadBytes(`class`: Class[_], path: String): Try[Array[Byte]] =
     Try {
-      getClass.getClassLoader.getResourceAsStream(path)
+      `class`.getClassLoader.getResourceAsStream(path)
     } flatMap { stream =>
       InputStreams.getBytes(stream)
     }
