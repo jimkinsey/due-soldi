@@ -3,7 +3,7 @@ package duesoldi.test.unit
 import java.time.format.DateTimeFormatter
 
 import duesoldi.blog.serialisation.EntryYaml
-import duesoldi.test.support.matchers.CustomMatchers._
+import hammerspace.testing.CustomMatchers._
 import utest._
 
 object BlogEntrySerialisationTests

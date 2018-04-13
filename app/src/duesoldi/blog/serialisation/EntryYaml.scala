@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME
 import duesoldi.blog.model.BlogEntry
 import duesoldi.blog.serialisation.EntryMap.EntryMap
 import duesoldi.blog.serialisation.EntryYaml.ParseFailure.{Invalid, Malformed}
-import duesoldi.yaml.Yaml
+import hammerspace.yaml.Yaml
 
 object EntryYaml
 {

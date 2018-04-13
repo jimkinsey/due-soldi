@@ -1,4 +1,4 @@
-package duesoldi.yaml
+package hammerspace.yaml
 
 object Yaml
 {

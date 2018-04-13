@@ -1,7 +1,7 @@
-package duesoldi.test.unit
+package hammerspace.yaml
 
-import duesoldi.test.support.matchers.CustomMatchers._
-import duesoldi.yaml.Yaml
+import hammerspace.testing.CustomMatchers._
+
 import utest._
 
 object YamlTests

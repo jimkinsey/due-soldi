@@ -2,7 +2,7 @@ package duesoldi.test.functional
 
 import duesoldi.test.support.app.ServerRequests._
 import duesoldi.test.support.app.TestApp.runningApp
-import duesoldi.test.support.matchers.CustomMatchers._
+import hammerspace.testing.CustomMatchers._
 import duesoldi.test.support.pages.{BlogEntryPage, OgMetadata}
 import duesoldi.test.support.setup.BlogStorage._
 import duesoldi.test.support.setup.Database._
