@@ -41,11 +41,6 @@ case class RequestMatcher(
   authorization: Option[AuthorizationMatcher] = None
 ) extends Rejects[Request]
 {
-  lazy val specificity: Float = {
-    val options = Seq(method, path, accept, authorization)
-    options.count(_.isDefined) / options.length
-  }
-
   def apply(path: String): RequestMatcher = {
     copy(path = Some(PathMatcher(path)))
   }
