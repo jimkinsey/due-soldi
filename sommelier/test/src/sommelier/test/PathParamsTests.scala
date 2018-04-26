@@ -1,6 +1,7 @@
 package sommelier.test
 
-import sommelier.routing.PathParams
+import sommelier.messaging.{Method, Request}
+import sommelier.routing.{BadRequest, PathParams, RequestMatcher}
 import sommelier.routing.PathParams.Failure.PathMatchFailure
 import utest._
 
@@ -29,6 +30,26 @@ extends TestSuite
       "contains the rest of the path where a wildcard matches and the path has vars" - {
         val result = PathParams("/:var/*")("/42/remainder")
         assert(result == Right(Map("var" -> "42", "*" -> "remainder")))
+      }
+    }
+  }
+}
+
+object RequestMatcherTests
+extends TestSuite
+{
+  val tests = this
+  {
+    "A request matcher" - {
+      "can match on host" - {
+        val request = Request(Method.GET, "/").header("Host" -> Seq("sommelier.io"))
+        val rejection = RequestMatcher().Host("sommelier.io").rejects(request)
+        assert(rejection isEmpty)
+      }
+      "can reject on host" - {
+        val request = Request(Method.GET, "/").header("Host" -> Seq("scalatra.org"))
+        val rejection = RequestMatcher().Host("sommelier.io").rejects(request)
+        assert(rejection contains BadRequest)
       }
     }
   }

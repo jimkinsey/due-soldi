@@ -38,7 +38,8 @@ case class RequestMatcher(
   method: Option[MethodMatcher] = None,
   path: Option[PathMatcher] = None,
   accept: Option[AcceptMatcher] = None,
-  authorization: Option[AuthorizationMatcher] = None
+  authorization: Option[AuthorizationMatcher] = None,
+  host: Option[HostMatcher] = None
 ) extends Rejects[Request]
 {
   def apply(path: String): RequestMatcher = {
@@ -49,7 +50,8 @@ case class RequestMatcher(
     path.flatMap(_.rejects(request.path)) orElse
     method.flatMap(_.rejects(request.method)) orElse
     accept.flatMap(_.rejects(request.accept.getOrElse(""))) orElse // FIXME
-    authorization.flatMap(_.rejects(request))
+    authorization.flatMap(_.rejects(request)) orElse
+    host.flatMap(_.rejects(request.headers("Host").head)) // FIXME
   }
 
   def Accept(contentType: String): RequestMatcher = {
@@ -58,6 +60,10 @@ case class RequestMatcher(
 
   def Authorization(authorization: AuthorizationMatcher): RequestMatcher = {
     copy(authorization = Some(authorization))
+  }
+
+  def Host(host: String): RequestMatcher = {
+    copy(host = Some(HostMatcher(host)))
   }
 
   override def toString: String =
@@ -111,4 +117,19 @@ case class Basic(username: String, password: String, realm: String) extends Auth
   lazy val encoded: String = Base64.getEncoder.encodeToString(s"$username:$password".getBytes("UTF-8"))
 
   override def toString: String = s"Basic ***"
+}
+
+case class HostMatcher(host: String) extends Rejects[String]
+{
+  override def rejects(in: String): Option[Rejection] = {
+    if (host == in) {
+      None
+    } else {
+      Some(BadRequest)
+    }
+  }
+}
+
+case object BadRequest extends Rejection {
+  override def response: Response = Response(400)
 }
