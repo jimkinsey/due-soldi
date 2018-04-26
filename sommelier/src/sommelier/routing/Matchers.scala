@@ -66,7 +66,7 @@ case class RequestMatcher(
        |Authorization: ${authorization.getOrElse("n/a")}""".stripMargin
 }
 
-case object Unnacceptable extends Rejection
+case object Unacceptable extends Rejection
 {
   val response: Response = Response(406)
 }
@@ -74,7 +74,7 @@ case object Unnacceptable extends Rejection
 case class AcceptMatcher(contentType: String) extends Rejects[String]
 {
   def rejects(reqContentType: String): Option[Rejection] = {
-    if (contentType == reqContentType) None else Some(Unnacceptable)
+    if (contentType == reqContentType) None else Some(Unacceptable)
   }
 }
 

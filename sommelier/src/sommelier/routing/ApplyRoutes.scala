@@ -35,7 +35,7 @@ private[sommelier] object ApplyRoutes
     rejection match {
       case ResourceNotFound => 1
       case MethodNotAllowed => 2
-      case Unnacceptable => 3
+      case Unacceptable => 3
       case Unauthorized(_) => 4
       case Forbidden => 5
     }
