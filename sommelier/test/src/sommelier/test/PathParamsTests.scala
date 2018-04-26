@@ -1,5 +1,6 @@
 package sommelier.test
 
+import sommelier.messaging.Method.GET
 import sommelier.messaging.{Method, Request}
 import sommelier.routing.{BadRequest, PathParams, RequestMatcher}
 import sommelier.routing.PathParams.Failure.PathMatchFailure
@@ -42,12 +43,12 @@ extends TestSuite
   {
     "A request matcher" - {
       "can match on host" - {
-        val request = Request(Method.GET, "/").header("Host" -> Seq("sommelier.io"))
+        val request = Request(GET, "/").host("sommelier.io")
         val rejection = RequestMatcher().Host("sommelier.io").rejects(request)
         assert(rejection isEmpty)
       }
       "can reject on host" - {
-        val request = Request(Method.GET, "/").header("Host" -> Seq("scalatra.org"))
+        val request = Request(GET, "/").host("scalatra.org")
         val rejection = RequestMatcher().Host("sommelier.io").rejects(request)
         assert(rejection contains BadRequest)
       }

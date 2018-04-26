@@ -11,6 +11,7 @@ case class Request(
 {
   def header(header: (String, Seq[String])): Request = copy(headers = headers + header)
   def body(str: String): Request = copy(body = Some(str))
+  def host(host: String): Request = header("Host" -> Seq(host))
 }
 
 
