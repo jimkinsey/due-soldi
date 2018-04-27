@@ -69,7 +69,8 @@ case class RequestMatcher(
   override def toString: String =
     s"""${method.map(_.methods.mkString(",")).getOrElse("[Any Method]")} ${path.map(_.pathPattern).getOrElse("*")}
        |Accept: ${accept.map(_.contentType).getOrElse("*/*")}
-       |Authorization: ${authorization.getOrElse("n/a")}""".stripMargin
+       |Authorization: ${authorization.getOrElse("n/a")}
+       |Host: ${host.map(_.host).getOrElse("[Any Host]")}""".stripMargin
 }
 
 case object Unacceptable extends Rejection
