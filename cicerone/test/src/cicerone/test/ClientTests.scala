@@ -16,7 +16,7 @@ extends TestSuite
   val tests = this {
     "A client" - {
       "returns a failure when it cannot connect" - {
-        val result = new Client(Configuration(connectTimeout = 1.millisecond)).send(http GET "http://127.0.0.3")
+        val result = new Client(Configuration(connectTimeout = 1.millisecond)).send(http GET "http://127.0.0.1:1")
         result map { res =>
           assert(res isLeftOf ConnectionFailure)
         }
