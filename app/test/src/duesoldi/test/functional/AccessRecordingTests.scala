@@ -136,6 +136,26 @@ extends TestSuite
         }
       }
     }
+    "The access JSON endpoint" - {
+      "returns a JSON file containing access records" - {
+        withSetup(
+          database,
+          accessRecordingEnabled,
+          runningAppForThisTestOnly,
+          blogEntries("id" -> "# Content!")
+        ) { implicit env =>
+          for {
+            _ <- get("/blog/id")
+            response <- get("/admin/metrics/access.json", headers = TestApp.adminAuth)
+          } yield {
+            assert(
+              response.headers.get("Content-type") exists(_ exists(_ contains "application/json")),
+              response.body contains """"path": "/blog/id","""
+            )
+          }
+        }
+      }
+    }
   }
 
   private lazy val accessRecordingEnabled = new SyncSetup {

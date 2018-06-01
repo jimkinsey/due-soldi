@@ -30,6 +30,17 @@ extends Controller
     }
   }
 
+  GET("/admin/metrics/access.json").Authorization(basicAdminAuth) ->- { implicit context =>
+    for {
+      getAccessRecords <- provided[GetAccessRecords]
+      start <- query[ZonedDateTime]("start").optional.firstValue defaultTo sevenDaysAgo
+      accesses <- getAccessRecords(start)
+      content = renderJson(accesses)
+    } yield {
+      200 (content) header("Cache-control" -> "no-cache") header("Content-type" -> "application/json")
+    }
+  }
+
   private def sevenDaysAgo = ZonedDateTime.now().minus(7, ChronoUnit.DAYS)
 
   private def renderCsv(accessRecords: Seq[Access]): String = {
@@ -55,4 +66,30 @@ extends Controller
     else {
       value.trim
     }
+
+  private def renderJson(accessRecords: Seq[Access]): String = {
+
+    def jsonSafe(in: String): String = in.replace("\"", """\"""")
+
+    def optionalJsonField(name: String, value: Option[String]): String = {
+      s""" "$name": ${value.map(defined => s""""${jsonSafe(defined)}"""").getOrElse("null")} """
+    }
+
+    s"""{
+       |  "records": [
+       |    ${accessRecords.map{ case Access(time, path, referer, userAgent, duration, ip, country, statusCode) =>
+                s"""{
+                   |  "time": "${time.format(DateTimeFormatter.ISO_DATE_TIME)}",
+                   |  "path": "$path",
+                   |  ${optionalJsonField("referer", referer)},
+                   |  ${optionalJsonField("userAgent", userAgent)},
+                   |  "duration": $duration,
+                   |  ${optionalJsonField("ip", ip)},
+                   |  ${optionalJsonField("country", country)},
+                   |  "statusCode": $statusCode
+                   |}""".stripMargin
+             }.mkString(",")}
+       |  ]
+       |}""".stripMargin
+  }
 }
