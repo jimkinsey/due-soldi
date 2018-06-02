@@ -97,6 +97,19 @@ object AuthorizationFailed {
   }
 }
 
+object AuthorizationMatcher
+{
+  implicit class WithFallback(initial: AuthorizationMatcher) {
+    def or(next: AuthorizationMatcher): AuthorizationMatcher = {
+      (request: Request) => {
+        initial.rejects(request) match {
+          case None => None
+          case _ => next.rejects(request)
+        }
+      }
+    }
+  }
+}
 trait AuthorizationMatcher extends Rejects[Request]
 {
   def rejects(request: Request): Option[Rejection]

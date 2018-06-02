@@ -22,6 +22,8 @@ object Routing
     def respond(handler: Handler) = Route(matcher, handler)
   }
 
+  implicit def methodToRequest(method: Method): Request = Request(method, "/")
+
   implicit def statusToResponse(status: Int): Response = Response(status = status)
 
   implicit def responseToResult(response: Response): Result[Response] = Accepted(response)
@@ -43,4 +45,11 @@ object Routing
   def reject(response: Response): Result[Response] = Rejected(Rejection(response))
 
   def rejectRequest(response: Response): Result[Request] = Rejected(Rejection(response))
+
+  implicit class RequestOps(request: Request)
+  {
+    def basicAuth(auth: Basic): Request = {
+      request.header("Authorization" -> Seq(s"Basic ${auth.encoded}"))
+    }
+  }
 }
