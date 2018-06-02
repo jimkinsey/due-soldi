@@ -14,6 +14,7 @@ case class Response(
   def body(body: String): Response = this(body)
   def body(body: Array[Byte]): Response = this(body)
   def header(header: (String, String)): Response = copy(headers = headers :+ header)
+  def cookie(cookie: Cookie): Response = header("Set-Cookie" -> cookie.format)
   def body[T](implicit marshal: Array[Byte] => T): Option[T] = body map marshal
 
   override def equals(obj: scala.Any): Boolean = {
