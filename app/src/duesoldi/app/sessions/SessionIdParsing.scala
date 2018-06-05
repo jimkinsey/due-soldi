@@ -4,17 +4,15 @@ import duesoldi.app.sessions.SessionIdParsing.ParseFailure.MalformedSessionId
 
 object SessionIdParsing
 {
-  case class SessionId(user: String, hash: String)
-
   sealed trait ParseFailure
   object ParseFailure
   {
     case object MalformedSessionId extends ParseFailure
   }
 
-  def parseSessionId(raw: String): Either[ParseFailure, SessionId] = {
+  def parseSessionId(raw: String): Either[ParseFailure, UnvalidatedSessionId] = {
     raw match {
-      case WellFormedSessionId(user, hash) => Right(SessionId(user, hash))
+      case WellFormedSessionId(user, hash) => Right(UnvalidatedSessionId(user, hash))
       case _ => Left(MalformedSessionId)
     }
   }

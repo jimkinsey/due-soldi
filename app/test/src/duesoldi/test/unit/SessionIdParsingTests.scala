@@ -1,8 +1,7 @@
 package duesoldi.test.unit
 
 import duesoldi.app.sessions.SessionIdParsing.ParseFailure.MalformedSessionId
-import duesoldi.app.sessions.SessionIdParsing.SessionId
-import duesoldi.app.sessions.SessionIdParsing
+import duesoldi.app.sessions.{SessionIdParsing, UnvalidatedSessionId}
 import utest._
 import hammerspace.testing.CustomMatchers._
 
@@ -17,7 +16,7 @@ extends TestSuite
       }
       "A well-formed session ID can be parsed" - {
         val result = SessionIdParsing.parseSessionId("user:jim;h:12345")
-        assert(result isRightOf SessionId("jim", "12345"))
+        assert(result isRightOf UnvalidatedSessionId("jim", "12345"))
       }
     }
   }
