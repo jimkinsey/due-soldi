@@ -2,7 +2,10 @@ import ratatoskr.{Request, Response}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-package object cicerone {
+package object cicerone
+{
+  type Result = Future[Either[Failure, Response]]
+
   sealed trait Failure
   case object ConnectionFailure extends Failure
   case object MalformedURL extends Failure
@@ -10,14 +13,5 @@ package object cicerone {
 
   type Headers = Map[String,Seq[String]]
 
-  val http = RequestBuilder()
-
-  implicit def builtRequest(builder: RequestBuilder): Request = builder.build
-
-  implicit class RequestSender(builder: RequestBuilder)
-  {
-    def send(implicit executionContext: ExecutionContext): Future[Either[Failure, Response]] = {
-      new Client().send(builder.build)
-    }
-  }
+  def http(request: Request)(implicit executionContext: ExecutionContext): Result = new Client().send(request)
 }

@@ -5,6 +5,8 @@ import java.net.{InetSocketAddress, ServerSocket}
 import com.sun.net.httpserver.{HttpExchange, HttpHandler, HttpServer}
 import hammerspace.streams.InputStreams
 import hammerspace.testing.StreamHelpers._
+import ratatoskr.Method.{GET, HEAD}
+import ratatoskr.{Method, Request}
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
@@ -17,20 +19,12 @@ object TestServer
   implicit def tuple3ToResponse(tuple: (Int, String, Headers)): Response = Response(tuple._1, Some(tuple._2), tuple._3)
   implicit def statusAndHeaderToResponse(statusAndHeader: (Int, (String, String))): Response = Response(statusAndHeader._1, headers = Map(statusAndHeader._2._1 -> Seq(statusAndHeader._2._2)))
 
-  case class Request(method: String, path: String, body: Option[String] = None, headers: Headers = Map.empty)
   case class Response(status: Int, body: Option[String] = None, headers: Headers = Map.empty)
   case class ServerInfo(port: Int)
 
-  sealed abstract class MethodMatcher(methods: String*)
-  {
-    def unapply(request: Request): Option[String] = if (methods contains request.method) Some(request.path) else None
-  }
-  object GET extends MethodMatcher("GET", "HEAD")
-  object POST extends MethodMatcher("POST")
-  object PUT extends MethodMatcher("PUT")
-  object DELETE extends MethodMatcher("DELETE")
+  type RequestMatcher = (Method, String)
 
-  def withServer[T](routing: PartialFunction[Request, Response])(block: ServerInfo => T): T = {
+  def withServer[T](routing: PartialFunction[RequestMatcher, Request => Response])(block: ServerInfo => T): T = {
     val server = {
       val socket = new ServerSocket(0)
       val port = socket.getLocalPort
@@ -47,17 +41,25 @@ object TestServer
             case (acc, entry) => acc ++ Map(entry.getKey -> entry.getValue.asScala)
           }
         }
-        val request: Request = Request(httpExchange.getRequestMethod, httpExchange.getRequestURI.getPath, Some(body), headers)
-        if (routing.isDefinedAt(request)) {
+        val request: Request = Request(
+          method = Method(httpExchange.getRequestMethod),
+          url = httpExchange.getRequestURI.getPath,
+          body = body.asByteStream("UTF-8"),
+          headers = headers
+        )
+        if (routing.isDefinedAt(request.method -> request.url) || request.method == HEAD && routing.isDefinedAt(GET -> request.url)) {
           Try {
-            val Response(status, body, headers) = routing(request)
+            val Response(status, body, headers) = request.method match {
+              case HEAD => routing(GET -> request.url)(request)
+              case _ => routing(request.method -> request.url)(request)
+            }
             headers.foreach { case (key, values) =>
               values.foreach { value =>
                 httpExchange.getResponseHeaders.add(key, value)
               }
             }
             httpExchange.sendResponseHeaders(status, body.map(_.getBytes.length.toLong).getOrElse(-1))
-            if (request.method != "HEAD" && body.exists(_.nonEmpty)) {
+            if (request.method != HEAD && body.exists(_.nonEmpty)) {
               body.foreach { content =>
                 val bodyOut = httpExchange.getResponseBody
                 bodyOut.write(content.getBytes)

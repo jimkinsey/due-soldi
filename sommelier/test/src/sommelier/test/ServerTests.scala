@@ -2,21 +2,19 @@ package sommelier.test
 
 import java.util.Base64
 
-import sommelier.test.support.CustomMatchers._
+import cicerone._
 import hammerspace.testing.CustomMatchers._
 import hammerspace.testing.StreamHelpers._
-
-import cicerone._
-
-import sommelier._
+import ratatoskr.RequestBuilding._
+import ratatoskr.{Method, Request}
+import sommelier.handling.Unpacking._
 import sommelier.routing.Routing._
+import sommelier.routing.{Basic, Controller}
+import sommelier.serving.Server
 import utest._
 
 import scala.concurrent.Future
 import scala.util.Try
-import sommelier.handling.Unpacking._
-import sommelier.routing.{Basic, Controller}
-import sommelier.serving.Server
 
 object ServerTests
 extends TestSuite
@@ -29,7 +27,7 @@ extends TestSuite
       "returns a 404 when it has no routes" - {
         withServer({ Server.start(routes = Seq.empty) }) { server =>
           for {
-            response <- http GET s"http://localhost:${server.port}/any-url" send
+            response <- http(Request(Method.GET, s"http://localhost:${server.port}/any-url"))
           } yield {
             assert(response isRightWhere(_.status == 404))
           }
@@ -41,7 +39,7 @@ extends TestSuite
           GET("/some-resource") respond { _ => 200 }
         ) )}) { server =>
           for {
-            response <- http GET s"http://localhost:${server.port}/some-resource" send
+            response <- http(Request(Method.GET, s"http://localhost:${server.port}/some-resource"))
           } yield {
             assert(response isRightWhere(_.status == 200))
           }
@@ -53,7 +51,7 @@ extends TestSuite
           GET("/yet-another-resource") respond { _ => 200 }
         ) )}) { server =>
           for {
-            response <- http GET s"http://localhost:${server.port}/some-resource" send
+            response <- http(Request(Method.GET, s"http://localhost:${server.port}/some-resource"))
           } yield {
             assert(response isRightWhere(_.status == 404))
           }
@@ -64,7 +62,7 @@ extends TestSuite
           PUT("/some-other-resource") respond { _ => 200 }
         ) )}) { server =>
           for {
-            response <- http GET s"http://localhost:${server.port}/some-resource" send
+            response <- http(Request(Method.GET, s"http://localhost:${server.port}/some-resource"))
           } yield {
             assert(response isRightWhere(_.status == 404))
           }
@@ -75,7 +73,7 @@ extends TestSuite
           GET("/some-resource") respond { _ => 200 ("Some content") }
         ) )}) { server =>
           for {
-            response <- http HEAD s"http://localhost:${server.port}/some-resource" send
+            response <- http(Request(Method.HEAD, s"http://localhost:${server.port}/some-resource"))
           } yield {
             assert(
               response isRightWhere(_.status == 200),
@@ -90,7 +88,7 @@ extends TestSuite
           GET("/some-resource") respond { _ => 200 ("Some content") }
         ) )}) { server =>
           for {
-            response <- http GET s"http://localhost:${server.port}/some-resource" send
+            response <- http(Request(Method.GET, s"http://localhost:${server.port}/some-resource"))
           } yield {
             assert(
               response isRightWhere(_.body.asString == "Some content"),
@@ -104,7 +102,7 @@ extends TestSuite
           GET("/ask") respond { _ => 200 ("Some content") header ("X-The-Answer" -> "42") }
         ) )}) { server =>
           for {
-            response <- http GET s"http://localhost:${server.port}/ask" send
+            response <- http(Request(Method.GET, s"http://localhost:${server.port}/ask"))
           } yield {
             assert(
               response isRightWhere(_.headers.get("X-the-answer") contains Seq("42"))
@@ -117,7 +115,7 @@ extends TestSuite
           GET("/async") respond { _ => Future { 200 ("hi!") } }
         ) )}) { server =>
           for {
-            response <- http GET s"http://localhost:${server.port}/async" send
+            response <- http(Request(Method.GET, s"http://localhost:${server.port}/async"))
           } yield {
             assert(
               response isRightWhere(_.status == 200)
@@ -130,7 +128,7 @@ extends TestSuite
           GET("/book") respond { _ => reject(451) }
         ) )}) { server =>
           for {
-            response <- http GET s"http://localhost:${server.port}/book" send
+            response <- http(Request(Method.GET, s"http://localhost:${server.port}/book"))
           } yield {
             assert(
               response isRightWhere(_.status == 451)
@@ -143,7 +141,7 @@ extends TestSuite
           GET("/book") respond { _ => Future { reject(451) } }
         ) )}) { server =>
           for {
-            response <- http GET s"http://localhost:${server.port}/book" send
+            response <- http(Request(Method.GET, s"http://localhost:${server.port}/book"))
           } yield {
             assert(
               response isRightWhere(_.status == 451)
@@ -159,9 +157,9 @@ extends TestSuite
           GET("/path-match-acc-fail-auth-match") Accept "text/css" Authorization Basic("u", "p", "r") respond { _ => 200 }
         ) )}) { server =>
           for {
-            response <- http.GET(s"http://localhost:${server.port}/path-match-acc-match-auth-fail")
+            response <- http(Request(Method.GET, s"http://localhost:${server.port}/path-match-acc-match-auth-fail")
                 .header("Accept", "text/plain")
-                .header("Authorization", s"Basic ${Base64.getEncoder.encodeToString("u:p".getBytes())}") send
+                .header("Authorization", s"Basic ${Base64.getEncoder.encodeToString("u:p".getBytes())}"))
           } yield {
             assert(
               response isRightWhere(_.status == 403)
@@ -179,7 +177,7 @@ extends TestSuite
           )
         )}) { server =>
           for {
-            response <- http GET s"http://localhost:${server.port}/path" send
+            response <- http(Request(Method.GET, s"http://localhost:${server.port}/path"))
           } yield {
             assert(
               response isRightWhere(_.body.asString == "Handled")
@@ -197,7 +195,7 @@ extends TestSuite
           )
         )}) { server =>
           for {
-            response <- http GET s"http://localhost:${server.port}/path" send
+            response <- http(Request(Method.GET, s"http://localhost:${server.port}/path"))
           } yield {
             assert(
               response isRightWhere(_.body.asString == "Handled")
@@ -214,7 +212,7 @@ extends TestSuite
           })
         )}) { server =>
           for {
-            response <- http GET s"http://localhost:${server.port}/" send
+            response <- http(Request(Method.GET, s"http://localhost:${server.port}/"))
           } yield {
             assert(
               response isRightWhere(_.body.asString == "in->handled->out")

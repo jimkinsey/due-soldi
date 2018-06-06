@@ -1,7 +1,7 @@
 package cicerone
 
 import cicerone.HttpConnection._
-import ratatoskr.{Request, Response}
+import ratatoskr.Request
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -13,7 +13,7 @@ object Client
 class Client(configuration: Configuration = Client.defaultConfiguration)
 {
   def send(request: Request)
-          (implicit executionContext: ExecutionContext): Future[Either[Failure, Response]] = Future {
+          (implicit executionContext: ExecutionContext): Result = Future {
 
     for {
       connection <- open(request.url)
