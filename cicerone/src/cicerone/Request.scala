@@ -1,7 +1,7 @@
 package cicerone
 
 import hammerspace.testing.StreamHelpers._
-import ratatoskr.Request
+import ratatoskr.{Method, Request}
 
 case class RequestBuilder(method: String = "GET", url: String = "http://localhost", body: Option[String] = None, headers: Headers = Map.empty)
 {
@@ -23,5 +23,5 @@ case class RequestBuilder(method: String = "GET", url: String = "http://localhos
     copy(headers = headers)
   }
 
-  lazy val build: Request = Request(method, url, body.map(_.asByteStream("UTF-8")).getOrElse(Stream.empty), headers)
+  lazy val build: Request = Request(Method(method), url, body.map(_.asByteStream("UTF-8")).getOrElse(Stream.empty), headers)
 }

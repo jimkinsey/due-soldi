@@ -29,7 +29,7 @@ private[cicerone] object HttpConnection
 
   def applyRequest(connection: HttpURLConnection, request: Request): Option[Failure] = {
     Try {
-      connection.setRequestMethod(request.method)
+      connection.setRequestMethod(request.method.toString)
       request.headers.foreach { case (key, values) =>
         connection.setRequestProperty(key, values.mkString(","))
       }

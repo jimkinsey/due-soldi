@@ -2,8 +2,8 @@ package duesoldi.test.support.httpclient
 
 import cicerone._
 import duesoldi.Env
-
 import hammerspace.testing.StreamHelpers._
+import ratatoskr.Method
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
@@ -40,7 +40,7 @@ object HttpClient
 
   def send(method: String, path: String, env: Env, headers: Seq[(String, String)], body: Option[String] = None)(implicit ec: ExecutionContext): Future[Response] = {
     new Client().send(ratatoskr.Request(
-      method = method,
+      method = Method(method),
       url = s"http://localhost:${env("PORT")}$path",
       body = body.map(_.asByteStream("UTF-8")).getOrElse(Stream.empty),
       headers = headers.map { case (name, value) => name -> Seq(value) } toMap
