@@ -3,6 +3,7 @@ package cicerone
 import java.net._
 
 import hammerspace.streams.InputStreams
+import ratatoskr.{Request, Response}
 
 import scala.concurrent.duration.Duration
 import scala.util.Try
@@ -32,9 +33,9 @@ private[cicerone] object HttpConnection
       request.headers.foreach { case (key, values) =>
         connection.setRequestProperty(key, values.mkString(","))
       }
-      request.body.map(_.getBytes()).foreach { bytes =>
+      if (request.body.nonEmpty) {
         connection.setDoOutput(true)
-        connection.getOutputStream.write(bytes)
+        connection.getOutputStream.write(request.body.toArray)
         connection.getOutputStream.close()
       }
     }

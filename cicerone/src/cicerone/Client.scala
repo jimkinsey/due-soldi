@@ -1,6 +1,7 @@
 package cicerone
 
 import cicerone.HttpConnection._
+import ratatoskr.{Request, Response}
 
 import scala.concurrent.{ExecutionContext, Future}
 

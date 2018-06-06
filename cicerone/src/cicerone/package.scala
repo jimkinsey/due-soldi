@@ -1,3 +1,5 @@
+import ratatoskr.{Request, Response}
+
 import scala.concurrent.{ExecutionContext, Future}
 
 package object cicerone {

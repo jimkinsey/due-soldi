@@ -39,10 +39,10 @@ object HttpClient
   }
 
   def send(method: String, path: String, env: Env, headers: Seq[(String, String)], body: Option[String] = None)(implicit ec: ExecutionContext): Future[Response] = {
-    new Client().send(cicerone.Request(
+    new Client().send(ratatoskr.Request(
       method = method,
       url = s"http://localhost:${env("PORT")}$path",
-      body = body,
+      body = body.map(_.asByteStream("UTF-8")).getOrElse(Stream.empty),
       headers = headers.map { case (name, value) => name -> Seq(value) } toMap
     )).map { result =>
       result.map { response =>

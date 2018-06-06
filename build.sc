@@ -15,9 +15,20 @@ object hammerspace extends ScalaModule {
   }
 }
 
-object cicerone extends ScalaModule {
+object ratatoskr extends ScalaModule {
   def scalaVersion = "2.12.4"
   def moduleDeps = Seq(hammerspace)
+  object test extends Tests{
+    def ivyDeps = Agg(
+      ivy"com.lihaoyi::utest:0.6.0"
+    )
+    def testFrameworks = Seq("utest.runner.Framework")
+  }
+}
+
+object cicerone extends ScalaModule {
+  def scalaVersion = "2.12.4"
+  def moduleDeps = Seq(hammerspace, ratatoskr)
   object test extends Tests{
     def ivyDeps = Agg(
       ivy"com.lihaoyi::utest:0.6.0"
