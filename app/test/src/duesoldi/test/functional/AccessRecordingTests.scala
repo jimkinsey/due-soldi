@@ -155,6 +155,28 @@ extends TestSuite
           }
         }
       }
+      "supports session-based access" - {
+        withSetup(
+          database,
+          runningAppForThisTestOnly
+        ) { implicit env =>
+          for {
+            firstAccess <- get("/admin/metrics/access.json", headers = TestApp.adminAuth)
+            sessionIdCookie = firstAccess.cookie("adminSessionId")
+            _ = assert(sessionIdCookie isDefined)
+            secondAccess <- get("/admin/metrics/access.json", headers = sessionIdCookie.get.toHeader)
+            thirdAccess <- get("/admin/metrics/access.json", headers = sessionIdCookie.get.toHeader)
+            fourthAccess <- get("/admin/metrics/access.json")
+          } yield {
+            assert(
+              firstAccess.status == 200,
+              secondAccess.status == 200,
+              thirdAccess.status == 200,
+              fourthAccess.status == 403
+            )
+          }
+        }
+      }
     }
   }
 

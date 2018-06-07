@@ -17,5 +17,5 @@ object SessionIdParsing
     }
   }
 
-  private val WellFormedSessionId = """^user:([\w]+);h:(.+)$""".r
+  private val WellFormedSessionId = """^user:([\w]+),h:(.+)$""".r
 }

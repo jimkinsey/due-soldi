@@ -15,7 +15,7 @@ extends TestSuite
         assert(result isLeftOf MalformedSessionId)
       }
       "A well-formed session ID can be parsed" - {
-        val result = SessionIdParsing.parseSessionId("user:jim;h:12345")
+        val result = SessionIdParsing.parseSessionId("user:jim,h:12345")
         assert(result isRightOf UnvalidatedSessionId("jim", "12345"))
       }
     }

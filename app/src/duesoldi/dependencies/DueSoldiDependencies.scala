@@ -3,6 +3,8 @@ package duesoldi.dependencies
 import java.sql.ResultSet
 
 import dearboy.EventBus
+import duesoldi.app.sessions.Sessions
+import duesoldi.app.sessions.Sessions.GetSessionCookie
 import duesoldi.blog.model.BlogEntry
 import duesoldi.blog.pages._
 import duesoldi.blog.serialisation.EntryYaml
@@ -122,6 +124,8 @@ object DueSoldiDependencies
   implicit lazy val blogEntriesToYaml: Inject[blog.EntriesToYaml] = _ => EntryYaml.formatAll
 
   implicit lazy val blogEntriesFromYaml: Inject[blog.EntriesFromYaml] = _ => EntryYaml.parseAll
+
+  implicit lazy val getSessionCookie: Inject[GetSessionCookie] = config => Sessions.getSessionCookie(config.secretKey)
 }
 
 object Features

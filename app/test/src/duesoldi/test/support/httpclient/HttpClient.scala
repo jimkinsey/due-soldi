@@ -10,7 +10,21 @@ import scala.language.postfixOps
 
 object HttpClient
 {
-  case class Response(status: Int, headers: Map[String, Seq[String]], body: String)
+  case class Response(status: Int, headers: Map[String, Seq[String]], body: String) {
+    def cookie(name: String): Option[Cookie] = {
+      for {
+        cookies <- headers.keys.find(_.toLowerCase == "set-cookie").flatMap(headers.get)
+        cookie <- cookies.find(_.startsWith(s"$name="))
+        value = cookie.substring(name.length + 1).split(";").head
+      } yield {
+        Cookie(name, value)
+      }
+    }
+  }
+
+  case class Cookie(name: String, value: String) {
+    def toHeader: (String, String) = ("Cookie", s"$name=$value")
+  }
 
   def get(path: String, env: Env, headers: Seq[(String, String)] = Seq.empty)(implicit ec: ExecutionContext): Future[Response] = {
     send("GET", path, env, headers)

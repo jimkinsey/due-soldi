@@ -32,12 +32,13 @@ private[sommelier] object ApplyRoutes
   }
 
   def priority(rejection: Rejection): Int = {
-    rejection match {
-      case ResourceNotFound => 1
-      case MethodNotAllowed => 2
-      case Unacceptable => 3
-      case Unauthorized(_) => 4
-      case Forbidden => 5
+    rejection.response.status match {
+      case 404 => 1
+      case 405 => 2
+      case 406 => 3
+      case 401 => 4
+      case 403 => 5
+      case _ => Integer.MAX_VALUE
     }
   }
 }

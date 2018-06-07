@@ -10,7 +10,7 @@ extends TestSuite
   val tests = this {
     "Session ID creation" - {
       "Creates a session ID with the provided details hashed with the secret" - {
-        val expectedHash = Hashing.md5("user:charley;secret:s3cr3t")
+        val expectedHash = Hashing.hmac("s3cr3t")("user:charley")
         val sessionId = SessionIdCreation.createSessionId("s3cr3t")("charley")
         assert(
           sessionId.user == "charley",

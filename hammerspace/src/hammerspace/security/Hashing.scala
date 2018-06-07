@@ -1,12 +1,15 @@
 package hammerspace.security
 
-import java.security.MessageDigest
+import java.util.Base64
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 
 object Hashing
 {
-  def md5(string: String): String = {
-    val messageBytes = string.getBytes("UTF-8")
-    val digestBytes = MessageDigest.getInstance("MD5").digest(messageBytes)
-    new String(digestBytes, "UTF-8")
+  def hmac(secret: String)(string: String): String = {
+    val sha256_HMAC = Mac.getInstance("HmacSHA256")
+    val secret_key = new SecretKeySpec(secret.getBytes, "HmacSHA256")
+    sha256_HMAC.init(secret_key)
+    Base64.getEncoder.encodeToString(sha256_HMAC.doFinal(string.getBytes))
   }
 }

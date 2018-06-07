@@ -6,6 +6,7 @@ import java.time.temporal.ChronoUnit
 
 import duesoldi.app.AdminAuth.basicAdminAuth
 import duesoldi.app.RequestDependencies._
+import duesoldi.app.sessions.Sessions.{GetSessionCookie, validSession}
 import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.metrics.storage.AccessRecordStore.Access
@@ -30,14 +31,20 @@ extends Controller
     }
   }
 
-  GET("/admin/metrics/access.json").Authorization(basicAdminAuth) ->- { implicit context =>
+  GET("/admin/metrics/access.json").Authorization(basicAdminAuth or validSession) ->- { implicit context =>
     for {
+      getSessionCookie <- provided[GetSessionCookie]
+      sessionCookie <- getSessionCookie(context.request) rejectWith 500
+
       getAccessRecords <- provided[GetAccessRecords]
       start <- query[ZonedDateTime]("start").optional.firstValue defaultTo sevenDaysAgo
       accesses <- getAccessRecords(start)
       content = renderJson(accesses)
     } yield {
-      200 (content) header("Cache-control" -> "no-cache") header("Content-type" -> "application/json")
+      200 (content)
+        .header("Cache-control" -> "no-cache")
+        .header("Content-type" -> "application/json")
+        .cookie(sessionCookie)
     }
   }
 
