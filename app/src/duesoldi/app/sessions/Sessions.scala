@@ -5,7 +5,8 @@ import java.util.Base64
 import duesoldi.app.sessions.SessionIdParsing.parseSessionId
 import duesoldi.app.sessions.SessionIdValidation.validateSessionId
 import duesoldi.config.Config
-import sommelier.messaging.{Cookie, Request, Response}
+import ratatoskr.Cookie
+import sommelier.messaging.{Request, Response}
 import sommelier.routing.{AuthorizationMatcher, Rejection}
 
 object Sessions

@@ -1,5 +1,7 @@
 package sommelier.messaging
 
+import ratatoskr.Cookie
+
 case class Response(
   status: Int,
   body: Option[Array[Byte]] = None,

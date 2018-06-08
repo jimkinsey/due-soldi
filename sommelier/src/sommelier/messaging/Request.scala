@@ -1,6 +1,6 @@
 package sommelier.messaging
 
-import ratatoskr.Method
+import ratatoskr.{Cookie, Method}
 
 case class Request(
   method: Method,

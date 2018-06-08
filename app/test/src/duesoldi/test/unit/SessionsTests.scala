@@ -2,7 +2,8 @@ package duesoldi.test.unit
 
 import duesoldi.app.sessions.{SessionIdCreation, Sessions}
 import duesoldi.test.support.httpclient.BasicAuthorization
-import sommelier.messaging.{Cookie, Method, Request}
+import ratatoskr.{Cookie, Method}
+import sommelier.messaging.Request
 import utest._
 
 object SessionsTests
