@@ -1,6 +1,7 @@
 package duesoldi.app
 
 import sommelier.routing.Controller
+import ratatoskr.RequestAccess._
 
 object TrailingSlashRedirection
 extends Controller

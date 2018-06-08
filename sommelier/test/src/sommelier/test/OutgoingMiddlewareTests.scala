@@ -1,7 +1,7 @@
 package sommelier.test
 
 import ratatoskr.Method
-import sommelier.messaging.Request
+import ratatoskr.Request
 import sommelier.routing.ApplyMiddleware.applyOutgoing
 import sommelier.routing.Routing._
 import sommelier.routing.SyncResult.Accepted
@@ -19,7 +19,7 @@ extends TestSuite
   {
     "Applying outgoing middleware to a request / response pair" - {
       "returns a result of the response if there is no outgoing middleware" - {
-        val request = Request(method = Method.GET, path = "/")
+        val request = Request(method = Method.GET, url = "/")
         val response = 200 ("OK")
         val result = applyOutgoing(Seq.empty)(request, response)
         assert(result == Accepted(response))

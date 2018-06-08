@@ -1,10 +1,11 @@
 package sommelier.test
 
 import dearboy.EventBus
-import ratatoskr.Method
+import ratatoskr.RequestBuilding._
+import ratatoskr.{Method, Request}
 import sommelier.events.{Completed, ExceptionWhileRouting}
 import sommelier.handling.Unpacking._
-import sommelier.messaging.{Request, Response}
+import sommelier.messaging.Response
 import sommelier.routing.Result
 import sommelier.routing.Routing._
 import sommelier.serving.{HttpMessageContext, Router}
@@ -31,7 +32,7 @@ extends TestSuite
             GET("/") respond { implicit req => body[String] map (body => 200(s"${body}->")) }
           ),
           middleware = Seq(
-            AnyRequest incoming { req => req body "***" }
+            AnyRequest incoming { req => req content "***" }
           )
         )(context)
         assert(context.sent containsA[Response](_.body[String] contains "***->"))

@@ -1,7 +1,7 @@
 package object sommelier
 {
   type Context = handling.Context
-  type Request = messaging.Request
+  type Request = ratatoskr.Request
   type Response = messaging.Response
   type Server = serving.Server
   type Controller = routing.Controller

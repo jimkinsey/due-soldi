@@ -3,7 +3,10 @@ package sommelier.routing
 import java.util.Base64
 
 import ratatoskr.Method
-import sommelier.messaging.{Request, Response}
+import ratatoskr.Request
+import sommelier.messaging.Response
+
+import ratatoskr.RequestAccess._
 
 import scala.util.matching.Regex
 
@@ -50,7 +53,7 @@ case class RequestMatcher(
   def rejects(request: Request): Option[Rejection] = {
     path.flatMap(_.rejects(request.path)) orElse
     method.flatMap(_.rejects(request.method)) orElse
-    accept.flatMap(_.rejects(request.accept.getOrElse(""))) orElse // FIXME
+    accept.flatMap(_.rejects(request.header("Accept").flatMap(_.headOption).getOrElse(""))) orElse // FIXME
     authorization.flatMap(_.rejects(request)) orElse
     host.flatMap(_.rejects(request.headers("Host").head)) // FIXME
   }

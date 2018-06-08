@@ -1,6 +1,7 @@
 package sommelier
 
 import sommelier.routing.Middleware.{Incoming, Outgoing}
+import ratatoskr.Request
 
 package object routing
 {
@@ -8,7 +9,7 @@ package object routing
 
   implicit class MiddlewareMaker(matcher: RequestMatcher)
   {
-    def incoming(handle: Request => Result[Request]): Middleware = Incoming(matcher, handle)
-    def outgoing(handle: (Request, Response) => Result[Response]): Middleware = Outgoing(matcher, handle)
+    def incoming(handle: ratatoskr.Request => Result[ratatoskr.Request]): Middleware = Incoming(matcher, handle)
+    def outgoing(handle: (ratatoskr.Request, Response) => Result[Response]): Middleware = Outgoing(matcher, handle)
   }
 }

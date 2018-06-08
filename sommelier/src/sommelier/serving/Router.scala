@@ -1,8 +1,9 @@
 package sommelier.serving
 
 import dearboy.EventBus
+import ratatoskr.Request
 import sommelier.events.{Completed, ExceptionWhileRouting}
-import sommelier.messaging.{Request, Response}
+import sommelier.messaging.Response
 import sommelier.routing.ApplyMiddleware.{applyIncoming, applyOutgoing}
 import sommelier.routing.ApplyRoutes.applyRoutes
 import sommelier.routing.{AsyncResult, Middleware, Result, Route, SyncResult}
@@ -30,19 +31,21 @@ object Router
           SyncResult.Accepted(Response(500)("Internal Server Error"))
       }
 
-      def sendResponse(result: Result[Response]): Unit = result match {
+      def sendResponse(request: Request)(result: Result[Response]): Unit = result match {
         case sync: SyncResult[Response] =>
           sync.recover(rejection => rejection.response).map { response =>
-            bus.publish(Completed(context.get, response, Duration.fromNanos(System.nanoTime() - start)))
+            bus.publish(Completed(request, response, Duration.fromNanos(System.nanoTime() - start)))
             context.send(response)
           }
         case AsyncResult(async) =>
-          async.recover(handleException).map(sendResponse)
+          async.recover(handleException).map(sendResponse(request))
       }
+
+      val request = context.get
 
       Try {
         for {
-          finalRequest <- applyIncoming(middleware)(context.get)
+          finalRequest <- applyIncoming(middleware)(request)
           interimResponse <- applyRoutes(routes)(finalRequest) recover { _.response }
           finalResponse <- applyOutgoing(middleware)(finalRequest, interimResponse)
         } yield {
@@ -51,7 +54,7 @@ object Router
       } recover {
         handleException
       } map {
-        sendResponse
+        sendResponse(request)
       }
     }
   }

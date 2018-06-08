@@ -173,7 +173,7 @@ extends TestSuite
             GET("/path") respond { implicit context => body[String] map (content => 200 (content)) }
           ),
           middleware = Seq(
-            AnyRequest incoming { _ body "Handled" }
+            AnyRequest incoming { _ content "Handled" }
           )
         )}) { server =>
           for {
@@ -206,8 +206,8 @@ extends TestSuite
       "can be configured with controllers for neater routing" - {
         withServer({ Server.start(
           Seq(new Controller {
-            AnyRequest >-- { req => req body "in->" }
-            AnyRequest ->- { ctx => 200 body s"${ctx.request.body.getOrElse("")}handled->" }
+            AnyRequest >-- { req => req content "in->" }
+            AnyRequest ->- { ctx => 200 body s"${ctx.request.body.asString}handled->" }
             AnyRequest --> { (req, res) => res body s"${res.body[String].getOrElse("")}out" }
           })
         )}) { server =>

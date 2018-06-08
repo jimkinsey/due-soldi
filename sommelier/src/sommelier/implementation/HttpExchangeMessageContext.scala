@@ -1,62 +1,39 @@
 package sommelier.implementation
 
-import java.util.Scanner
-
 import com.sun.net.httpserver.HttpExchange
-import ratatoskr.Method
-import sommelier.messaging.Request
+import hammerspace.streams.InputStreams
+import ratatoskr.{Method, Request}
+import sommelier.Response
 import sommelier.serving.HttpMessageContext
-import sommelier.{Request, Response}
 
 import scala.collection.JavaConverters._
-import scala.util.matching.Regex
 
 class HttpExchangeMessageContext(exchange: HttpExchange)
 extends HttpMessageContext
 {
+  // FIXME make this safer by preventing subsequent invocations of get and send from erroring
   def get: Request = {
-    lazy val method: Method = exchange.getRequestMethod match {
+    val url = exchange.getRequestURI.toString
+    val method: Method = exchange.getRequestMethod match {
       case "HEAD" => Method.GET
       case other => Method(other)
     }
-    lazy val queryParams: Map[String, Seq[String]] =
-      Option(exchange.getRequestURI.getQuery)
-        .map(_
-          .split('&')
-          .foldLeft[Map[String, Seq[String]]](Map.empty) {
-            case (acc, QueryParam(key, value)) if acc.contains(key) =>
-              acc ++ Map(key -> (acc(key) :+ value))
-            case (acc, QueryParam(key, value)) =>
-              acc ++ Map(key -> Seq(value))
-            case (acc, _) =>
-              acc
-          }
-        )
-        .getOrElse(Map.empty)
-    lazy val QueryParam: Regex = """^(.+)=(.+)$""".r
-    lazy val headers: Map[String, Seq[String]] =
+    val headers: Map[String, Seq[String]] =
       exchange
         .getRequestHeaders
         .entrySet().asScala
         .toSeq
         .map(entry => entry.getKey -> entry.getValue.asScala)
         .toMap
-    lazy val body: Option[String] =
+    val body: Stream[Byte] =
       exchange.getRequestMethod match {
-        case "GET" | "HEAD" | "DELETE" => None
-        case _ =>
-          val requestBody = exchange.getRequestBody
-          val s = new Scanner(requestBody).useDelimiter("\\A")
-          val result = if (s.hasNext) Some(s.next) else None
-          requestBody.close()
-          result
+        case "GET" | "HEAD" | "DELETE" => Stream.empty
+        case _ => InputStreams.toByteStream(exchange.getRequestBody)
       }
     Request(
       method = method,
-      path = exchange.getRequestURI.getPath,
-      queryParams = queryParams,
+      url = url,
       headers = headers,
-      accept = Option(exchange.getRequestHeaders.getFirst("Accept")),
       body = body
     )
   }

@@ -9,6 +9,8 @@ import sommelier.routing.{AsyncResult, PathParams, Rejection, Result, SyncResult
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 import scala.util.Try
+import ratatoskr.RequestAccess._
+import hammerspace.testing.StreamHelpers._
 
 object Unpacking {
 
@@ -60,7 +62,7 @@ object Unpacking {
 
   def body[T](implicit context: Context, unpacker: Unpacker[T]): Result[T] = {
     for {
-      body <- context.request.body rejectWith { RequestHasNoBody }
+      body <- Option(context.request.body.asString).filter(_.nonEmpty) rejectWith { RequestHasNoBody }
       unpacked <- unpacker.unpack(body) rejectWith { BodyUnpackFailure }
     } yield {
       unpacked

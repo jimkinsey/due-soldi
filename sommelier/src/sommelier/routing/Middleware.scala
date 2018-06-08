@@ -1,6 +1,7 @@
 package sommelier.routing
 
-import sommelier.{Request, Response}
+import ratatoskr.Request
+import sommelier.Response
 
 sealed trait Middleware
 object Middleware

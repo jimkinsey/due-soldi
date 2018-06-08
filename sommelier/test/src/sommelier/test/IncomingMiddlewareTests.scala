@@ -1,7 +1,8 @@
 package sommelier.test
 
-import ratatoskr.Method
-import sommelier.messaging.Request
+import hammerspace.testing.StreamHelpers._
+import ratatoskr.{Method, Request}
+import ratatoskr.RequestBuilding._
 import sommelier.routing.ApplyMiddleware.applyIncoming
 import sommelier.routing.Middleware
 import sommelier.routing.Routing._
@@ -26,23 +27,23 @@ extends TestSuite
       }
       "returns the result of the single item of incoming middleware if it matches" - {
         val middleware = Seq(
-          AnyRequest incoming { _ header "X" -> Seq("32") }
+          AnyRequest incoming { _ header "X" -> "32" }
         )
         val result = applyIncoming(middleware)(Request(Method.GET, "/"))
         assert(result isAcceptedWhere (_.headers("X") == Seq("32")))
       }
       "does not apply middleware which does not match" - {
         val middleware = Seq(
-          GET ("/foo") incoming { _ header "X" -> Seq("0") },
-          GET ("/") incoming { _ header "X" -> Seq("1") },
-          POST ("/") incoming { _ header "X" -> Seq("2") }
+          GET ("/foo") incoming { _ header "X" -> "0" },
+          GET ("/") incoming { _ header "X" -> "1" },
+          POST ("/") incoming { _ header "X" -> "2" }
         )
         val result = applyIncoming(middleware)(Request(Method.GET, "/"))
         assert(result isAcceptedWhere (_.headers("X") == Seq("1")))
       }
       "returns the first rejection" - {
         val middleware = Seq(
-          GET ("/") incoming { _ header "X" -> Seq("0") },
+          GET ("/") incoming { _ header "X" -> "0" },
           GET ("/") incoming { _ => rejectRequest(401) },
           GET ("/") incoming { _ => rejectRequest(402) }
         )
@@ -51,10 +52,10 @@ extends TestSuite
       }
       "works with async middleware" - {
         val middleware = Seq(
-          GET ("/") incoming { req => Future { req body "42" } }
+          GET ("/") incoming { req => Future { req content "42" } }
         )
         val result = applyIncoming(middleware)(Request(Method.GET, "/"))
-        assert(result isAcceptedWhere(_.body contains "42"))
+        assert(result isAcceptedWhere(_.body.asString == "42"))
       }
     }
   }

@@ -22,6 +22,7 @@ import sommelier.serving.Server
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Failure
+import ratatoskr.RequestAccess._
 
 object App
 {

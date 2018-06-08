@@ -22,13 +22,14 @@ extends Controller
       parse <- provided[EntryFromYaml]
       putEntry <- provided[PutBlogEntry]
       getEntry <- provided[GetBlogEntry]
+
       id <- pathParam[String]("id").validate(id => validateIdentifier(id).isEmpty) { 400 ("Invalid identifier") }
       content <- body[String]
       _ <- getEntry(id).map(_.toLeft(false)) rejectWith { _ => 409 (s"Entry with ID '$id' already exists")}
       entry <- parse(content) rejectWith { failure => 400 (s"Failed to parse this content [$failure] [$content]")}
       _ <- putEntry(entry) rejectWith { _ => 500 ("Failed to store entry") }
     } yield {
-      201
+      201 ("")
     }
   }
 
@@ -36,6 +37,7 @@ extends Controller
     for {
       validateIdentifier <- provided[ValidateIdentifier]
       deleteEntry <- provided[DeleteBlogEntry]
+
       id <- pathParam[String]("id").validate(id => validateIdentifier(id).isEmpty) { 400 ("Invalid identifier") }
       _ <- deleteEntry(id) rejectWith { _ => 500 ("Failed to delete blog entry")}
     } yield {
@@ -48,6 +50,7 @@ extends Controller
       validateIdentifier <- provided[ValidateIdentifier]
       getEntry <- provided[GetBlogEntry]
       format <- provided[EntryToYaml]
+
       id <- pathParam[String]("id").validate(id => validateIdentifier(id).isEmpty) { 400 ("Invalid identifier") }
       entry <- getEntry(id) rejectWith { 404 }
     } yield {
@@ -59,6 +62,7 @@ extends Controller
     for {
       getEntries <- provided[GetAllBlogEntries]
       format <- provided[EntriesToYaml]
+
       entries <- getEntries()
     } yield {
       200 (format(entries))
@@ -69,6 +73,7 @@ extends Controller
     for {
       putEntries <- provided[PutBlogEntries]
       parse <- provided[EntriesFromYaml]
+
       content <- body[String]
       entries <- parse(content) rejectWith { failure => 400 (s"Failed to parse document - $failure") }
       _ <- putEntries(entries) rejectWith { failure => 500 (s"Failed to store entries - $failure") }
@@ -80,6 +85,7 @@ extends Controller
   DELETE("/admin/blog").Authorization(basicAdminAuth) ->- { implicit context =>
     for {
       deleteEntries <- provided[DeleteAllBlogEntries]
+
       _ <- deleteEntries() rejectWith { _ => 500 }
     } yield {
       204

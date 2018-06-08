@@ -1,8 +1,9 @@
 package sommelier.routing
 
-import ratatoskr.Method
+import ratatoskr.{Method, Request}
+import ratatoskr.RequestBuilding._
 import sommelier.Context
-import sommelier.messaging.{Request, Response}
+import sommelier.messaging.Response
 import sommelier.routing.SyncResult.{Accepted, Rejected}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -50,7 +51,7 @@ object Routing
   implicit class RequestOps(request: Request)
   {
     def basicAuth(auth: Basic): Request = {
-      request.header("Authorization" -> Seq(s"Basic ${auth.encoded}"))
+      request.header("Authorization" -> s"Basic ${auth.encoded}")
     }
   }
 }

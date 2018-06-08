@@ -1,8 +1,8 @@
 package sommelier.routing
 
+import ratatoskr.Request
 import sommelier.handling.Context
-import sommelier.messaging.{Request, Response}
-import sommelier.routing.AuthorizationFailed.{Forbidden, Unauthorized}
+import sommelier.messaging.Response
 import sommelier.routing.SyncResult.Rejected
 
 private[sommelier] object ApplyRoutes
