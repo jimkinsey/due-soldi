@@ -6,6 +6,7 @@ import duesoldi.test.support.app.TestApp.runningApp
 import duesoldi.test.support.setup.Setup.withSetup
 import duesoldi.test.support.setup.SyncSetup
 import utest._
+import hammerspace.testing.StreamHelpers._
 
 object ConfigOverrideTests
   extends TestSuite
@@ -21,7 +22,7 @@ object ConfigOverrideTests
           response <- get("/admin/debug/config", headers = TestApp.adminAuth, "Config-Override" -> "IMAGE_BASE_URL=http://somewhere.else")
         } yield {
           assert(
-            response.body contains "IMAGE_BASE_URL=http://somewhere"
+            response.body.asString contains "IMAGE_BASE_URL=http://somewhere"
           )
         }
       }
@@ -38,7 +39,7 @@ object ConfigOverrideTests
             headers = TestApp.adminAuth, "Config-Override" -> "IMAGE_BASE_URL=http://somewhere.else", "Secret-Key" -> TestApp.secretKey)
         } yield {
           assert(
-            response.body contains "IMAGE_BASE_URL=http://somewhere.else"
+            response.body.asString contains "IMAGE_BASE_URL=http://somewhere.else"
           )
         }
       }
@@ -55,7 +56,7 @@ object ConfigOverrideTests
             headers = TestApp.adminAuth, "Config-Override" -> "IMAGE_BASE_URL=http://somewhere.else", "Secret-Key" -> "5eCrEt")
         } yield {
           assert(
-            response.body contains "IMAGE_BASE_URL=http://somewhere"
+            response.body.asString contains "IMAGE_BASE_URL=http://somewhere"
           )
         }
       }

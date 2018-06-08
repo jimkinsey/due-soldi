@@ -6,6 +6,7 @@ import duesoldi.test.support.app.TestApp.runningApp
 import duesoldi.test.support.setup.Setup.withSetup
 import duesoldi.test.support.setup.SyncSetup
 import utest._
+import hammerspace.testing.StreamHelpers._
 
 object DebugTests
   extends TestSuite
@@ -20,7 +21,7 @@ object DebugTests
           for {
             response <- get("/admin/debug/headers", headers = TestApp.adminAuth, "Key" -> "Value")
           } yield {
-            assert(response.body.lines.toList contains "Key: Value")
+            assert(response.body.asString.lines.toList contains "Key: Value")
           }
         }
       }
@@ -34,7 +35,7 @@ object DebugTests
           for {
             response <- get("/admin/debug/config", headers = TestApp.adminAuth)
           } yield {
-            assert(response.body.lines.toList contains "IMAGE_BASE_URL=http://somewhere")
+            assert(response.body.asString.lines.toList contains "IMAGE_BASE_URL=http://somewhere")
           }
         }
       }
@@ -45,7 +46,7 @@ object DebugTests
           for {
             response <- get("/admin/debug/config", headers = TestApp.adminAuth)
           } yield {
-            assert(!(response.body contains "ADMIN_CREDENTIALS"))
+            assert(!(response.body.asString contains "ADMIN_CREDENTIALS"))
           }
         }
       }

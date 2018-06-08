@@ -6,13 +6,13 @@ import hammerspace.testing.CustomMatchers._
 import duesoldi.test.support.pages.{BlogEntryPage, OgMetadata}
 import duesoldi.test.support.setup.BlogStorage._
 import duesoldi.test.support.setup.Database._
-import duesoldi.test.support.setup.FeatureSwitching
 import duesoldi.test.support.setup.FeatureSwitching.{featureDisabled, featureEnabled}
 import duesoldi.test.support.setup.Setup.withSetup
+import hammerspace.testing.StreamHelpers._
 import utest._
 
 object BlogEntryPageTests
-  extends TestSuite 
+extends TestSuite 
 {
   implicit val executionContext = utest.framework.ExecutionContext.RunNow
   val tests = this {
@@ -82,7 +82,7 @@ object BlogEntryPageTests
           for {
             res <- get("/blog/titled")
           } yield {
-            val page = new BlogEntryPage(res.body)
+            val page = new BlogEntryPage(res.body.asString)
             assert(
               page.title == "A title!",
               page.h1.text == "A title!"
@@ -106,7 +106,7 @@ object BlogEntryPageTests
           for {
             response <- get("/blog/has-content")
           } yield {
-            val page = new BlogEntryPage(response.body)
+            val page = new BlogEntryPage(response.body.asString)
             assert(
               page.h1.text == "Content Galore!",
               page.content.paragraphs.head == "<p>This is an <b>amazing</b> page of <i>content</i>.</p>",
@@ -128,7 +128,7 @@ object BlogEntryPageTests
           for {
             pageResponse <- get("/blog/has-image")
           } yield {
-            val page = new BlogEntryPage(pageResponse.body)
+            val page = new BlogEntryPage(pageResponse.body.asString)
             assert(
               page.content.images.head.src == "/blog/has-image/images/a-cat.gif",
               page.content.images.head.alt == "A cat alt-text",
@@ -151,7 +151,7 @@ object BlogEntryPageTests
         ) { implicit env =>
           for {
             pageResponse <- get("/blog/has-html")
-            paragraphs = new BlogEntryPage(pageResponse.body).content.paragraphs
+            paragraphs = new BlogEntryPage(pageResponse.body.asString).content.paragraphs
           } yield {
             assert(paragraphs contains "<p> hello </p>")
           }
@@ -165,7 +165,7 @@ object BlogEntryPageTests
         ) { implicit env =>
           for {
             response <- get("/blog/top-content")
-            footer = new BlogEntryPage(response.body).footer
+            footer = new BlogEntryPage(response.body.asString).footer
           } yield {
             assert(footer.copyrightNotice.exists(_ matches """© \d\d\d\d-\d\d\d\d Jim Kinsey"""))
           }
@@ -179,7 +179,7 @@ object BlogEntryPageTests
         ) { implicit env =>
           for {
             response <- get("/blog/dated")
-            date = new BlogEntryPage(response.body).date
+            date = new BlogEntryPage(response.body.asString).date
           } yield {
             assert(date hasDateFormat "EEEE, dd MMMM yyyy")
           }
@@ -194,7 +194,7 @@ object BlogEntryPageTests
           for {
             response <- get("/blog/navigable")
           } yield {
-            val page = new BlogEntryPage(response.body)
+            val page = new BlogEntryPage(response.body.asString)
             assert(page.navigation.items.map(_.url).contains("/blog/"))
           }
         }
@@ -207,7 +207,7 @@ object BlogEntryPageTests
         ) { implicit env =>
           for {
             response <- get("/blog/title")
-            page = new BlogEntryPage(response.body)
+            page = new BlogEntryPage(response.body.asString)
             cssResponse <- get(page.cssUrl)
           } yield {
             assert(cssResponse.status == 200)
@@ -228,7 +228,7 @@ object BlogEntryPageTests
         ) { implicit env =>
           for {
             response <- get("/blog/title")
-            page = new BlogEntryPage(response.body)
+            page = new BlogEntryPage(response.body.asString)
           } yield {
             assert(page.twitterMetadata.isDefined)
             page.twitterMetadata.foreach { data =>
@@ -248,7 +248,7 @@ object BlogEntryPageTests
         ) { implicit env =>
           for {
             response <- get("/blog/title")
-            twitterCard = new BlogEntryPage(response.body).twitterMetadata
+            twitterCard = new BlogEntryPage(response.body.asString).twitterMetadata
           } yield {
             assert(twitterCard.isEmpty)
           }
@@ -270,7 +270,7 @@ object BlogEntryPageTests
         ) { implicit env =>
           for {
             response <- get("/blog/title")
-            page = new BlogEntryPage(response.body)
+            page = new BlogEntryPage(response.body.asString)
           } yield {
             assertMatch(page.ogMetadata) {
               case Some(OgMetadata("Title", Some("Some excellent content."), _)) => {}
@@ -293,7 +293,7 @@ object BlogEntryPageTests
         ) { implicit env =>
           for {
             response <- get("/blog/title")
-            page = new BlogEntryPage(response.body)
+            page = new BlogEntryPage(response.body.asString)
           } yield {
             assertMatch(page.ogMetadata.flatMap(_.image)) {
               case Some(OgMetadata.Image("/blog/title/images/image.gif", Some("The first image"))) => {}

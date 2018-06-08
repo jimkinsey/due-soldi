@@ -8,6 +8,7 @@ import duesoldi.test.support.setup.BlogStorage._
 import duesoldi.test.support.setup.Database._
 import duesoldi.test.support.setup.Setup.withSetup
 import utest._
+import hammerspace.testing.StreamHelpers._
 
 object BlogIndexPageTests
   extends TestSuite 
@@ -82,7 +83,7 @@ object BlogIndexPageTests
         ) { implicit env =>
           for {
             response <- get("/blog/")
-            footer = new BlogIndexPage(response.body).footer
+            footer = new BlogIndexPage(response.body.asString).footer
           } yield {
             assert(footer.copyrightNotice.exists(_ matches """© \d\d\d\d-\d\d\d\d Jim Kinsey"""))
           }
@@ -97,7 +98,7 @@ object BlogIndexPageTests
           for {
             response <- get("/blog/")
           } yield {
-            val page: BlogIndexPage = new BlogIndexPage(response.body)
+            val page: BlogIndexPage = new BlogIndexPage(response.body.asString)
             assert(
               page.title == "Jim Kinsey's Blog",
               page.heading == "Latest Blog Entries"
@@ -116,7 +117,7 @@ object BlogIndexPageTests
           for {
             response <- get("/blog/")
           } yield {
-            val page = new BlogIndexPage(response.body)
+            val page = new BlogIndexPage(response.body.asString)
             assert(page.blogEntries.map(_.title) == Seq("Third", "Second", "First"))
           }
         }
@@ -129,7 +130,7 @@ object BlogIndexPageTests
         ) { implicit env =>
           for {
             response <- get("/blog/")
-            date = new BlogIndexPage(response.body).blogEntries.head.date
+            date = new BlogIndexPage(response.body.asString).blogEntries.head.date
           } yield {
             assert(date hasDateFormat "EEEE, dd MMMM yyyy")
           }
@@ -144,7 +145,7 @@ object BlogIndexPageTests
           for {
             response <- get("/blog/")
           } yield {
-            val page = new BlogIndexPage(response.body)
+            val page = new BlogIndexPage(response.body.asString)
             assert(
               page.blurb.title == "About",
               page.blurb.paragraphs.size() > 0
@@ -160,7 +161,7 @@ object BlogIndexPageTests
         ) { implicit env =>
           for {
             response <- get("/blog/")
-            page = new BlogIndexPage(response.body)
+            page = new BlogIndexPage(response.body.asString)
             cssResponse <- get(page.cssUrl)
           } yield {
             assert(

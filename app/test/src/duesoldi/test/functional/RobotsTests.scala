@@ -4,6 +4,7 @@ import duesoldi.test.support.app.ServerRequests._
 import duesoldi.test.support.app.TestApp.runningApp
 import duesoldi.test.support.setup.Setup.withSetup
 import utest._
+import hammerspace.testing.StreamHelpers._
 
 object RobotsTests
   extends TestSuite
@@ -21,7 +22,7 @@ object RobotsTests
           } yield {
             assert(
               response.status == 200,
-              response.body ==
+              response.body.asString ==
                 """User-agent: *
                   |Disallow:
                   |""".stripMargin,

@@ -8,6 +8,7 @@ import duesoldi.test.support.setup.BlogStorage._
 import duesoldi.test.support.setup.Database._
 import duesoldi.test.support.setup.Setup.withSetup
 import utest._
+import hammerspace.testing.StreamHelpers._
 
 object BlogEditingTests
   extends TestSuite 
@@ -34,7 +35,7 @@ object BlogEditingTests
             assert(
               createResponse.status == 201,
               entryResponse.status == 200,
-              entryResponse.body contains "New entry!"
+              entryResponse.body.asString contains "New entry!"
             )
           }
         }
@@ -157,7 +158,7 @@ object BlogEditingTests
           for {
             getAllResponse <- get("/admin/blog", headers = TestApp.adminAuth)
           } yield {
-            assert(getAllResponse.body == "")
+            assert(getAllResponse.body isEmpty)
           }
         }
       }
@@ -172,8 +173,8 @@ object BlogEditingTests
           } yield {
             assert(
               getAllResponse.status == 200,
-              getAllResponse.body contains "  id: one",
-              getAllResponse.body contains "  id: two"
+              getAllResponse.body.asString contains "  id: one",
+              getAllResponse.body.asString contains "  id: two"
             )
           }
         }
@@ -192,7 +193,7 @@ object BlogEditingTests
           } yield {
             assert(
               deleteAllResponse.status == 204,
-              getAllResponse.body == ""
+              getAllResponse.body isEmpty
             )
           }
         }
@@ -208,7 +209,7 @@ object BlogEditingTests
           for {
             getAllResponse <- get("/admin/blog", headers = TestApp.adminAuth)
             _ <- delete("/admin/blog", headers = TestApp.adminAuth)
-            putAllResponse <- put("/admin/blog", body = getAllResponse.body, headers = TestApp.adminAuth)
+            putAllResponse <- put("/admin/blog", body = getAllResponse.body.asString, headers = TestApp.adminAuth)
             getFirstResponse <- get("/admin/blog/1", headers = TestApp.adminAuth)
             getSecondResponse <- get("/admin/blog/2", headers = TestApp.adminAuth)
             getThirdResponse <- get("/admin/blog/3", headers = TestApp.adminAuth)
@@ -260,10 +261,10 @@ object BlogEditingTests
           } yield {
             assert(
               getResponse.status == 200,
-              getResponse.body contains "id: does-exist",
-              getResponse.body contains "last-modified: ",
-              getResponse.body contains "description: ",
-              getResponse.body contains "content: |"
+              getResponse.body.asString contains "id: does-exist",
+              getResponse.body.asString contains "last-modified: ",
+              getResponse.body.asString contains "description: ",
+              getResponse.body.asString contains "content: |"
             )
           }
         }
@@ -277,7 +278,7 @@ object BlogEditingTests
           for {
             getResponse <- get("/admin/blog/id", headers = TestApp.adminAuth)
             _ <- delete("/admin/blog/id", headers = TestApp.adminAuth)
-            putResponse <- put("/admin/blog/id", getResponse.body, headers = TestApp.adminAuth)
+            putResponse <- put("/admin/blog/id", getResponse.body.asString, headers = TestApp.adminAuth)
           } yield {
             assert(
               putResponse.status == 201

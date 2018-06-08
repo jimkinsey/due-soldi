@@ -2,7 +2,7 @@ package duesoldi.test.support.app
 
 import duesoldi.Env
 import duesoldi.test.support.httpclient.HttpClient
-import duesoldi.test.support.httpclient.HttpClient.Response
+import ratatoskr.Response
 
 import scala.concurrent.{ExecutionContext, Future}
 

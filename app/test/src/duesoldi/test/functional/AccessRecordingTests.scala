@@ -9,6 +9,8 @@ import duesoldi.test.support.setup.BlogStorage._
 import duesoldi.test.support.setup.Database._
 import duesoldi.test.support.setup.Setup.withSetup
 import duesoldi.test.support.setup.SyncSetup
+import hammerspace.testing.StreamHelpers._
+import ratatoskr.ResponseAccess._
 import utest._
 
 object AccessRecordingTests
@@ -39,8 +41,8 @@ extends TestSuite
           } yield {
             assert(
               response.status == 200,
-              response.body.lines.toList.head == "Timestamp,Path,Referer,User-Agent,Duration (ms),Client IP,Country,Status Code",
-              response.body.lines.toList.tail == Nil
+              response.body.asString.lines.toList.head == "Timestamp,Path,Referer,User-Agent,Duration (ms),Client IP,Country,Status Code",
+              response.body.asString.lines.toList.tail == Nil
             )
           }
         }
@@ -57,7 +59,7 @@ extends TestSuite
             response <- get("/admin/metrics/access.csv", headers = TestApp.adminAuth)
           } yield {
             assert(
-              response.body.lines exists(_.contains("/blog/id"))
+              response.body.asString.lines exists(_.contains("/blog/id"))
             )
           }
         }
@@ -78,7 +80,7 @@ extends TestSuite
             )
             response <- get("/admin/metrics/access.csv", headers = TestApp.adminAuth)
           } yield {
-            assert(response.body.lines exists(_.contains("/blog/")))
+            assert(response.body.asString.lines exists(_.contains("/blog/")))
           }
         }
       }
@@ -97,8 +99,8 @@ extends TestSuite
             response <- get("/admin/metrics/access.csv", headers = TestApp.adminAuth)
           } yield {
             assert(
-              response.body.lines exists(_.contains("1.2.3.4")),
-              response.body.lines exists(_.contains("IS"))
+              response.body.asString.lines exists(_.contains("1.2.3.4")),
+              response.body.asString.lines exists(_.contains("IS"))
             )
           }
         }
@@ -115,7 +117,7 @@ extends TestSuite
             _ <- get("/blog/id")
             response <- get("/admin/metrics/access.csv", headers = TestApp.adminAuth)
           } yield {
-            assert(response.body.lines.toList.tail.isEmpty)
+            assert(response.body.asString.lines.toList.tail.isEmpty)
           }
         }
       }
@@ -131,7 +133,7 @@ extends TestSuite
             _ <- get("/blog/id")
             response <- get("/admin/metrics/access.csv?start=2099-10-12T00:00:00Z", headers = TestApp.adminAuth)
           } yield {
-            assert(response.body.lines.toList.tail.isEmpty)
+            assert(response.body.asString.lines.toList.tail.isEmpty)
           }
         }
       }
@@ -150,7 +152,7 @@ extends TestSuite
           } yield {
             assert(
               response.headers.get("Content-type") exists(_ exists(_ contains "application/json")),
-              response.body contains """"path": "/blog/id","""
+              response.body.asString contains """"path": "/blog/id","""
             )
           }
         }
@@ -164,8 +166,8 @@ extends TestSuite
             firstAccess <- get("/admin/metrics/access.json", headers = TestApp.adminAuth)
             sessionIdCookie = firstAccess.cookie("adminSessionId")
             _ = assert(sessionIdCookie isDefined)
-            secondAccess <- get("/admin/metrics/access.json", headers = sessionIdCookie.get.toHeader)
-            thirdAccess <- get("/admin/metrics/access.json", headers = sessionIdCookie.get.toHeader)
+            secondAccess <- get("/admin/metrics/access.json", headers = sessionIdCookie.get.toRequestHeader)
+            thirdAccess <- get("/admin/metrics/access.json", headers = sessionIdCookie.get.toRequestHeader)
             fourthAccess <- get("/admin/metrics/access.json")
           } yield {
             assert(
