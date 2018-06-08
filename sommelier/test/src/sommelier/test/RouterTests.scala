@@ -2,15 +2,17 @@ package sommelier.test
 
 import dearboy.EventBus
 import ratatoskr.RequestBuilding._
+import ratatoskr.ResponseBuilding._
 import ratatoskr.{Method, Request}
 import sommelier.events.{Completed, ExceptionWhileRouting}
 import sommelier.handling.Unpacking._
-import sommelier.messaging.Response
+import ratatoskr.Response
 import sommelier.routing.Result
 import sommelier.routing.Routing._
 import sommelier.serving.{HttpMessageContext, Router}
 import sommelier.test.RouterTests.SeqMatchers.Pred
 import utest._
+import hammerspace.testing.StreamHelpers._
 
 import scala.collection.mutable
 import scala.concurrent.Future
@@ -29,13 +31,13 @@ extends TestSuite
         implicit val bus: RecordingBus = new RecordingBus()
         Router.complete(
           routes = Seq(
-            GET("/") respond { implicit req => body[String] map (body => 200(s"${body}->")) }
+            GET("/") respond { implicit req => body[String] map (body => 200 (s"$body->")) }
           ),
           middleware = Seq(
             AnyRequest incoming { req => req content "***" }
           )
         )(context)
-        assert(context.sent containsA[Response](_.body[String] contains "***->"))
+        assert(context.sent containsA[Response](_.body.asString contains "***->"))
       }
       "applies the outgoing middleware after handling the request" - {
         val context = new RecordingContext(Request(Method.GET, "/"))
@@ -45,10 +47,10 @@ extends TestSuite
             GET("/") respond { _ => Future { 200("->") } }
           ),
           middleware = Seq(
-            AnyRequest outgoing { case (req, res) => res body s"${res.body[String].map(b => s"$b***").getOrElse("")}" }
+            AnyRequest outgoing { case (req, res) => res content s"${res.body.asString + "***"}" }
           )
         )(context)
-        assert(context.sent containsA[Response](_.body[String] contains "->***"))
+        assert(context.sent containsA[Response](_.body.asString contains "->***"))
       }
       "sends a 500 if there is an exception" - {
         val context = new RecordingContext(Request(Method.GET, "/"))

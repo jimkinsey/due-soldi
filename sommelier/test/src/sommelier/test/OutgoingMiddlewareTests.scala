@@ -1,7 +1,8 @@
 package sommelier.test
 
-import ratatoskr.Method
-import ratatoskr.Request
+import hammerspace.testing.StreamHelpers._
+import ratatoskr.ResponseBuilding._
+import ratatoskr.{Method, Request, ResponseBuilding}
 import sommelier.routing.ApplyMiddleware.applyOutgoing
 import sommelier.routing.Routing._
 import sommelier.routing.SyncResult.Accepted
@@ -26,33 +27,33 @@ extends TestSuite
       }
       "returns a result of the response for the first matching outgoing middleware" - {
         val middleware = Seq(
-          AnyRequest outgoing { (_, res) => res body "Handled" }
+          AnyRequest outgoing { (_, res) => res content "Handled" }
         )
         val result = applyOutgoing(middleware)(Request(Method.GET, "/"), 200 ("OK"))
-        assert(result isAcceptedWhere (_.body[String] contains "Handled"))
+        assert(result isAcceptedWhere (_.body.asString contains "Handled"))
       }
       "does not apply middleware that does not match" - {
         val middleware = Seq(
-          GET("/foo") outgoing { (_, res) => res body s"${res.body[String].getOrElse("")} foo!" },
-          GET("/bar") outgoing { (_, res) => res body s"${res.body[String].getOrElse("")} bar!" }
+          GET("/foo") outgoing { (_, res) => res content s"${res.body.asString} foo!" },
+          GET("/bar") outgoing { (_, res) => res content s"${res.body.asString} bar!" }
         )
         val result = applyOutgoing(middleware)(Request(Method.GET, "/bar"), 200 ("OK"))
-        assert(result isAcceptedWhere (_.body[String] contains "OK bar!"))
+        assert(result isAcceptedWhere (_.body.asString contains "OK bar!"))
       }
       "applies all matching middleware, in order" - {
         val middleware = Seq(
-          GET("/") outgoing { (_, res) => res body s"${res.body[String].getOrElse("")} 1" },
-          GET("/") outgoing { (_, res) => res body s"${res.body[String].getOrElse("")} 2" }
+          GET("/") outgoing { (_, res) => res content s"${res.body.asString} 1" },
+          GET("/") outgoing { (_, res) => res content s"${res.body.asString} 2" }
         )
         val result = applyOutgoing(middleware)(Request(Method.GET, "/"), 200 ("OK"))
-        assert(result isAcceptedWhere (_.body[String] contains "OK 1 2"))
+        assert(result isAcceptedWhere (_.body.asString contains "OK 1 2"))
       }
       "works with async middleware" - {
         val middleware = Seq(
-          GET("/") outgoing { (_, res) => Future { res body "handled!" } }
+          GET("/") outgoing { (_, res) => Future { res content "handled!" } }
         )
         val result = applyOutgoing(middleware)(Request(Method.GET, "/"), 200)
-        assert(result isAcceptedWhere (_.body[String] contains "handled!"))
+        assert(result isAcceptedWhere (_.body.asString contains "handled!"))
       }
     }
   }

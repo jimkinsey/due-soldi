@@ -2,9 +2,9 @@ package duesoldi.app
 
 import java.util.UUID
 
-import sommelier.routing.Controller
-
 import ratatoskr.RequestBuilding._
+import ratatoskr.ResponseBuilding._
+import sommelier.routing.Controller
 
 object RequestId
 extends Controller

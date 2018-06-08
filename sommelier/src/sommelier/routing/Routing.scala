@@ -1,9 +1,9 @@
 package sommelier.routing
 
-import ratatoskr.{Method, Request}
 import ratatoskr.RequestBuilding._
+import ratatoskr.ResponseBuilding.ResponseBuilder
+import ratatoskr.{Method, Request, Response}
 import sommelier.Context
-import sommelier.messaging.Response
 import sommelier.routing.SyncResult.{Accepted, Rejected}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -30,6 +30,8 @@ object Routing
 
   implicit def responseToResult(response: Response): Result[Response] = Accepted(response)
 
+  implicit def responseBuilderToResult(builder: ResponseBuilder): Result[Response] = Accepted(builder.response)
+
   implicit def responseToRejection(response: Response): Rejection = Rejection(response)
 
   implicit def requestToResult(request: Request): Result[Request] = Accepted(request)
@@ -39,6 +41,8 @@ object Routing
   implicit def statusToRejection(status: Int): Rejection = Rejection(status)
 
   implicit def futureResponseToResult(fResponse: Future[Response])(implicit executionContext: ExecutionContext): Result[Response] = AsyncResult(fResponse.map(Accepted(_)))
+
+  implicit def futureResponseBuilderToResult(fBuilder: Future[ResponseBuilder])(implicit executionContext: ExecutionContext): Result[Response] = AsyncResult(fBuilder.map(Accepted(_)))
 
   implicit def futureRequestToResult(fRequest: Future[Request])(implicit executionContext: ExecutionContext): Result[Request] = AsyncResult(fRequest.map(Accepted(_)))
 

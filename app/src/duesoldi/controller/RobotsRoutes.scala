@@ -1,5 +1,6 @@
 package duesoldi.controller
 
+import ratatoskr.ResponseBuilding._
 import sommelier.routing.Controller
 import sommelier.routing.Routing._
 

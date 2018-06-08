@@ -11,6 +11,7 @@ import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.metrics.storage.GetAccessRecords
+import ratatoskr.ResponseBuilding._
 import sommelier.handling.Unpacking._
 import sommelier.routing.Controller
 import sommelier.routing.Routing._

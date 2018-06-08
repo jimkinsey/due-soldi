@@ -1,7 +1,6 @@
 package sommelier
 
 import sommelier.routing.Middleware.{Incoming, Outgoing}
-import ratatoskr.Request
 
 package object routing
 {

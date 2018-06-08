@@ -7,6 +7,8 @@ import sommelier.handling.Unpacking._
 import sommelier.routing.Controller
 import sommelier.routing.Routing._
 
+import ratatoskr.ResponseBuilding._
+
 object LearnJapaneseController
 extends Controller
 {

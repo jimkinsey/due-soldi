@@ -12,6 +12,7 @@ import sommelier.routing.Controller
 import sommelier.routing.Routing._
 
 import scala.concurrent.ExecutionContext
+import ratatoskr.ResponseBuilding._
 
 class FurnitureController(implicit executionContext: ExecutionContext, appConfig: Config)
 extends Controller
@@ -27,7 +28,7 @@ extends Controller
         .header("Content-Type" -> "application/octet-stream")
         .header("Cache-Control" -> "max-age=3600")
         .header("Expires" -> ZonedDateTime.now().plusHours(1).format(RFC_1123_DATE_TIME))
-        .body(furniture.content)
+        .content(furniture.content)
     }
   }
 }

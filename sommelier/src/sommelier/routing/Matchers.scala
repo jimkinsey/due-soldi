@@ -2,11 +2,10 @@ package sommelier.routing
 
 import java.util.Base64
 
-import ratatoskr.Method
-import ratatoskr.Request
-import sommelier.messaging.Response
-
+import ratatoskr.{Method, Request, Response}
+import sommelier.Response
 import ratatoskr.RequestAccess._
+import ratatoskr.ResponseBuilding._
 
 import scala.util.matching.Regex
 

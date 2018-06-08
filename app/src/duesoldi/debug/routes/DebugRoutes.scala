@@ -7,6 +7,7 @@ import duesoldi.debug.pages.{MakeConfigPage, MakeHeadersPage}
 import duesoldi.dependencies.DueSoldiDependencies._
 import sommelier.routing.Controller
 import sommelier.routing.Routing._
+import ratatoskr.ResponseBuilding._
 
 import scala.concurrent.ExecutionContext
 

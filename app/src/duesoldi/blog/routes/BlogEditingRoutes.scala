@@ -10,6 +10,7 @@ import duesoldi.dependencies.DueSoldiDependencies._
 import sommelier.handling.Unpacking._
 import sommelier.routing.Controller
 import sommelier.routing.Routing._
+import ratatoskr.ResponseBuilding._
 
 import scala.concurrent.ExecutionContext
 

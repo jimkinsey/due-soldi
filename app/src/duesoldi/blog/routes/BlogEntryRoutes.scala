@@ -12,6 +12,7 @@ import sommelier.routing.Controller
 import sommelier.routing.Routing._
 
 import scala.concurrent.ExecutionContext
+import ratatoskr.ResponseBuilding._
 
 class BlogEntryController(implicit executionContext: ExecutionContext, appConfig: Config)
 extends Controller

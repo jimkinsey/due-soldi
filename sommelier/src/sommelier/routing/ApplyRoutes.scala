@@ -1,8 +1,7 @@
 package sommelier.routing
 
-import ratatoskr.Request
+import ratatoskr.{Request, Response}
 import sommelier.handling.Context
-import sommelier.messaging.Response
 import sommelier.routing.SyncResult.Rejected
 
 private[sommelier] object ApplyRoutes

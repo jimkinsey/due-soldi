@@ -1,9 +1,10 @@
 package sommelier.serving
 
 import dearboy.EventBus
-import ratatoskr.Request
+import ratatoskr.{Request, Response}
+import ratatoskr.ResponseBuilding._
 import sommelier.events.{Completed, ExceptionWhileRouting}
-import sommelier.messaging.Response
+import sommelier.Response
 import sommelier.routing.ApplyMiddleware.{applyIncoming, applyOutgoing}
 import sommelier.routing.ApplyRoutes.applyRoutes
 import sommelier.routing.{AsyncResult, Middleware, Result, Route, SyncResult}
@@ -28,7 +29,7 @@ object Router
       def handleException: PartialFunction[Throwable, Result[Response]] = {
         case ex =>
           bus.publish(ExceptionWhileRouting(context.get, ex))
-          SyncResult.Accepted(Response(500)("Internal Server Error"))
+          SyncResult.Accepted(Response(500).content("Internal Server Error"))
       }
 
       def sendResponse(request: Request)(result: Result[Response]): Unit = result match {

@@ -5,9 +5,9 @@ import java.util.Base64
 import duesoldi.app.sessions.SessionIdParsing.parseSessionId
 import duesoldi.app.sessions.SessionIdValidation.validateSessionId
 import duesoldi.config.Config
-import ratatoskr.{Cookie, Request}
+import ratatoskr.{Cookie, Request, Response}
 import ratatoskr.RequestAccess._
-import sommelier.messaging.Response
+import ratatoskr.ResponseBuilding._
 import sommelier.routing.{AuthorizationMatcher, Rejection}
 
 object Sessions
@@ -26,7 +26,7 @@ object Sessions
   }
 
   def validSession(implicit config: Config): AuthorizationMatcher = (request) => {
-    sessionId(config.secretKey)(request).swap.toOption.map(message => Rejection(Response(403).body(message)))
+    sessionId(config.secretKey)(request).swap.toOption.map(message => Rejection(Response(403).content(message)))
   }
 
   def sessionId(secret: String)(request: Request): Either[String, ValidatedSessionId] = {

@@ -2,6 +2,7 @@ package duesoldi.app
 
 import duesoldi.config.EnvironmentalConfig.{nonSensitive, toEnv}
 import duesoldi.config.{Config, EnvironmentalConfig}
+import ratatoskr.ResponseBuilding._
 import sommelier._
 import sommelier.handling.Unpacking._
 import sommelier.routing.Result

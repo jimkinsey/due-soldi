@@ -6,6 +6,7 @@ import cicerone._
 import hammerspace.testing.CustomMatchers._
 import hammerspace.testing.StreamHelpers._
 import ratatoskr.RequestBuilding._
+import ratatoskr.ResponseBuilding._
 import ratatoskr.{Method, Request}
 import sommelier.handling.Unpacking._
 import sommelier.routing.Routing._
@@ -191,7 +192,7 @@ extends TestSuite
             GET("/path") respond { _ => 200 }
           ),
           middleware = Seq(
-            AnyRequest outgoing { (req, res) => res body "Handled" }
+            AnyRequest outgoing { (req, res) => res content "Handled" }
           )
         )}) { server =>
           for {
@@ -207,8 +208,8 @@ extends TestSuite
         withServer({ Server.start(
           Seq(new Controller {
             AnyRequest >-- { req => req content "in->" }
-            AnyRequest ->- { ctx => 200 body s"${ctx.request.body.asString}handled->" }
-            AnyRequest --> { (req, res) => res body s"${res.body[String].getOrElse("")}out" }
+            AnyRequest ->- { ctx => 200 content s"${ctx.request.body.asString}handled->" }
+            AnyRequest --> { (req, res) => res content s"${res.body.asString}out" }
           })
         )}) { server =>
           for {

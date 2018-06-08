@@ -2,7 +2,6 @@ package sommelier.handling
 
 import java.time.ZonedDateTime
 
-import sommelier.messaging.Response
 import sommelier.routing.SyncResult.{Accepted, Rejected}
 import sommelier.routing.{AsyncResult, PathParams, Rejection, Result, SyncResult}
 
@@ -10,7 +9,9 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 import scala.util.Try
 import ratatoskr.RequestAccess._
+import ratatoskr.ResponseBuilding._
 import hammerspace.testing.StreamHelpers._
+import ratatoskr.Response
 
 object Unpacking {
 
@@ -25,7 +26,7 @@ object Unpacking {
 
   case class BadPathVar(name: String) extends Rejection
   {
-    lazy val response = Response(400)(s"Path var $name could not be unpacked")
+    lazy val response = Response(400, body = s"Path var $name could not be unpacked".asByteStream("UTF-8"))
   }
 
   def pathParam[T](name: String)(implicit context: Context, unpacker: Unpacker[T]): Result[T] = {
@@ -41,7 +42,7 @@ object Unpacking {
 
   case object NotAWildcardedPath extends Rejection
   {
-    lazy val response: Response = Response(500)("Path is not wildcarded")
+    lazy val response: Response = Response(500).content("Path is not wildcarded")
   }
 
   case object PathMatchFailure extends Rejection
@@ -83,22 +84,22 @@ object Unpacking {
 
   case class HeaderNotFound(name: String) extends Rejection
   {
-    val response: Response = Response(400)(s"Header '$name' not found in request")
+    val response: Response = Response(400).content(s"Header '$name' not found in request")
   }
 
   case class QueryParamNotFound(name: String) extends Rejection
   {
-    val response: Response = Response(400)(s"Query param '$name' not found in request")
+    val response: Response = Response(400).content(s"Query param '$name' not found in request")
   }
 
   case object RequestHasNoBody extends Rejection
   {
-    val response: Response = Response(400)("Request has no body")
+    val response: Response = Response(400).content("Request has no body")
   }
 
   case object BodyUnpackFailure extends Rejection
   {
-    val response: Response = Response(500)("Failed to unpack the body")
+    val response: Response = Response(500).content("Failed to unpack the body")
   }
 
   implicit val unpackInt: Unpacker[Int] = string => Try(string.toInt).toOption

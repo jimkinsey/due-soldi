@@ -6,6 +6,7 @@ import duesoldi.blog.storage.GetAllBlogEntries
 import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.rendering.Render
+import ratatoskr.ResponseBuilding._
 import sommelier.handling.Unpacking._
 import sommelier.routing.Controller
 import sommelier.routing.Routing._
