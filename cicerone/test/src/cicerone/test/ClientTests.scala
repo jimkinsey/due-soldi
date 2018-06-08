@@ -2,7 +2,7 @@ package cicerone.test
 
 import cicerone.HttpConnection.Configuration
 import cicerone._
-import cicerone.test.support.TestServer.withServer
+import cicerone.test.support.TestServer._
 import hammerspace.testing.CustomMatchers._
 import hammerspace.testing.StreamHelpers._
 import ratatoskr.Method.{GET, POST, HEAD}

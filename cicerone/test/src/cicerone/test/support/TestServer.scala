@@ -6,20 +6,17 @@ import com.sun.net.httpserver.{HttpExchange, HttpHandler, HttpServer}
 import hammerspace.streams.InputStreams
 import hammerspace.testing.StreamHelpers._
 import ratatoskr.Method.{GET, HEAD}
-import ratatoskr.{Method, Request}
+import ratatoskr.{Headers, Method, Request, Response}
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
 object TestServer
 {
-  type Headers = Map[String, Seq[String]]
-
-  implicit def tuple2ToResponse(tuple: (Int, String)): Response = Response(tuple._1, Some(tuple._2))
-  implicit def tuple3ToResponse(tuple: (Int, String, Headers)): Response = Response(tuple._1, Some(tuple._2), tuple._3)
+  implicit def tuple2ToResponse(tuple: (Int, String)): Response = Response(tuple._1, ratatoskr.EmptyHeaders, tuple._2.asByteStream("UTF-8"))
+  implicit def tuple3ToResponse(tuple: (Int, String, Headers)): Response = Response(tuple._1, tuple._3, tuple._2.asByteStream("UTF-8"))
   implicit def statusAndHeaderToResponse(statusAndHeader: (Int, (String, String))): Response = Response(statusAndHeader._1, headers = Map(statusAndHeader._2._1 -> Seq(statusAndHeader._2._2)))
 
-  case class Response(status: Int, body: Option[String] = None, headers: Headers = Map.empty)
   case class ServerInfo(port: Int)
 
   type RequestMatcher = (Method, String)
@@ -49,7 +46,7 @@ object TestServer
         )
         if (routing.isDefinedAt(request.method -> request.url) || request.method == HEAD && routing.isDefinedAt(GET -> request.url)) {
           Try {
-            val Response(status, body, headers) = request.method match {
+            val Response(status, headers, body) = request.method match {
               case HEAD => routing(GET -> request.url)(request)
               case _ => routing(request.method -> request.url)(request)
             }
@@ -58,13 +55,11 @@ object TestServer
                 httpExchange.getResponseHeaders.add(key, value)
               }
             }
-            httpExchange.sendResponseHeaders(status, body.map(_.getBytes.length.toLong).getOrElse(-1))
-            if (request.method != HEAD && body.exists(_.nonEmpty)) {
-              body.foreach { content =>
-                val bodyOut = httpExchange.getResponseBody
-                bodyOut.write(content.getBytes)
-                bodyOut.close()
-              }
+            httpExchange.sendResponseHeaders(status, if (body.nonEmpty) body.toArray.length.toLong else -1) // FIXME what was -1 for?
+            if (request.method != HEAD && body.nonEmpty) {
+              val bodyOut = httpExchange.getResponseBody
+              bodyOut.write(body.toArray)
+              bodyOut.close()
             }
           } recover {
             case exception =>
