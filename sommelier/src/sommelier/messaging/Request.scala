@@ -1,5 +1,7 @@
 package sommelier.messaging
 
+import ratatoskr.Method
+
 case class Request(
   method: Method,
   path: String,

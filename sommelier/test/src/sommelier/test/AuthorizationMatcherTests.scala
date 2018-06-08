@@ -1,6 +1,6 @@
 package sommelier.test
 
-import sommelier.messaging.Method.GET
+import ratatoskr.Method.GET
 import sommelier.messaging.Request
 import sommelier.routing.{AuthorizationMatcher, Basic, Rejection}
 import sommelier.routing.Routing._

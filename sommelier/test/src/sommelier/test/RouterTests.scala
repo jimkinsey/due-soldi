@@ -1,9 +1,10 @@
 package sommelier.test
 
 import dearboy.EventBus
+import ratatoskr.Method
 import sommelier.events.{Completed, ExceptionWhileRouting}
 import sommelier.handling.Unpacking._
-import sommelier.messaging.{Method, Request, Response}
+import sommelier.messaging.{Request, Response}
 import sommelier.routing.Result
 import sommelier.routing.Routing._
 import sommelier.serving.{HttpMessageContext, Router}

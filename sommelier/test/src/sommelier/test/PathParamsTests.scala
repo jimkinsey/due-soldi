@@ -1,7 +1,8 @@
 package sommelier.test
 
-import sommelier.messaging.Method.GET
-import sommelier.messaging.{Method, Request}
+import ratatoskr.Method.GET
+import ratatoskr.Method
+import sommelier.messaging.Request
 import sommelier.routing.{BadRequest, PathParams, RequestMatcher}
 import sommelier.routing.PathParams.Failure.PathMatchFailure
 import utest._

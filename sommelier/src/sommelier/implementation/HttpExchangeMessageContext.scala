@@ -3,7 +3,8 @@ package sommelier.implementation
 import java.util.Scanner
 
 import com.sun.net.httpserver.HttpExchange
-import sommelier.messaging.{Method, Request}
+import ratatoskr.Method
+import sommelier.messaging.Request
 import sommelier.serving.HttpMessageContext
 import sommelier.{Request, Response}
 

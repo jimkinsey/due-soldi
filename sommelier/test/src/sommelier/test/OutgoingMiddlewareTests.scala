@@ -1,9 +1,10 @@
 package sommelier.test
 
+import ratatoskr.Method
+import sommelier.messaging.Request
 import sommelier.routing.ApplyMiddleware.applyOutgoing
-import sommelier.messaging.{Method, Request}
-import sommelier.routing.SyncResult.Accepted
 import sommelier.routing.Routing._
+import sommelier.routing.SyncResult.Accepted
 import sommelier.test.support.CustomMatchers._
 import utest._
 

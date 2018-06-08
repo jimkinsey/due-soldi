@@ -2,7 +2,8 @@ package sommelier.routing
 
 import java.util.Base64
 
-import sommelier.messaging.{Method, Request, Response}
+import ratatoskr.Method
+import sommelier.messaging.{Request, Response}
 
 import scala.util.matching.Regex
 
@@ -101,7 +102,7 @@ object AuthorizationMatcher
 {
   implicit class WithFallback(initial: AuthorizationMatcher) {
     def or(next: AuthorizationMatcher): AuthorizationMatcher = {
-      (request: Request) => {
+      request: Request => {
         initial.rejects(request) match {
           case None => None
           case _ => next.rejects(request)

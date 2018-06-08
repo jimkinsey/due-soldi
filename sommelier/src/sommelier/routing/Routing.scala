@@ -1,7 +1,8 @@
 package sommelier.routing
 
+import ratatoskr.Method
 import sommelier.Context
-import sommelier.messaging.{Method, Request, Response}
+import sommelier.messaging.{Request, Response}
 import sommelier.routing.SyncResult.{Accepted, Rejected}
 
 import scala.concurrent.{ExecutionContext, Future}

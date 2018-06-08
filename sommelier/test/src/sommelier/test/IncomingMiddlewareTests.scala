@@ -1,6 +1,7 @@
 package sommelier.test
 
-import sommelier.messaging.{Method, Request}
+import ratatoskr.Method
+import sommelier.messaging.Request
 import sommelier.routing.ApplyMiddleware.applyIncoming
 import sommelier.routing.Middleware
 import sommelier.routing.Routing._
