@@ -57,6 +57,18 @@ extends Controller
     }
   }
 
+  GET("/admin/metrics/access/").Authorization(basicAdminAuth or validSession) ->- { implicit context =>
+    for {
+      getSessionCookie <- provided[GetSessionCookie]
+      sessionCookie <- getSessionCookie(context.request) rejectWith 500
+    } yield {
+      200 ("TODO")
+        .header("Cache-control" -> "no-cache")
+        .header("Content-type" -> "application/html")
+        .cookie(sessionCookie)
+    }
+  }
+
   private def sevenDaysAgo = ZonedDateTime.now().minus(7, ChronoUnit.DAYS)
 
   private def renderCsv(accessRecords: Seq[Access]): String = {
