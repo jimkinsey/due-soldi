@@ -10,7 +10,7 @@ object ResponseAccess
 
     def cookie(name: String): Option[Cookie] = {
       for {
-        setCookies <- response.headers.find(_._1.toLowerCase == "set-cookie").map(_._2)
+        setCookies <- header("Set-Cookie")
         namedCookie <- setCookies.find(_.startsWith(s"$name="))
         value = namedCookie.substring(s"$name=".length)
       } yield {
