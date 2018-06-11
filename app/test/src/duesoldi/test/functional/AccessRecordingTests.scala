@@ -179,6 +179,20 @@ extends TestSuite
           }
         }
       }
+      "Allows CORS access for all origins" - {
+        withSetup(
+          database,
+          runningAppForThisTestOnly
+        ) { implicit env =>
+          for {
+            response <- get("/admin/metrics/access.json", headers = TestApp.adminAuth)
+          } yield {
+            assert(
+              response.header("Access-Control-Allow-Origin") contains Seq("*")
+            )
+          }
+        }
+      }
     }
   }
 

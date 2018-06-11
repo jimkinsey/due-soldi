@@ -43,6 +43,7 @@ extends Controller
       content = renderJson(accesses)
     } yield {
       200 (content)
+        .header("Access-Control-Allow-Origin" -> "*")
         .header("Cache-control" -> "no-cache")
         .header("Content-type" -> "application/json")
         .cookie(sessionCookie)
