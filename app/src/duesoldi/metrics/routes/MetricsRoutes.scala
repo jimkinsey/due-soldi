@@ -36,7 +36,7 @@ extends Controller
     200
       .header("Access-Control-Allow-Origin" -> "*")
       .header("Access-Control-Allow-Methods" -> "GET")
-      .header("Access-Control-Allow-Headers" -> context.request.headers.keys.mkString(", "))
+      .header("Access-Control-Allow-Headers" -> "authorization, cookie")
   }
 
   GET("/admin/metrics/access.json").Authorization(basicAdminAuth or validSession) ->- { implicit context =>
