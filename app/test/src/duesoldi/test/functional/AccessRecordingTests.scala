@@ -174,7 +174,7 @@ extends TestSuite
               firstAccess.status == 200,
               secondAccess.status == 200,
               thirdAccess.status == 200,
-              fourthAccess.status == 403
+              fourthAccess.status == 401
             )
           }
         }
@@ -211,7 +211,8 @@ extends TestSuite
             assert(
               accessPageWithAuth.status == 200,
               accessPageWithCookie.status == 200,
-              accessPageUnauthorised.status == 403
+              accessPageUnauthorised.status == 401,
+              accessPageUnauthorised.header("WWW-Authenticate") nonEmpty
             )
           }
         }

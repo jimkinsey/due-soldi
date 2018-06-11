@@ -107,7 +107,7 @@ object AuthorizationMatcher
       request: Request => {
         initial.rejects(request) match {
           case None => None
-          case _ => next.rejects(request)
+          case Some(initialRejection) => next.rejects(request).map(_ => initialRejection)
         }
       }
     }

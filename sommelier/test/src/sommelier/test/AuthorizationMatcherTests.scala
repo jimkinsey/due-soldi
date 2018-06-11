@@ -1,10 +1,10 @@
 package sommelier.test
 
 import ratatoskr.Method.GET
-import ratatoskr.RequestBuilding._
 import ratatoskr.Request
-import sommelier.routing.{AuthorizationMatcher, Basic, Rejection}
-import sommelier.routing.Routing._
+import ratatoskr.RequestBuilding._
+import sommelier.Response
+import sommelier.routing.{AuthorizationMatcher, Rejection}
 import utest._
 
 object AuthorizationMatcherTests
@@ -13,21 +13,36 @@ extends TestSuite
   val tests = this {
     "A chained authorization matcher" - {
       "falls back on the second matcher when the first fails" - {
-        val jimAuth = Basic("jim", "p455w0rd", "admin")
-        val charleyAuth = Basic("charley", "234asd1123", "admin")
-        val rejection = (jimAuth or charleyAuth).rejects(GET("/") header "Authorization" -> s"Basic ${charleyAuth.encoded}")
+        val rejection = (Fails("First") or Passes).rejects(GET("/"))
         assert(rejection isEmpty)
       }
       "stops checking matchers after first success" - {
-        val goodAuth = new AuthorizationMatcher {
-          override def rejects(request: Request): Option[Rejection] = None
-        }
-        val badAuth = new AuthorizationMatcher {
-          override def rejects(request: Request): Option[Rejection] = ???
-        }
-        val rejection = (goodAuth or badAuth).rejects(GET("/"))
+        val rejection = (Passes or Fails("Bad")).rejects(GET("/"))
+        assert(rejection isEmpty)
+      }
+      "fails with the first error when both fail" - {
+        val rejection = (Fails("First") or Fails("Second")).rejects(GET("/"))
+        assert(rejection contains TestRejection("First"))
+      }
+      "passes if both pass" - {
+        val rejection = (Passes or Passes).rejects(GET("/"))
         assert(rejection isEmpty)
       }
     }
+  }
+
+  object Passes extends AuthorizationMatcher
+  {
+    override def rejects(request: Request): Option[Rejection] = None
+  }
+
+  case class Fails(message: String) extends AuthorizationMatcher
+  {
+    override def rejects(request: Request): Option[Rejection] = Some(TestRejection(message))
+  }
+
+  case class TestRejection(message: String) extends Rejection
+  {
+    override def response: Response = ???
   }
 }
