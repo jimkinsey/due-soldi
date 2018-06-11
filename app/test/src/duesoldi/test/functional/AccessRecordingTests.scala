@@ -185,9 +185,11 @@ extends TestSuite
           runningAppForThisTestOnly
         ) { implicit env =>
           for {
+            optionsResponse <- options("/admin/metrics/access.json", headers = TestApp.adminAuth)
             response <- get("/admin/metrics/access.json", headers = TestApp.adminAuth)
           } yield {
             assert(
+              optionsResponse.header("Access-Control-Allow-Origin") contains Seq("*"),
               response.header("Access-Control-Allow-Origin") contains Seq("*")
             )
           }

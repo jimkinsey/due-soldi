@@ -20,6 +20,10 @@ object ServerRequests
     HttpClient.delete(path, env, withOverrides(headers))
   }
 
+  def options(path: String, headers: (String, String)*)(implicit ec: ExecutionContext, env: Env): Future[Response] = {
+    HttpClient.options(path, env, withOverrides(headers))
+  }
+
   private def withOverrides(headers: Seq[(String, String)])(implicit env: Env): Seq[(String, String)] = {
     headers :+ headers.find(_._1 == "Config-Override").getOrElse(configOverrideHeader(env)) :+ secretKeyHeader(env)
   }

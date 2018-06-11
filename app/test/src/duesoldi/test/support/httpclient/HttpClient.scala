@@ -22,6 +22,10 @@ object HttpClient
     send("DELETE", path, env, headers)
   }
 
+  def options(path: String, env: Env, headers: Seq[(String, String)] = Seq.empty)(implicit ec: ExecutionContext): Future[Response] = {
+    send("OPTIONS", path, env, headers)
+  }
+
   def send(method: String, path: String, env: Env, headers: Seq[(String, String)], body: Option[String] = None)(implicit ec: ExecutionContext): Future[Response] = {
     new Client().send(ratatoskr.Request(
       method = Method(method),

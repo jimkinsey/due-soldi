@@ -17,6 +17,7 @@ object Routing
   lazy val POST = RequestMatcher(method = Some(MethodMatcher(Method.POST)))
   lazy val PUT = RequestMatcher(method = Some(MethodMatcher(Method.PUT)))
   lazy val DELETE = RequestMatcher(method = Some(MethodMatcher(Method.DELETE)))
+  lazy val OPTIONS = RequestMatcher(method = Some(MethodMatcher(Method.OPTIONS)))
 
   val AnyRequest = RequestMatcher()
 
