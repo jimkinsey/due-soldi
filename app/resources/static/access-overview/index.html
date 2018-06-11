@@ -1,0 +1,56 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>Access Overview</title>
+    </head>
+    <body>
+        <h1>Access Overview</h1>
+        <div id="content">
+            <div id="top-pages"></div>
+        </div>
+        <script language="JavaScript">
+            loadData().then(render);
+            
+            function loadData() {
+                return fetch('https://www.jimkinsey.com/admin/metrics/access.json')
+                    .then((response) => {
+                        return response.json();
+                    })  
+            };
+            
+            function render(data) {
+                renderTopPages(data); 
+                return;  
+            };
+            
+            function renderTopPages(data) {
+
+                let topPagesModel = data.records.reduce((acc, curr) => {
+                    let page = acc.pages.find((p) => p.path == curr.path);
+                    if (page) {
+                        page.hits++;
+                    }
+                    else {
+                        acc.pages.push({ hits: 1, path: curr.path });
+                    }
+                    return acc;
+                }, { pages: [] });
+                                
+                let topPagesHTML = `<table>
+                    <thead>
+                        <tr><th>Hits</th><th>Path</th></tr>
+                    </thead>
+                    <tbody>
+                        ${topPagesModel.pages.map(({hits, path}) => `<tr><td>${hits}</td><td>${path}</td></tr>`)}
+                    </tbody>
+                </table>`;
+                
+                document.getElementById('top-pages').innerHTML = topPagesHTML;
+                
+                return;
+            };
+            
+            
+        </script>
+    </body>
+</html>
