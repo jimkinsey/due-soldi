@@ -198,20 +198,35 @@ extends TestSuite
         }
       }
     }
-    "The access overview page is only available to admins" - {
-      withSetup(runningAppForThisTestOnly) { implicit env =>
-        for {
-          accessPageWithAuth <- get("/admin/metrics/access/", headers = TestApp.adminAuth)
-          sessionIdCookie = accessPageWithAuth.cookie("adminSessionId")
-          _ = assert(sessionIdCookie isDefined)
-          accessPageWithCookie <- get("/admin/metrics/access/", headers = sessionIdCookie.get.toRequestHeader)
-          accessPageUnauthorised <- get("/admin/metrics/access/")
-        } yield {
-          assert(
-            accessPageWithAuth.status == 200,
-            accessPageWithCookie.status == 200,
-            accessPageUnauthorised.status == 403
-          )
+    "The access overview page" - {
+      "is only available to admins" - {
+        withSetup(runningAppForThisTestOnly) { implicit env =>
+          for {
+            accessPageWithAuth <- get("/admin/metrics/access/", headers = TestApp.adminAuth)
+            sessionIdCookie = accessPageWithAuth.cookie("adminSessionId")
+            _ = assert(sessionIdCookie isDefined)
+            accessPageWithCookie <- get("/admin/metrics/access/", headers = sessionIdCookie.get.toRequestHeader)
+            accessPageUnauthorised <- get("/admin/metrics/access/")
+          } yield {
+            assert(
+              accessPageWithAuth.status == 200,
+              accessPageWithCookie.status == 200,
+              accessPageUnauthorised.status == 403
+            )
+          }
+        }
+      }
+      "returns HTML" - {
+        withSetup(runningAppForThisTestOnly) { implicit env =>
+          for {
+            response <- get("/admin/metrics/access/", headers = TestApp.adminAuth)
+          } yield {
+            assert(
+              response.status == 200,
+              response.header("Content-Type") contains Seq("text/html; charset=UTF-8"),
+              response.body nonEmpty
+            )
+          }
         }
       }
     }

@@ -1,5 +1,7 @@
 package duesoldi.metrics.routes
 
+import java.io.File
+import java.nio.file.Files
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -62,11 +64,15 @@ extends Controller
       getSessionCookie <- provided[GetSessionCookie]
       sessionCookie <- getSessionCookie(context.request) rejectWith 500
     } yield {
-      200 ("TODO")
+      200 (fileContent("app/resources/static/access-overview/")("index.html"))
         .header("Cache-control" -> "no-cache")
-        .header("Content-type" -> "application/html")
+        .header("Content-type" -> "text/html; charset=UTF-8")
         .cookie(sessionCookie)
     }
+  }
+
+  private def fileContent(basePath: String)(path: String): Array[Byte] = {
+    Files.readAllBytes(new File(basePath + path).toPath)
   }
 
   private def sevenDaysAgo = ZonedDateTime.now().minus(7, ChronoUnit.DAYS)
