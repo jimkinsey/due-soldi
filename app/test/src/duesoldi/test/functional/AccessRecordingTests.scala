@@ -191,7 +191,7 @@ extends TestSuite
             assert(
               optionsResponse.header("Access-Control-Allow-Origin") contains Seq("*"),
               optionsResponse.header("Access-Control-Allow-Methods") contains Seq("GET"),
-              optionsResponse.header("Access-Control-Allow-Headers") contains Seq("*"),
+              optionsResponse.header("Access-Control-Allow-Headers") exists (_.nonEmpty),
               response.header("Access-Control-Allow-Origin") contains Seq("*")
             )
           }
