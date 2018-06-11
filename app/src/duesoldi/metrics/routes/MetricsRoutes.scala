@@ -32,10 +32,11 @@ extends Controller
     }
   }
 
-  OPTIONS("/admin/metrics/access.json").Authorization(basicAdminAuth or validSession) ->- { implicit context =>
+  OPTIONS("/admin/metrics/access.json") ->- { implicit context =>
     200 header "Access-Control-Allow-Origin" -> "*"
   }
 
+//  GET("/admin/metrics/access.json").Authorization(basicAdminAuth or validSession).Origin([some function of origin])
   GET("/admin/metrics/access.json").Authorization(basicAdminAuth or validSession) ->- { implicit context =>
     for {
       getSessionCookie <- provided[GetSessionCookie]
