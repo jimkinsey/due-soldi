@@ -12,7 +12,9 @@
             loadData().then(render);
             
             function loadData() {
-                return fetch('https://www.jimkinsey.com/admin/metrics/access.json')
+                return fetch('https://www.jimkinsey.com/admin/metrics/access.json', {
+                        credentials: 'same-origin'
+                    })
                     .then((response) => {
                         return response.json();
                     })  
