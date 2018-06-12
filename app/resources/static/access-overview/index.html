@@ -6,28 +6,57 @@
     <body>
         <h1>Access Overview</h1>
         <div id="content">
-            <div id="top-pages"></div>
+            <div id="top-pages">
+                <div id="top-pages-controls">
+                    <form>
+                        <input type="checkbox" id="top-pages-only-ok" /><label>Only OK</label>
+                    </form>
+                </div>
+                <div id="top-pages-data"></div>
+            </div>
         </div>
         <script language="JavaScript">
-            loadData().then(render);
+            document.querySelector('#top-pages-only-ok').onchange = toggleTopPagesOnlyOk;
+
+            refresh();
+
+            function refresh() {
+                return loadData().then(render);
+            }
             
             function loadData() {
                 return fetch('https://www.jimkinsey.com/admin/metrics/access.json', {
-                        credentials: 'same-origin'
+                        credentials: 'same-origin',
+                        headers: {
+                            'Cookie': 'adminSessionId=user:jim,h:NFL9Vn2pSKPMOyNlbc0dCXUnn/Tr0B12Wlf+5JrITDA='
+                        }
                     })
                     .then((response) => {
                         return response.json();
-                    })  
+                    })
             };
-            
+
+            let identity = (x) => x;
+            let topPagesRecordFilter = identity;
+
             function render(data) {
                 renderTopPages(data); 
                 return;  
             };
-            
+
+            function toggleTopPagesOnlyOk(event) {
+                if (event.target.checked) {
+                    topPagesRecordFilter = (record) => record.statusCode < 300;
+                } else {
+                    topPagesRecordFilter = identity;
+                }
+                refresh();
+                return;
+            }
+
             function renderTopPages(data) {
 
-                let topPages = data.records.reduce((acc, curr) => {
+                let topPages = data.records.filter(topPagesRecordFilter).reduce((acc, curr) => {
                     let page = acc.find((p) => p.path == curr.path);
                     if (page) {
                         page.hits++;
@@ -47,8 +76,8 @@
                     </tbody>
                 </table>`;
                 
-                document.getElementById('top-pages').innerHTML = topPagesHTML;
-                
+                document.getElementById('top-pages-data').innerHTML = topPagesHTML;
+
                 return;
             };
             
