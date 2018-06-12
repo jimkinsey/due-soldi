@@ -27,23 +27,23 @@
             
             function renderTopPages(data) {
 
-                let topPagesModel = data.records.reduce((acc, curr) => {
-                    let page = acc.pages.find((p) => p.path == curr.path);
+                let topPages = data.records.reduce((acc, curr) => {
+                    let page = acc.find((p) => p.path == curr.path);
                     if (page) {
                         page.hits++;
                     }
                     else {
-                        acc.pages.push({ hits: 1, path: curr.path });
+                        acc.push({ hits: 1, path: curr.path });
                     }
                     return acc;
-                }, { pages: [] });
+                }, []).sort((a,b) => b.hits - a.hits);
                                 
                 let topPagesHTML = `<table>
                     <thead>
                         <tr><th>Hits</th><th>Path</th></tr>
                     </thead>
                     <tbody>
-                        ${topPagesModel.pages.map(({hits, path}) => `<tr><td>${hits}</td><td>${path}</td></tr>`)}
+                        ${topPages.map(({hits, path}) => `<tr><td>${hits}</td><td>${path}</td></tr>`)}
                     </tbody>
                 </table>`;
                 
