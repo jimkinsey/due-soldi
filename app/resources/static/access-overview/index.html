@@ -101,7 +101,7 @@
                             <tr><th>Hits</th><th>Path</th></tr>
                         </thead>
                         <tbody>
-                            ${topPages.map(({hits, path}) => `<tr><td>${hits}</td><td>${path}</td></tr>`)}
+                            ${topPages.map(({hits, path}) => `<tr><td>${hits}</td><td>${path}</td></tr>`).join('\n')}
                         </tbody>
                     </table>`;
                 
