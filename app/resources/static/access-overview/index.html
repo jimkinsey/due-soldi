@@ -27,7 +27,7 @@
                 document.querySelector(`#filter-${name}`).onchange = toggleFilter(name)
             );
 
-            refresh().then(() => setInterval(refresh, 5000));
+            refresh().then(() => setInterval(refresh, 60000));
 
             function refresh() {
                 return loadData().then(render);
