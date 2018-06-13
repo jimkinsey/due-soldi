@@ -6,16 +6,14 @@
     <body>
         <h1>Access Overview</h1>
         <div id="content">
-            <div id="top-pages">
-                <div id="top-pages-controls">
-                    <fieldset>
-                        <legend>Filters</legend>
-                        <label><input type="checkbox" id="top-pages-only-ok">Only OK</label>
-                        <label><input type="checkbox" id="top-pages-only-public">Only Public</label>
-                    </fieldset>
-                </div>
-                <div id="top-pages-data"></div>
+            <div id="filters">
+                <fieldset>
+                    <legend>Filters</legend>
+                    <label><input type="checkbox" id="filter-only-ok">Only OK</label>
+                    <label><input type="checkbox" id="filter-only-public">Only Public</label>
+                </fieldset>
             </div>
+            <section id="top-pages"></section>
         </div>
         <script language="JavaScript">
             const pageFilters = {
@@ -24,7 +22,7 @@
             };
 
             Object.keys(pageFilters).forEach((name) =>
-                document.querySelector(`#top-pages-${name}`).onchange = toggleFilter(name)
+                document.querySelector(`#filter-${name}`).onchange = toggleFilter(name)
             );
 
             refresh().then(() => setInterval(refresh, 5000));
@@ -44,8 +42,8 @@
 
             let selectedFilters = [];
 
-            function topPagesRecordFilter() {
-                const filters = selectedFilters.map((name) => pageFilters[name]);
+            function combinedFilter(names) {
+                const filters = names.map((name) => pageFilters[name]);
                 return filters.reduce((acc, next) => {
                     return (input) => acc(input) && next(input)
                 }, () => true)
@@ -68,7 +66,7 @@
 
             function renderTopPages(data) {
 
-                let topPages = data.records.filter(topPagesRecordFilter()).reduce((acc, curr) => {
+                let topPages = data.records.filter(combinedFilter(selectedFilters)).reduce((acc, curr) => {
                     let page = acc.find((p) => p.path === curr.path);
                     if (page) {
                         page.hits++;
@@ -79,16 +77,17 @@
                     return acc;
                 }, []).sort((a,b) => b.hits - a.hits);
                                 
-                let topPagesHTML = `<table>
-                    <thead>
-                        <tr><th>Hits</th><th>Path</th></tr>
-                    </thead>
-                    <tbody>
-                        ${topPages.map(({hits, path}) => `<tr><td>${hits}</td><td>${path}</td></tr>`)}
-                    </tbody>
-                </table>`;
+                let topPagesHTML = `<header><h2>Page views</h2></header>
+                    <table>
+                        <thead>
+                            <tr><th>Hits</th><th>Path</th></tr>
+                        </thead>
+                        <tbody>
+                            ${topPages.map(({hits, path}) => `<tr><td>${hits}</td><td>${path}</td></tr>`)}
+                        </tbody>
+                    </table>`;
                 
-                document.getElementById('top-pages-data').innerHTML = topPagesHTML;
+                document.getElementById('top-pages').innerHTML = topPagesHTML;
             }
         </script>
     </body>
