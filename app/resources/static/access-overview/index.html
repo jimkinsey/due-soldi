@@ -17,8 +17,14 @@
             </div>
         </div>
         <script language="JavaScript">
-            document.querySelector('#top-pages-only-ok').onchange = toggleTopPagesOnlyOk;
-            document.querySelector('#top-pages-only-public').onchange = toggleTopPagesOnlyPublic;
+            const pageFilters = {
+                'only-ok': (record) => record.statusCode < 300,
+                'only-public': (record) => !record.path.match(/^\/admin\/\.+/)
+            };
+
+            Object.keys(pageFilters).forEach((name) =>
+                document.querySelector(`#top-pages-${name}`).onchange = toggleFilter(name)
+            );
 
             refresh();
 
@@ -35,56 +41,41 @@
                     })
             }
 
-            const pageFilters = {
-                'only-ok': (record) => record.statusCode < 300,
-                'only-public': (record) => !record.path.match(/^\/admin\/\.+/)
-            };
-
             let selectedFilters = [];
 
             let identity = (x) => x;
 
             function topPagesRecordFilter(arr) {
-                const compose = (...fns) =>
-                    fns.reduceRight((prevFn, nextFn) =>
-                        (...args) => nextFn(prevFn(...args)),
-                        identity
-                    );
-
                 const filters = selectedFilters.map((name) => pageFilters[name]);
-
                 return compose(filters)(arr);
+            }
+
+            function compose(fns) {
+                return fns.reduceRight((prevFn, nextFn) =>
+                    (...args) => nextFn(prevFn(...args)),
+                    identity
+                );
             }
 
             function render(data) {
                 renderTopPages(data); 
-                return;  
             }
 
-            function toggleTopPagesOnlyOk(event) {
-                if (event.target.checked) {
-                    selectedFilters.push('only-ok');
-                } else {
-                    selectedFilters = selectedFilters.filter((filter) => filter !== 'only-ok');
+            function toggleFilter(name) {
+                return (event) => {
+                    if (event.target.checked) {
+                        selectedFilters.push(name);
+                    } else {
+                        selectedFilters = selectedFilters.filter((filter) => filter !== name);
+                    }
+                    refresh();
                 }
-                refresh();
-                return;
-            }
-
-            function toggleTopPagesOnlyPublic(event) {
-                if (event.target.checked) {
-                    selectedFilters.push('only-public');
-                } else {
-                    selectedFilters = selectedFilters.filter((filter) => filter !== 'only-public');
-                }
-                refresh();
-                return;
             }
 
             function renderTopPages(data) {
 
                 let topPages = data.records.filter(topPagesRecordFilter).reduce((acc, curr) => {
-                    let page = acc.find((p) => p.path == curr.path);
+                    let page = acc.find((p) => p.path === curr.path);
                     if (page) {
                         page.hits++;
                     }
@@ -104,11 +95,7 @@
                 </table>`;
                 
                 document.getElementById('top-pages-data').innerHTML = topPagesHTML;
-
-                return;
-            };
-            
-            
+            }
         </script>
     </body>
 </html>
