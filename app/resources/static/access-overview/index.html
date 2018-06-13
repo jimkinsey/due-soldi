@@ -19,7 +19,7 @@
         <script language="JavaScript">
             const pageFilters = {
                 'only-ok': (record) => record.statusCode < 300,
-                'only-public': (record) => !record.path.match(/^\/admin\/\.+/)
+                'only-public': (record) => !record.path.match(/^\/admin.*/)
             };
 
             Object.keys(pageFilters).forEach((name) =>
@@ -43,18 +43,11 @@
 
             let selectedFilters = [];
 
-            let identity = (x) => x;
-
-            function topPagesRecordFilter(arr) {
+            function topPagesRecordFilter() {
                 const filters = selectedFilters.map((name) => pageFilters[name]);
-                return compose(filters)(arr);
-            }
-
-            function compose(fns) {
-                return fns.reduceRight((prevFn, nextFn) =>
-                    (...args) => nextFn(prevFn(...args)),
-                    identity
-                );
+                return filters.reduce((acc, next) => {
+                    return (input) => acc(input) && next(input)
+                }, () => true)
             }
 
             function render(data) {
