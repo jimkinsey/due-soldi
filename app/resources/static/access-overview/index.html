@@ -9,8 +9,8 @@
             <div id="filters">
                 <fieldset>
                     <legend>Filters</legend>
-                    <label><input type="checkbox" id="filter-only-ok">Only OK</label>
-                    <label><input type="checkbox" id="filter-only-public">Only Public</label>
+                    <label><input type="checkbox" id="filter-only-ok" checked>Only OK</label>
+                    <label><input type="checkbox" id="filter-only-public" checked>Only Public</label>
                 </fieldset>
             </div>
             <section id="top-pages"></section>
@@ -40,7 +40,10 @@
                     })
             }
 
-            let selectedFilters = [];
+            let selectedFilters = Object.keys(pageFilters).filter((name) => {
+                let input = document.querySelector(`input#filter-${name}`);
+                return (input) && input.checked
+            });
 
             function combinedFilter(names) {
                 const filters = names.map((name) => pageFilters[name]);
