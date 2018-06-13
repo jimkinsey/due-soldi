@@ -10,6 +10,7 @@
                 <div id="top-pages-controls">
                     <form>
                         <input type="checkbox" id="top-pages-only-ok" /><label>Only OK</label>
+                        <input type="checkbox" id="top-pages-only-public" /><label>Only Public</label>
                     </form>
                 </div>
                 <div id="top-pages-data"></div>
@@ -17,6 +18,7 @@
         </div>
         <script language="JavaScript">
             document.querySelector('#top-pages-only-ok').onchange = toggleTopPagesOnlyOk;
+            document.querySelector('#top-pages-only-public').onchange = toggleTopPagesOnlyPublic;
 
             refresh();
 
@@ -26,29 +28,54 @@
             
             function loadData() {
                 return fetch('https://www.jimkinsey.com/admin/metrics/access.json', {
-                        credentials: 'same-origin',
-                        headers: {
-                            'Cookie': 'adminSessionId=user:jim,h:NFL9Vn2pSKPMOyNlbc0dCXUnn/Tr0B12Wlf+5JrITDA='
-                        }
+                        credentials: 'same-origin'
                     })
                     .then((response) => {
                         return response.json();
                     })
+            }
+
+            const pageFilters = {
+                'only-ok': (record) => record.statusCode < 300,
+                'only-public': (record) => !record.path.match(/^\/admin\/\.+/)
             };
 
+            let selectedFilters = [];
+
             let identity = (x) => x;
-            let topPagesRecordFilter = identity;
+
+            function topPagesRecordFilter(arr) {
+                const compose = (...fns) =>
+                    fns.reduceRight((prevFn, nextFn) =>
+                        (...args) => nextFn(prevFn(...args)),
+                        identity
+                    );
+
+                const filters = selectedFilters.map((name) => pageFilters[name]);
+
+                return compose(filters)(arr);
+            }
 
             function render(data) {
                 renderTopPages(data); 
                 return;  
-            };
+            }
 
             function toggleTopPagesOnlyOk(event) {
                 if (event.target.checked) {
-                    topPagesRecordFilter = (record) => record.statusCode < 300;
+                    selectedFilters.push('only-ok');
                 } else {
-                    topPagesRecordFilter = identity;
+                    selectedFilters = selectedFilters.filter((filter) => filter !== 'only-ok');
+                }
+                refresh();
+                return;
+            }
+
+            function toggleTopPagesOnlyPublic(event) {
+                if (event.target.checked) {
+                    selectedFilters.push('only-public');
+                } else {
+                    selectedFilters = selectedFilters.filter((filter) => filter !== 'only-public');
                 }
                 refresh();
                 return;
