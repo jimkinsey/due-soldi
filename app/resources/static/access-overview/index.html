@@ -2,6 +2,14 @@
 <html>
     <head>
         <title>Access Overview</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"
+                integrity="sha256-CfcERD4Ov4+lKbWbYqXD6aFM9M51gN4GUEtDhkWABMo="
+                crossorigin="anonymous"></script>
+        <style>
+            #status-codes {
+                max-width: 400px;
+            }
+        </style>
     </head>
     <body>
         <h1>Access Overview</h1>
@@ -14,6 +22,7 @@
                     <label><input type="checkbox" id="filter-exclude-bots" checked>Exclude bots</label>
                 </fieldset>
             </div>
+            <section id="status-codes"></section>
             <section id="top-pages"></section>
         </div>
         <script language="JavaScript">
@@ -42,6 +51,11 @@
                     })
             }
 
+            function render(data) {
+                renderStatusCodes(data);
+                renderTopPages(data);
+            }
+
             let selectedFilters = Object.keys(pageFilters).filter((name) => {
                 let input = document.querySelector(`input#filter-${name}`);
                 return (input) && input.checked
@@ -52,10 +66,6 @@
                 return filters.reduce((acc, next) => {
                     return (input) => acc(input) && next(input)
                 }, () => true)
-            }
-
-            function render(data) {
-                renderTopPages(data); 
             }
 
             function toggleFilter(name) {
@@ -93,6 +103,49 @@
                     </table>`;
                 
                 document.getElementById('top-pages').innerHTML = topPagesHTML;
+            }
+
+            function statusCodeBreakdown(data) {
+                return data.records
+                    .filter(combinedFilter(selectedFilters))
+                    .reduce((acc, { statusCode }) => {
+                        if (statusCode < 300) acc['2XX']++;
+                        else if (statusCode < 400) acc['3XX']++;
+                        else if (statusCode < 500) acc['4XX']++;
+                        else if (statusCode < 600) acc['5XX']++;
+                        return acc
+                    }, {
+                        '2XX': 0,
+                        '3XX': 0,
+                        '4XX': 0,
+                        '5XX': 0,
+                    })
+            }
+
+            function renderStatusCodes(data) {
+                let statusCodesSection = document.querySelector('section#status-codes');
+                statusCodesSection.innerHTML = `<header><h2>Status Codes</h2></header>
+                    <canvas id="status-codes-chart" width="400" height="400"></canvas>`
+                let ctx = document.getElementById("status-codes-chart").getContext('2d');
+                let breakdown = statusCodeBreakdown(data);
+                let myChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['2XX', '3XX', '4XX', '5XX'],
+                        datasets: [{
+                            label: '# of Votes',
+                            data: [breakdown['2XX'], breakdown['3XX'], breakdown['4XX'], breakdown['5XX']],
+                            backgroundColor: [
+                                'rgb(0, 0, 255)',
+                                'rgb(0, 255, 0)',
+                                'rgb(255, 255, 0)',
+                                'rgb(255, 0, 0)',
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {}
+                });
             }
         </script>
     </body>
