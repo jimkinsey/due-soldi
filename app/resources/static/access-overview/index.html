@@ -67,7 +67,7 @@
 
             function renderTopPages(data) {
 
-                let topPages = data.records.filter(topPagesRecordFilter).reduce((acc, curr) => {
+                let topPages = data.records.filter(topPagesRecordFilter()).reduce((acc, curr) => {
                     let page = acc.find((p) => p.path === curr.path);
                     if (page) {
                         page.hits++;
