@@ -6,8 +6,9 @@
                 integrity="sha256-CfcERD4Ov4+lKbWbYqXD6aFM9M51gN4GUEtDhkWABMo="
                 crossorigin="anonymous"></script>
         <style>
-            #status-codes {
+            #status-codes, #traffic {
                 max-width: 400px;
+                display: inline-block;
             }
         </style>
     </head>
@@ -22,6 +23,7 @@
                     <label><input type="checkbox" id="filter-exclude-bots" checked>Exclude bots</label>
                 </fieldset>
             </div>
+            <section id="traffic"></section>
             <section id="status-codes"></section>
             <section id="top-pages"></section>
         </div>
@@ -52,6 +54,7 @@
             }
 
             function render(data) {
+                renderTraffic(data);
                 renderStatusCodes(data);
                 renderTopPages(data);
             }
@@ -128,12 +131,12 @@
                     <canvas id="status-codes-chart" width="400" height="400"></canvas>`
                 let ctx = document.getElementById("status-codes-chart").getContext('2d');
                 let breakdown = statusCodeBreakdown(data);
-                let myChart = new Chart(ctx, {
+                new Chart(ctx, {
                     type: 'pie',
                     data: {
                         labels: ['2XX', '3XX', '4XX', '5XX'],
                         datasets: [{
-                            label: '# of Votes',
+                            label: 'Status Codes',
                             data: [breakdown['2XX'], breakdown['3XX'], breakdown['4XX'], breakdown['5XX']],
                             backgroundColor: [
                                 'rgb(0, 0, 255)',
@@ -143,6 +146,50 @@
                             ],
                             borderWidth: 0
                         }]
+                    },
+                    options: {}
+                });
+            }
+
+            const millisecondsInHour = 3600000;
+
+            function hitsOverTime(data) {
+                let hours = [];
+                const now = new Date().getTime();
+                for (let hour = now - (7 * 24 * millisecondsInHour); hour < now; hour += millisecondsInHour) {
+                    hours.push(hour);
+                }
+
+                const filteredRecords = data.records.filter(combinedFilter(selectedFilters));
+
+                return hours.map((hour) => {
+                    const hits = filteredRecords.filter(({time}) => {
+                        const recordHour = Date.parse(time)
+                        return recordHour >= hour && recordHour < (hour + millisecondsInHour)
+                    }).length
+                    return { hour, hits }
+                })
+            }
+
+            function renderTraffic(data) {
+                let trafficSection = document.querySelector('section#traffic');
+                trafficSection.innerHTML = `<header><h2>Traffic</h2></header>
+                    <canvas id="traffic-chart" width="400" height="400"></canvas>`
+                let ctx = document.getElementById("traffic-chart").getContext('2d');
+                let hours = hitsOverTime(data);
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: hours.map(() => ''),
+                        datasets: [{
+                            label: 'Hits per hour',
+                            data: hours.map((group) => group.hits),
+                            fill: false,
+                            pointRadius: 0,
+                            borderColor: 'black',
+                            borderWidth: 1,
+                        }],
                     },
                     options: {}
                 });
