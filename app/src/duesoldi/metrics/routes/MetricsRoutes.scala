@@ -113,7 +113,7 @@ extends Controller
        |  "records": [
        |    ${accessRecords.map{ case Access(time, path, referer, userAgent, duration, ip, country, statusCode) =>
                 s"""{
-                   |  "time": "${time.format(DateTimeFormatter.ISO_DATE_TIME)}",
+                   |  "time": "${time.format(DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss"))}",
                    |  "path": "$path",
                    |  ${optionalJsonField("referer", referer)},
                    |  ${optionalJsonField("userAgent", userAgent)},

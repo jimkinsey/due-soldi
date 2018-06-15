@@ -1,5 +1,8 @@
 package duesoldi.test.functional
 
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatter.ISO_TIME
+
 import duesoldi.Env
 import duesoldi.test.support.app.ServerRequests._
 import duesoldi.test.support.app.TestApp
@@ -12,6 +15,10 @@ import duesoldi.test.support.setup.SyncSetup
 import hammerspace.testing.StreamHelpers._
 import ratatoskr.ResponseAccess._
 import utest._
+import hammerspace.testing.CustomMatchers._
+
+import scala.concurrent.Future
+import scala.util.matching.Regex
 
 object AccessRecordingTests
 extends TestSuite
@@ -157,6 +164,24 @@ extends TestSuite
           }
         }
       }
+      "returns JSON with dates formatted for easy parsing in JavaScript" - {
+        withSetup(
+          database,
+          accessRecordingEnabled,
+          runningAppForThisTestOnly,
+          blogEntries("id" -> "# Content!")
+        ) { implicit env =>
+          for {
+            _ <- get("/blog/id")
+            response <- get("/admin/metrics/access.json", headers = TestApp.adminAuth)
+            timestamp = jsonStringField("time").findFirstMatchIn(response.body.asString).get group 1
+          } yield {
+            assert(
+              timestamp hasDateFormat "YYYY-MM-dd'T'HH:mm:ss"
+            )
+          }
+        }
+      }
       "supports session-based access" - {
         withSetup(
           database,
@@ -240,4 +265,6 @@ extends TestSuite
   private lazy val accessRecordingDisabled = new SyncSetup {
     override def setup(env: Env) = Map("ACCESS_RECORDING_ENABLED" -> "false")
   }
+
+  private def jsonStringField(name: String): Regex = s""".*"$name": "(.+?)".*""".r
 }
