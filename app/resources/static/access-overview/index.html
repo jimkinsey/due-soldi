@@ -92,7 +92,7 @@
 
             function renderAccessPeriod() {
                 document.querySelector('#period').innerHTML =
-                    `<select id="period" name="period">
+                    `<select name="period">
                         ${periods.map((period) => `<option value="${period.label}" ${(selectedPeriod.label === period.label) ? 'selected' : ''}>${period.label}</option>`).join('\n')}
                      </select>`;
 
