@@ -14,7 +14,7 @@
     </head>
     <body>
         <h1>Access Overview</h1>
-        <div id="period">Past 7 days</div>
+        <div id="period"></div>
         <div id="content">
             <div id="filters">
                 <fieldset>
@@ -29,6 +29,8 @@
             <section id="top-pages"></section>
         </div>
         <script language="JavaScript">
+            let period = 'Past 7 days';
+
             const pageFilters = {
                 'only-ok': (record) => record.statusCode < 300,
                 'only-public': (record) => !record.path.match(/^\/admin.*/),
@@ -42,11 +44,11 @@
             refresh().then(() => setInterval(refresh, 60000));
 
             function refresh() {
-                return loadData().then(render);
+                return loadData(period).then(render);
             }
             
-            function loadData() {
-                return fetch('https://www.jimkinsey.com/admin/metrics/access.json', {
+            function loadData(period) {
+                return fetch(`https://www.jimkinsey.com/admin/metrics/access.json?start=${formattedPeriod(period)}`, {
                         credentials: 'same-origin'
                     })
                     .then((response) => {
@@ -55,9 +57,27 @@
             }
 
             function render(data) {
+                renderAccessPeriod(period);
                 renderTraffic(data);
                 renderStatusCodes(data);
                 renderTopPages(data);
+            }
+
+            function formattedPeriod(period) {
+                let formatted = '';
+                switch (period) {
+                    case 'Past 7 days':
+                        new Date(Date.now() - (7 * 24 * millisecondsInHour)).toISOString();
+                        break;
+                    default:
+                        new Date(Date.now() - (24 * millisecondsInHour)).toISOString();
+                        break;
+                }
+                return formatted;
+            }
+
+            function renderAccessPeriod(period) {
+                document.querySelector('#period').innerHTML = period;
             }
 
             let selectedFilters = Object.keys(pageFilters).filter((name) => {
