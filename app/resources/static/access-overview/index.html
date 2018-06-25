@@ -30,6 +30,8 @@
             <section id="top-referers"></section>
         </div>
         <script language="JavaScript">
+            const millisecondsInHour = 3600000;
+
             let period = 'Past 7 days';
 
             const pageFilters = {
@@ -199,8 +201,6 @@
                     options: {}
                 });
             }
-
-            const millisecondsInHour = 3600000;
 
             function hitsOverTime(data) {
                 let hours = [];
