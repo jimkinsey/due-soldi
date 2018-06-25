@@ -170,7 +170,7 @@
                             <tr><th>Hits</th><th>Referer</th></tr>
                         </thead>
                         <tbody>
-                            ${topReferers.map(({hits, referer}) => `<tr><td>${hits}</td><td>${referer}</td></tr>`).join('\n')}
+                            ${topReferers.map(({hits, referer}) => `<tr><td>${hits}</td><td>${referer || 'n/a'}</td></tr>`).join('\n')}
                         </tbody>
                     </table>`;
 
