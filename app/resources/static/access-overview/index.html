@@ -32,7 +32,15 @@
         <script language="JavaScript">
             const millisecondsInHour = 3600000;
 
-            let period = 'Past 7 days';
+            const periods = [
+                'Past 24 hours',
+                'Past 7 days',
+                'Past 28 days',
+                'Past year',
+                'All time'
+            ];
+
+            let selectedPeriod = 'Past 7 days';
 
             const pageFilters = {
                 'only-ok': (record) => record.statusCode < 300,
@@ -47,7 +55,7 @@
             refresh().then(() => setInterval(refresh, 60000));
 
             function refresh() {
-                return loadData(period).then(render);
+                return loadData(selectedPeriod).then(render);
             }
             
             function loadData(period) {
@@ -70,8 +78,20 @@
             function formattedPeriod(period) {
                 let formatted = '';
                 switch (period) {
+                    case 'Past 24 hours':
+                        new Date(Date.now() - (24 * millisecondsInHour)).toISOString();
+                        break;
                     case 'Past 7 days':
                         new Date(Date.now() - (7 * 24 * millisecondsInHour)).toISOString();
+                        break;
+                    case 'Past 28 days':
+                        new Date(Date.now() - (28 * 7 * 24 * millisecondsInHour)).toISOString();
+                        break;
+                    case 'Past year':
+                        new Date(Date.now() - (365 * 7 * 24 * millisecondsInHour)).toISOString();
+                        break;
+                    case 'All time':
+                        new Date(0).toISOString();
                         break;
                     default:
                         new Date(Date.now() - (24 * millisecondsInHour)).toISOString();
@@ -80,8 +100,16 @@
                 return formatted;
             }
 
-            function renderAccessPeriod(period) {
-                document.querySelector('#period').innerHTML = period;
+            function renderAccessPeriod() {
+                document.querySelector('#period').innerHTML =
+                    `<select id="period" name="period">
+                        ${periods.map((period) => `<option value="${period}" ${(selectedPeriod === period) ? 'selected' : ''}>${period}</option>`).join('\n')}
+                     </select>`;
+
+                document.querySelector('select[name="period"]').onchange = (event) => {
+                    selectedPeriod = event.target.value;
+                    refresh();
+                };
             }
 
             let selectedFilters = Object.keys(pageFilters).filter((name) => {
