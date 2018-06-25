@@ -238,21 +238,7 @@
                 })
             }
 
-            const trafficChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Hits per hour',
-                        data: [],
-                        fill: false,
-                        pointRadius: 0,
-                        borderColor: 'black',
-                        borderWidth: 1,
-                    }],
-                },
-                options: {}
-            });
+            let trafficChart = null;
 
             function renderTraffic(data) {
                 let trafficSection = document.querySelector('section#traffic');
@@ -260,6 +246,24 @@
                     <canvas id="traffic-chart" width="400" height="400"></canvas>`
                 let ctx = document.getElementById("traffic-chart").getContext('2d');
                 let hours = hitsOverTime(data, selectedPeriod);
+
+                if (!trafficChart) {
+                    trafficChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: [],
+                            datasets: [{
+                                label: 'Hits per hour',
+                                data: [],
+                                fill: false,
+                                pointRadius: 0,
+                                borderColor: 'black',
+                                borderWidth: 1,
+                            }],
+                        },
+                        options: {}
+                    });
+                }
 
                 trafficChart.data.labels = hours.map(() => '');
                 trafficChart.data.data = hours.map((group) => group.hits);
