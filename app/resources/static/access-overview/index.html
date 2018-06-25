@@ -194,30 +194,38 @@
                     })
             }
 
+            let statusChart = null;
+
             function renderStatusCodes(data) {
                 let statusCodesSection = document.querySelector('section#status-codes');
                 statusCodesSection.innerHTML = `<header><h2>Status Codes</h2></header>
                     <canvas id="status-codes-chart" width="400" height="400"></canvas>`
                 let ctx = document.getElementById("status-codes-chart").getContext('2d');
                 let breakdown = statusCodeBreakdown(data);
-                new Chart(ctx, {
-                    type: 'pie',
-                    data: {
-                        labels: ['2XX', '3XX', '4XX', '5XX'],
-                        datasets: [{
-                            label: 'Status Codes',
-                            data: [breakdown['2XX'], breakdown['3XX'], breakdown['4XX'], breakdown['5XX']],
-                            backgroundColor: [
-                                'rgb(0, 0, 255)',
-                                'rgb(0, 255, 0)',
-                                'rgb(255, 255, 0)',
-                                'rgb(255, 0, 0)',
-                            ],
-                            borderWidth: 0
-                        }]
-                    },
-                    options: {}
-                });
+
+                if (!statusChart) {
+                    statusChart = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: ['2XX', '3XX', '4XX', '5XX'],
+                            datasets: [{
+                                label: 'Status Codes',
+                                data: [breakdown['2XX'], breakdown['3XX'], breakdown['4XX'], breakdown['5XX']],
+                                backgroundColor: [
+                                    'rgb(0, 0, 255)',
+                                    'rgb(0, 255, 0)',
+                                    'rgb(255, 255, 0)',
+                                    'rgb(255, 0, 0)',
+                                ],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {}
+                    });
+                }
+
+                statusChart.data.labels = ['2XX', '3XX', '4XX', '5XX'];
+                statusChart.data.data = [breakdown['2XX'], breakdown['3XX'], breakdown['4XX'], breakdown['5XX']];
             }
 
             function hitsOverTime(data, period) {
