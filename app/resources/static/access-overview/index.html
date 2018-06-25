@@ -228,7 +228,7 @@
                 }
 
                 statusChart.data.labels = ['2XX', '3XX', '4XX', '5XX'];
-                statusChart.data.data = [breakdown['2XX'], breakdown['3XX'], breakdown['4XX'], breakdown['5XX']];
+                statusChart.data.datasets[0].data = [breakdown['2XX'], breakdown['3XX'], breakdown['4XX'], breakdown['5XX']];
                 statusChart.update();
             }
 
@@ -253,17 +253,17 @@
             let trafficChart = null;
 
             function renderTraffic(data) {
-                let ctx = document.getElementById("traffic-chart").getContext('2d');
                 let hours = hitsOverTime(data, selectedPeriod);
 
                 if (!trafficChart) {
+                    let ctx = document.getElementById("traffic-chart").getContext('2d');
                     trafficChart = new Chart(ctx, {
                         type: 'line',
                         data: {
-                            labels: [],
+                            labels: hours.map(() => ''),
                             datasets: [{
                                 label: 'Hits per hour',
-                                data: [],
+                                data: hours.map((group) => group.hits),
                                 fill: false,
                                 pointRadius: 0,
                                 borderColor: 'black',
@@ -275,7 +275,7 @@
                 }
 
                 trafficChart.data.labels = hours.map(() => '');
-                trafficChart.data.data = hours.map((group) => group.hits);
+                trafficChart.data.datasets[0].data = hours.map((group) => group.hits);
                 trafficChart.update();
             }
         </script>
