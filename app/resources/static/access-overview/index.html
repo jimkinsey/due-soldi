@@ -24,8 +24,14 @@
                     <label><input type="checkbox" id="filter-exclude-bots" checked>Exclude bots</label>
                 </fieldset>
             </div>
-            <section id="traffic"></section>
-            <section id="status-codes"></section>
+            <section id="traffic">
+                <header><h2>Traffic</h2></header>
+                <canvas id="traffic-chart" width="400" height="400"></canvas>
+            </section>
+            <section id="status-codes">
+                <header><h2>Status Codes</h2></header>
+                <canvas id="status-codes-chart" width="400" height="400"></canvas>
+            </section>
             <section id="top-pages"></section>
             <section id="top-referers"></section>
         </div>
@@ -197,9 +203,6 @@
             let statusChart = null;
 
             function renderStatusCodes(data) {
-                let statusCodesSection = document.querySelector('section#status-codes');
-                statusCodesSection.innerHTML = `<header><h2>Status Codes</h2></header>
-                    <canvas id="status-codes-chart" width="400" height="400"></canvas>`
                 let ctx = document.getElementById("status-codes-chart").getContext('2d');
                 let breakdown = statusCodeBreakdown(data);
 
@@ -249,9 +252,6 @@
             let trafficChart = null;
 
             function renderTraffic(data) {
-                let trafficSection = document.querySelector('section#traffic');
-                trafficSection.innerHTML = `<header><h2>Traffic</h2></header>
-                    <canvas id="traffic-chart" width="400" height="400"></canvas>`
                 let ctx = document.getElementById("traffic-chart").getContext('2d');
                 let hours = hitsOverTime(data, selectedPeriod);
 
