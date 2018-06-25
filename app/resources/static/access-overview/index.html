@@ -35,27 +35,22 @@
             const periods = [
                 {
                     label: 'Past 24 hours',
-                    start: () => new Date(Date.now() - (24 * millisecondsInHour)),
                     milliseconds: () => 24 * millisecondsInHour
                 },
                 {
                     label: 'Past 7 days',
-                    start: () => new Date(Date.now() - (7 * 24 * millisecondsInHour)),
                     milliseconds: () => 7 * 24 * millisecondsInHour
                 },
                 {
                     label: 'Past 28 days',
-                    start: () => new Date(Date.now() - (28 * 24 * millisecondsInHour)),
                     milliseconds: () => 28 * 24 * millisecondsInHour
                 },
                 {
                     label: 'Past year',
-                    start: () => new Date(Date.now() - (365 * 24 * millisecondsInHour)),
                     milliseconds: () => 365 * 24 * millisecondsInHour
                 },
                 {
                     label: 'All time',
-                    start: () => new Date(0),
                     milliseconds: () => Date.now() - new Date(0).getTime()
                 }
             ];
@@ -79,7 +74,7 @@
             }
             
             function loadData(period) {
-                return fetch(`https://www.jimkinsey.com/admin/metrics/access.json?start=${period.start().toISOString()}`, {
+                return fetch(`https://www.jimkinsey.com/admin/metrics/access.json?start=${new Date(Date.now() - period.milliseconds()).toISOString()}`, {
                         credentials: 'same-origin'
                     })
                     .then((response) => {
