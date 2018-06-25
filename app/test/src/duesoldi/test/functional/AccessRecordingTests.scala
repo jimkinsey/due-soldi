@@ -1,7 +1,7 @@
 package duesoldi.test.functional
 
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeFormatter.ISO_TIME
+import java.time.{ZoneId, ZonedDateTime}
 
 import duesoldi.Env
 import duesoldi.test.support.app.ServerRequests._
@@ -12,12 +12,11 @@ import duesoldi.test.support.setup.BlogStorage._
 import duesoldi.test.support.setup.Database._
 import duesoldi.test.support.setup.Setup.withSetup
 import duesoldi.test.support.setup.SyncSetup
+import hammerspace.testing.CustomMatchers._
 import hammerspace.testing.StreamHelpers._
 import ratatoskr.ResponseAccess._
 import utest._
-import hammerspace.testing.CustomMatchers._
 
-import scala.concurrent.Future
 import scala.util.matching.Regex
 
 object AccessRecordingTests
@@ -178,6 +177,27 @@ extends TestSuite
           } yield {
             assert(
               timestamp hasDateFormat "YYYY-MM-dd'T'HH:mm:ss"
+            )
+          }
+        }
+      }
+      "takes the start date in a format convenient for a JavaScript client to send" - {
+        withSetup(
+          database,
+          accessRecordingEnabled,
+          runningAppForThisTestOnly,
+          blogEntries("distant-past" -> "# Content 1!", "not-so-distant-past" -> "# Content 2!")
+        ) { implicit env =>
+          for {
+            _ <- get("/blog/distant-past")
+            betweenAccesses = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss.SSS'Z'").format(ZonedDateTime.now(ZoneId.of("UTC")))
+            _ <- get("/blog/not-so-distant-past")
+            response <- get(s"/admin/metrics/access.json?start=$betweenAccesses", headers = TestApp.adminAuth)
+            body = response.body.asString
+          } yield {
+            assert(
+              !(body contains "/blog/distant-past"),
+              body contains "/blog/not-so-distant-past"
             )
           }
         }

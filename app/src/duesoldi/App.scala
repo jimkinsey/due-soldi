@@ -1,6 +1,6 @@
 package duesoldi
 
-import java.time.ZonedDateTime
+import java.time.{ZoneId, ZonedDateTime}
 
 import dearboy.EventBus
 import duesoldi.app.{RequestId, TrailingSlashRedirection}
@@ -61,7 +61,7 @@ object App
           server.subscribe {
             case Completed(req, res, duration) if config.accessRecordingEnabled => {
               val access = Access(
-                time = ZonedDateTime.now(),
+                time = ZonedDateTime.now(ZoneId.of("UTC")),
                 path = req.path,
                 referer = req.headers.lowKeys.get("referer").flatMap(_.headOption),
                 userAgent = req.headers.lowKeys.get("user-agent").flatMap(_.headOption),
