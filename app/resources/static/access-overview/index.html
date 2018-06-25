@@ -27,6 +27,7 @@
             <section id="traffic"></section>
             <section id="status-codes"></section>
             <section id="top-pages"></section>
+            <section id="top-referers"></section>
         </div>
         <script language="JavaScript">
             let period = 'Past 7 days';
@@ -61,6 +62,7 @@
                 renderTraffic(data);
                 renderStatusCodes(data);
                 renderTopPages(data);
+                renderTopReferers(data);
             }
 
             function formattedPeriod(period) {
@@ -127,6 +129,32 @@
                     </table>`;
                 
                 document.getElementById('top-pages').innerHTML = topPagesHTML;
+            }
+
+            function renderTopReferers(data) {
+
+                let topReferers = data.records.filter(combinedFilter(selectedFilters)).reduce((acc, curr) => {
+                    let page = acc.find((p) => p.referer === curr.referer);
+                    if (page) {
+                        page.hits++;
+                    }
+                    else {
+                        acc.push({ hits: 1, referer: curr.referer });
+                    }
+                    return acc;
+                }, []).sort((a,b) => b.hits - a.hits);
+
+                let topReferersHTML = `<header><h2>Referers</h2></header>
+                    <table>
+                        <thead>
+                            <tr><th>Hits</th><th>Referer</th></tr>
+                        </thead>
+                        <tbody>
+                            ${topReferers.map(({hits, referer}) => `<tr><td>${hits}</td><td>${referer}</td></tr>`).join('\n')}
+                        </tbody>
+                    </table>`;
+
+                document.getElementById('top-referers').innerHTML = topReferersHTML;
             }
 
             function statusCodeBreakdown(data) {
