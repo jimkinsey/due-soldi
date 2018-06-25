@@ -229,6 +229,7 @@
 
                 statusChart.data.labels = ['2XX', '3XX', '4XX', '5XX'];
                 statusChart.data.data = [breakdown['2XX'], breakdown['3XX'], breakdown['4XX'], breakdown['5XX']];
+                statusChart.update();
             }
 
             function hitsOverTime(data, period) {
@@ -275,6 +276,7 @@
 
                 trafficChart.data.labels = hours.map(() => '');
                 trafficChart.data.data = hours.map((group) => group.hits);
+                trafficChart.update();
             }
         </script>
     </body>
