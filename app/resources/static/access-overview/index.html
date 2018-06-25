@@ -36,22 +36,27 @@
                 {
                     label: 'Past 24 hours',
                     start: () => new Date(Date.now() - (24 * millisecondsInHour)),
+                    milliseconds: () => 24 * millisecondsInHour
                 },
                 {
                     label: 'Past 7 days',
                     start: () => new Date(Date.now() - (7 * 24 * millisecondsInHour)),
+                    milliseconds: () => 7 * 24 * millisecondsInHour
                 },
                 {
                     label: 'Past 28 days',
                     start: () => new Date(Date.now() - (28 * 24 * millisecondsInHour)),
+                    milliseconds: () => 28 * 24 * millisecondsInHour
                 },
                 {
                     label: 'Past year',
                     start: () => new Date(Date.now() - (365 * 24 * millisecondsInHour)),
+                    milliseconds: () => 365 * 24 * millisecondsInHour
                 },
                 {
                     label: 'All time',
                     start: () => new Date(0),
+                    milliseconds: () => Date.now() - new Date(0).getTime()
                 }
             ];
 
@@ -220,10 +225,10 @@
                 });
             }
 
-            function hitsOverTime(data) {
+            function hitsOverTime(data, period) {
                 let hours = [];
                 const now = new Date().getTime();
-                for (let hour = now - (7 * 24 * millisecondsInHour); hour < now; hour += millisecondsInHour) {
+                for (let hour = now - (period.milliseconds()); hour < now; hour += millisecondsInHour) {
                     hours.push(hour);
                 }
 
@@ -243,7 +248,7 @@
                 trafficSection.innerHTML = `<header><h2>Traffic</h2></header>
                     <canvas id="traffic-chart" width="400" height="400"></canvas>`
                 let ctx = document.getElementById("traffic-chart").getContext('2d');
-                let hours = hitsOverTime(data);
+                let hours = hitsOverTime(data, selectedPeriod);
 
                 new Chart(ctx, {
                     type: 'line',
