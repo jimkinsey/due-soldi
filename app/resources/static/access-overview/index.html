@@ -33,14 +33,29 @@
             const millisecondsInHour = 3600000;
 
             const periods = [
-                'Past 24 hours',
-                'Past 7 days',
-                'Past 28 days',
-                'Past year',
-                'All time'
+                {
+                    label: 'Past 24 hours',
+                    start: () => new Date(Date.now() - (24 * millisecondsInHour)),
+                },
+                {
+                    label: 'Past 7 days',
+                    start: () => new Date(Date.now() - (7 * 24 * millisecondsInHour)),
+                },
+                {
+                    label: 'Past 28 days',
+                    start: () => new Date(Date.now() - (28 * 24 * millisecondsInHour)),
+                },
+                {
+                    label: 'Past year',
+                    start: () => new Date(Date.now() - (365 * 24 * millisecondsInHour)),
+                },
+                {
+                    label: 'All time',
+                    start: () => new Date(0),
+                }
             ];
 
-            let selectedPeriod = 'Past 7 days';
+            let selectedPeriod = periods.find((period) => period.label === 'Past 7 days');
 
             const pageFilters = {
                 'only-ok': (record) => record.statusCode < 300,
@@ -59,7 +74,7 @@
             }
             
             function loadData(period) {
-                return fetch(`https://www.jimkinsey.com/admin/metrics/access.json?start=${formattedPeriod(period)}`, {
+                return fetch(`https://www.jimkinsey.com/admin/metrics/access.json?start=${period.start().toISOString()}`, {
                         credentials: 'same-origin'
                     })
                     .then((response) => {
@@ -75,39 +90,14 @@
                 renderTopReferers(data);
             }
 
-            function formattedPeriod(period) {
-                let formatted = '';
-                switch (period) {
-                    case 'Past 24 hours':
-                        new Date(Date.now() - (24 * millisecondsInHour)).toISOString();
-                        break;
-                    case 'Past 7 days':
-                        new Date(Date.now() - (7 * 24 * millisecondsInHour)).toISOString();
-                        break;
-                    case 'Past 28 days':
-                        new Date(Date.now() - (28 * 7 * 24 * millisecondsInHour)).toISOString();
-                        break;
-                    case 'Past year':
-                        new Date(Date.now() - (365 * 7 * 24 * millisecondsInHour)).toISOString();
-                        break;
-                    case 'All time':
-                        new Date(0).toISOString();
-                        break;
-                    default:
-                        new Date(Date.now() - (24 * millisecondsInHour)).toISOString();
-                        break;
-                }
-                return formatted;
-            }
-
             function renderAccessPeriod() {
                 document.querySelector('#period').innerHTML =
                     `<select id="period" name="period">
-                        ${periods.map((period) => `<option value="${period}" ${(selectedPeriod === period) ? 'selected' : ''}>${period}</option>`).join('\n')}
+                        ${periods.map((period) => `<option value="${period.label}" ${(selectedPeriod.label === period.label) ? 'selected' : ''}>${period.label}</option>`).join('\n')}
                      </select>`;
 
                 document.querySelector('select[name="period"]').onchange = (event) => {
-                    selectedPeriod = event.target.value;
+                    selectedPeriod = periods.find((period) => event.target.value === period.label);
                     refresh();
                 };
             }
