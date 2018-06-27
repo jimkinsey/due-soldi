@@ -78,7 +78,7 @@ extends Controller
   private def sevenDaysAgo = ZonedDateTime.now().minus(7, ChronoUnit.DAYS)
 
   private def renderCsv(accessRecords: Seq[Access]): String = {
-    val rows = accessRecords.map { case Access(time, path, referer, userAgent, duration, ip, country, statusCode) =>
+    val rows = accessRecords.map { case Access(time, path, referer, userAgent, duration, ip, country, statusCode, _) =>
       Seq(
         time.format(DateTimeFormatter.ISO_DATE_TIME),
         path,
@@ -111,7 +111,7 @@ extends Controller
 
     s"""{
        |  "records": [
-       |    ${accessRecords.map{ case Access(time, path, referer, userAgent, duration, ip, country, statusCode) =>
+       |    ${accessRecords.map{ case Access(time, path, referer, userAgent, duration, ip, country, statusCode, _) =>
                 s"""{
                    |  "time": "${time.format(DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss"))}",
                    |  "path": "$path",

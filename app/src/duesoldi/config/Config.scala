@@ -14,7 +14,8 @@ case class Config(
   loggingEnabled: Boolean,
   loggerName: String,
   secretKey: String,
-  features: Map[String, Boolean]
+  features: Map[String, Boolean],
+  accessRecordArchiveThreshold: Option[Int] = None
 )
 
 object Config

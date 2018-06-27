@@ -21,7 +21,8 @@ object EnvironmentalConfig
       loggingEnabled = env.get("LOGGING_ENABLED").map(_.toBoolean).getOrElse(true),
       loggerName = env.getOrElse("LOGGER_NAME", ""),
       secretKey = env.getOrElse("SECRET_KEY", ""),
-      features = Features.featureStatuses(env)
+      features = Features.featureStatuses(env),
+      accessRecordArchiveThreshold = env.get("ACCESS_LOG_ARCHIVE_THRESHOLD").filter(_.matches("\\d+")).map(_.toInt)
     )
   }
 
@@ -31,6 +32,7 @@ object EnvironmentalConfig
       "PORT" -> config.port.map(_.toString).getOrElse(""),
       "ADMIN_CREDENTIALS" -> s"${config.adminCredentials.username}:${config.adminCredentials.password}",
       "ACCESS_RECORDING_ENABLED" -> config.accessRecordingEnabled.toString,
+      "ACCESS_LOG_ARCHIVE_THRESHOLD" -> config.accessRecordArchiveThreshold.map(_.toString).getOrElse(""),
       "JDBC_DATABASE_URL" -> config.jdbcConnectionDetails.url,
       "JDBC_DATABASE_PASSWORD" -> config.jdbcConnectionDetails.password,
       "JDBC_DATABASE_USERNAME" -> config.jdbcConnectionDetails.username,

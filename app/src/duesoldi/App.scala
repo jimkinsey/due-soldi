@@ -1,6 +1,8 @@
 package duesoldi
 
 import java.time.{ZoneId, ZonedDateTime}
+import java.time.ZonedDateTime
+import java.util.UUID
 
 import dearboy.EventBus
 import duesoldi.app.{RequestId, TrailingSlashRedirection}
@@ -8,13 +10,14 @@ import duesoldi.blog.routes.{BlogEditingController, BlogEntryController, BlogInd
 import duesoldi.config.{Config, EnvironmentalConfig}
 import duesoldi.controller.{LearnJapaneseController, RobotsController}
 import duesoldi.debug.routes.DebugController
-import duesoldi.dependencies.DueSoldiDependencies._
+import duesoldi.dependencies.DueSoldiDependencies.{logger, _}
 import duesoldi.dependencies.Injection.injected
 import duesoldi.furniture.routes.FurnitureController
 import duesoldi.logging.Logger
+import duesoldi.metrics.rendering.AccessCsv
 import duesoldi.metrics.routes.MetricsController
 import duesoldi.metrics.storage.AccessRecordStore.Access
-import duesoldi.metrics.storage.{AccessRecordStorage, StoreAccessRecord}
+import duesoldi.metrics.storage.{AccessRecordArchiveStorage, AccessRecordStorage, StoreAccessRecord}
 import hammerspace.collections.MapEnhancements._
 import sommelier.events.Completed
 import sommelier.serving.Server
@@ -38,6 +41,17 @@ object App
     val logger = new Logger("App", config.loggingEnabled)
     val events = new EventBus
     AccessRecordStorage.enable(events, injected[StoreAccessRecord])
+    config.accessRecordArchiveThreshold.foreach { threshold =>
+      AccessRecordArchiveStorage.enable(
+        events = events,
+        threshold = threshold,
+        getLogSize = getAccessRecordLogSize(config),
+        getAccessRecordsToArchive = getAccessRecordsWithCount(config),
+        deleteAccessRecord = deleteAccessRecord(config),
+        storeArchive = storeAccessRecordArchive(config),
+        accessCsv = AccessCsv.render
+      )
+    }
 
     Future fromTry {
       Server.start(
@@ -60,7 +74,7 @@ object App
           logger.info(s"Started server on ${server.host}:${server.port}")
           server.subscribe {
             case Completed(req, res, duration) if config.accessRecordingEnabled => {
-              val access = Access(
+              events.publish(Access(
                 time = ZonedDateTime.now(ZoneId.of("UTC")),
                 path = req.path,
                 referer = req.headers.lowKeys.get("referer").flatMap(_.headOption),
@@ -68,9 +82,9 @@ object App
                 duration = duration.toMillis,
                 clientIp = req.headers.lowKeys.get("cf-connecting-ip").flatMap(_.headOption),
                 country = req.headers.lowKeys.get("cf-ipcountry").flatMap(_.headOption),
-                statusCode = res.status
-              )
-              events.publish(access)
+                statusCode = res.status,
+                id = req.header("Request-Id").flatMap(_.headOption).getOrElse(UUID.randomUUID().toString)
+              ))
             }
             case sommelier.events.ExceptionWhileRouting(req, exception) => {
               logger.error(s"Exception while handling ${req.method} ${req.path} - ${exception.getMessage}")

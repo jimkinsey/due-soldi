@@ -19,7 +19,7 @@ import duesoldi.furniture.CurrentPathAndContent
 import duesoldi.furniture.storage.FurnitureFiles
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.metrics.storage.AccessRecordStore.Access
-import duesoldi.metrics.storage.{AccessRecordStorage, AccessRecordStore, GetAccessRecords, StoreAccessRecord}
+import duesoldi.metrics.storage._
 import duesoldi.rendering.Renderer
 import duesoldi.{Env, blog}
 import hammerspace.markdown.MarkdownParser
@@ -47,13 +47,23 @@ object DueSoldiDependencies
       events publish _
   }
 
-  implicit val getAccessRecords: Inject[GetAccessRecords] = { config =>
+  implicit lazy val getAccessRecordsWithCount: Inject[GetAccessRecordsWithCount] = { config =>
+    AccessRecordStore.getAllWithCount(jdbcPerformQuery[Access](AccessRecordStore.toAccess)(config))
+  }
+
+  implicit lazy val getAccessRecordLogSize: Inject[GetAccessRecordLogSize] = { config =>
+    AccessRecordStore.getLogSize(jdbcPerformQuery[Access](AccessRecordStore.toAccess)(config))
+  }
+
+  implicit lazy val deleteAccessRecord: Inject[DeleteAccessRecord] = inject(AccessRecordStore.delete _)
+
+  implicit lazy val getAccessRecords: Inject[GetAccessRecords] = { config =>
     AccessRecordStore.getAll(jdbcPerformQuery[Access](AccessRecordStore.toAccess)(config))
   }
 
-  implicit lazy val storeAccessRecord: Inject[StoreAccessRecord] = {
-    inject(AccessRecordStore.put _)
-  }
+  implicit lazy val storeAccessRecord: Inject[StoreAccessRecord] = inject(AccessRecordStore.put _)
+
+  implicit lazy val storeAccessRecordArchive: Inject[StoreAccessRecordArchive] = inject(AccessRecordArchiveStore.put _)
 
   implicit def render(implicit executionContext: ExecutionContext): Inject[duesoldi.rendering.Render] = {
     inject(Renderer.render _)
