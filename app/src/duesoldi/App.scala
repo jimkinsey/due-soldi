@@ -54,12 +54,6 @@ object App
       )
     }
 
-    events subscribe {
-      case _: ServerStarted =>
-        logger.info("Fixing missing IDs in access log...")
-        AccessRecordStorage.fixMissingIds(getAccessRecords(config), updateAccessRecord(config))
-    }
-
     Future fromTry {
       Server.start(
         controllers = Seq(
