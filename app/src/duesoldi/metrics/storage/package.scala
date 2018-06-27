@@ -13,6 +13,7 @@ package object storage
   type GetAccessRecords = (ZonedDateTime) => Future[List[Access]]
   type StoreAccessRecord = (Access) => Future[Unit]
   type DeleteAccessRecord = (Access) => Future[DeleteResult]
+  type DeleteAccessRecords = (Seq[Access]) => Future[DeleteResult]
   type UpdateAccessRecord = (Access) => Future[UpdateResult]
 
   type StoreAccessRecordArchive = ((ZonedDateTime, ZonedDateTime), String) => Future[Unit]

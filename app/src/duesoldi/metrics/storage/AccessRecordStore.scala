@@ -73,7 +73,13 @@ object AccessRecordStore
   def delete(performUpdate: PerformUpdate): DeleteAccessRecord = (access) => Future.fromTry {
     performUpdate("DELETE FROM access_record WHERE request_id = ?",
       Seq(access.id)
-    ) map ((count) => DeleteResult.Success(count) )
+    ) map DeleteResult.Success
+  }
+
+  def deleteAll(performUpdate: PerformUpdate): DeleteAccessRecords = (records) => Future.fromTry {
+    performUpdate("DELETE FROM access_record WHERE request_id = ANY (?)",
+      s"{${records.map(_.id).mkString(",")}}"
+    ) map DeleteResult.Success
   }
 }
 

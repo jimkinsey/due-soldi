@@ -48,7 +48,7 @@ object App
         threshold = threshold,
         getLogSize = getAccessRecordLogSize(config),
         getAccessRecordsToArchive = getAccessRecordsWithCount(config),
-        deleteAccessRecord = deleteAccessRecord(config),
+        delete = deleteAccessRecords(config),
         storeArchive = storeAccessRecordArchive(config),
         accessCsv = AccessCsv.render
       )
