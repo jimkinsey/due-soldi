@@ -54,6 +54,22 @@ object AccessRecordStore
     ) map (_ => {})
   }
 
+  def update(performUpdate: PerformUpdate): UpdateAccessRecord = (access) => Future.fromTry {
+    performUpdate("UPDATE access_record SET ( timestamp, path, referer, user_agent, duration, client_ip, country, status_code ) = ( ?, ?, ?, ?, ?, ?, ?, ? ) WHERE request_id = ?",
+      Seq(
+        Timestamp.from(access.time.toInstant),
+        access.path,
+        access.referer.orNull,
+        access.userAgent.orNull,
+        access.duration,
+        access.clientIp.orNull,
+        access.country.orNull,
+        access.statusCode,
+        access.id
+      )
+    ) map (count => UpdateResult.Success(count))
+  }
+
   def delete(performUpdate: PerformUpdate): DeleteAccessRecord = (access) => Future.fromTry {
     performUpdate("DELETE FROM access_record WHERE request_id = ?",
       Seq(access.id)
