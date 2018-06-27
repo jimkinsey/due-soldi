@@ -13,7 +13,7 @@ import duesoldi.debug.routes.DebugController
 import duesoldi.dependencies.DueSoldiDependencies.{logger, _}
 import duesoldi.dependencies.Injection.injected
 import duesoldi.furniture.routes.FurnitureController
-import duesoldi.logging.Logger
+import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.metrics.rendering.AccessCsv
 import duesoldi.metrics.routes.MetricsController
 import duesoldi.metrics.storage.AccessRecordStore.Access
@@ -40,6 +40,7 @@ object App
     implicit val config: Config = EnvironmentalConfig(env)
     val logger = new Logger("App", config.loggingEnabled)
     val events = new EventBus
+    EventLogging.enable(events, logger)
     AccessRecordStorage.enable(events, injected[StoreAccessRecord])
     config.accessRecordArchiveThreshold.foreach { threshold =>
       AccessRecordArchiveStorage.enable(
@@ -71,7 +72,7 @@ object App
         port = config.port
       ) map {
         server =>
-          logger.info(s"Started server on ${server.host}:${server.port}")
+          events publish ServerStarted(server.host, server.port)
           server.subscribe {
             case Completed(req, res, duration) if config.accessRecordingEnabled => {
               events.publish(Access(
@@ -93,9 +94,12 @@ object App
           server
       } recoverWith {
         case exception =>
-          logger.error(s"Failed to start server on ${config.host}:${config.port} - ${exception.getMessage}")
+          events publish ServerStartFailure(config.host, config.port, exception)
           Failure(exception)
       }
     }
   }
+
+  case class ServerStarted(host: String, port: Int)
+  case class ServerStartFailure(host: String, port: Option[Int], cause: Throwable)
 }
