@@ -15,7 +15,7 @@ object AccessRecordArchiveStorage
     threshold: Int,
     getLogSize: GetAccessRecordLogSize,
     getAccessRecordsToArchive: GetAccessRecordsWithCount,
-    delete: DeleteAccessRecords,
+    deleteAccessRecord: DeleteAccessRecord,
     storeArchive: StoreAccessRecordArchive,
     accessCsv: MakeAccessCsv)(implicit executionContext: ExecutionContext) {
     events.subscribe {
@@ -26,7 +26,7 @@ object AccessRecordArchiveStorage
           newArchive = accessCsv(records)
           archiveRange = (records.head.time, records.last.time)
           _ <- storeArchive(archiveRange, newArchive)
-          _ <- delete(records)
+          _ <- Future.sequence(records.map(deleteAccessRecord))
         } yield { }
         archive.onComplete {
           case Failure(throwable) => events publish ArchiveFailure(throwable)

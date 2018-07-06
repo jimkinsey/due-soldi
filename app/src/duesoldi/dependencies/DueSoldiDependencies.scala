@@ -57,8 +57,6 @@ object DueSoldiDependencies
 
   implicit lazy val deleteAccessRecord: Inject[DeleteAccessRecord] = inject(AccessRecordStore.delete _)
 
-  implicit lazy val deleteAccessRecords: Inject[DeleteAccessRecords] = inject(AccessRecordStore.deleteAll _)
-
   implicit lazy val updateAccessRecord: Inject[UpdateAccessRecord] = inject(AccessRecordStore.update _)
 
   implicit lazy val getAccessRecords: Inject[GetAccessRecords] = { config =>
