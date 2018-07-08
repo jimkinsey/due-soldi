@@ -16,7 +16,12 @@ object AccessRecordStorage
                           (implicit executionContext: ExecutionContext): GetAllAccessRecords = (start: ZonedDateTime) => {
     for {
       newRecords <- getAccessRecords(start)
+
+      _ = println(s"GOT ${newRecords.size} 'new' access records")
+
       archives <- getAccessRecordArchive(start)
+      
+      _ = println(s"GOT ${archives.size} archives")
 
       archiveFiles = archives.collect { case (_, csv)=> csv }
       archiveRecords = archiveFiles.map(AccessCsv.parse).collect {
