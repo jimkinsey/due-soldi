@@ -12,7 +12,7 @@ import duesoldi.app.sessions.Sessions.{GetSessionCookie, validSession}
 import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.metrics.storage.AccessRecordStore.Access
-import duesoldi.metrics.storage.GetAccessRecords
+import duesoldi.metrics.storage.{GetAccessRecords, GetAllAccessRecords}
 import ratatoskr.ResponseBuilding._
 import sommelier.handling.Unpacking._
 import sommelier.routing.Controller
@@ -46,9 +46,9 @@ extends Controller
       getSessionCookie <- provided[GetSessionCookie]
       sessionCookie <- getSessionCookie(context.request) rejectWith 500
 
-      getAccessRecords <- provided[GetAccessRecords]
+      getAccessRecords <- provided[GetAllAccessRecords]
       start <- query[ZonedDateTime]("start").optional.firstValue defaultTo sevenDaysAgo
-      accesses <- getAccessRecords(start)
+      accesses <- getAccessRecords(start) rejectWith { _ => 500 }
       content = renderJson(accesses)
     } yield {
       200 (content)

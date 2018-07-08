@@ -2,6 +2,8 @@ package duesoldi.metrics
 
 import java.time.ZonedDateTime
 
+import duesoldi.metrics.rendering.AccessCsv
+import duesoldi.metrics.storage.AccessRecordArchiveStore.Archive
 import duesoldi.metrics.storage.AccessRecordStore.Access
 
 import scala.concurrent.Future
@@ -16,6 +18,9 @@ package object storage
   type UpdateAccessRecord = (Access) => Future[UpdateResult]
 
   type StoreAccessRecordArchive = ((ZonedDateTime, ZonedDateTime), String) => Future[Unit]
+  type GetAccessRecordArchive = ZonedDateTime => Future[List[Archive]]
+
+  type GetAllAccessRecords = ZonedDateTime => Future[Either[AccessCsv.ParseFailure, List[Access]]]
 
   sealed trait DeleteResult
   object DeleteResult

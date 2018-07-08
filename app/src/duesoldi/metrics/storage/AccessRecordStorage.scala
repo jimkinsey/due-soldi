@@ -1,6 +1,9 @@
 package duesoldi.metrics.storage
 
+import java.time.ZonedDateTime
+
 import dearboy.EventBus
+import duesoldi.metrics.rendering.AccessCsv
 import duesoldi.metrics.storage.AccessRecordStorage.Event.{RecordFailure, RecordSuccess}
 import duesoldi.metrics.storage.AccessRecordStore.Access
 
@@ -9,6 +12,22 @@ import scala.util.Failure
 
 object AccessRecordStorage
 {
+  def getIncludingArchived(getAccessRecords: GetAccessRecords, getAccessRecordArchive: GetAccessRecordArchive)
+                          (implicit executionContext: ExecutionContext): GetAllAccessRecords = (start: ZonedDateTime) => {
+    for {
+      newRecords <- getAccessRecords(start)
+      archives <- getAccessRecordArchive(start)
+
+      archiveFiles = archives.collect { case (_, csv)=> csv }
+      archiveRecords = archiveFiles.map(AccessCsv.parse).collect {
+        case Right(records) => records.filter(_.time.isAfter(start))
+      } flatten
+    } yield {
+      // TODO propagate failure when one of the archives can't be parsed
+      Right(newRecords ++ archiveRecords)
+    }
+  }
+
   def enable(events: EventBus, store: StoreAccessRecord)(implicit executionContext: ExecutionContext) {
     events.subscribe {
       case access: Access => store(access).onComplete {

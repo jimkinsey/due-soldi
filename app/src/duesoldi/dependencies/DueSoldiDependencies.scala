@@ -67,6 +67,14 @@ object DueSoldiDependencies
 
   implicit lazy val storeAccessRecordArchive: Inject[StoreAccessRecordArchive] = inject(AccessRecordArchiveStore.put _)
 
+  implicit lazy val getAccessRecordArchive: Inject[GetAccessRecordArchive] = config => {
+    AccessRecordArchiveStore.get(jdbcPerformQuery(AccessRecordArchiveStore.toArchive)(config))
+  }
+
+  implicit def getAllAccessRecords(implicit executionContext: ExecutionContext): Inject[GetAllAccessRecords] = config => {
+    AccessRecordStorage.getIncludingArchived(getAccessRecords(config), getAccessRecordArchive(config))
+  }
+
   implicit def render(implicit executionContext: ExecutionContext): Inject[duesoldi.rendering.Render] = {
     inject(Renderer.render _)
   }
