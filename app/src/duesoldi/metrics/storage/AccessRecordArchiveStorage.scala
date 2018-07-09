@@ -13,17 +13,21 @@ import scala.util.Failure
 object AccessRecordArchiveStorage
 {
 
-  def tidyUp(getArchive: GetAccessRecordArchive)(implicit executionContext: ExecutionContext): Future[Unit] = {
+  def tidyUp(getArchive: GetAccessRecordArchive, deleteArchive: DeleteAccessRecordArchive)(implicit executionContext: ExecutionContext): Future[Unit] = {
     for {
       archives <- getArchive(ZonedDateTime.now().minusYears(39))
     } yield {
 
-      val (good, bad) = archives.foldLeft[(List[Archive], List[Archive])](List.empty -> List.empty) {
+      val (_, duplicate) = archives.foldLeft[(List[Archive], List[Archive])](List.empty -> List.empty) {
         case ((good, bad), current) if good.exists(_.csv == current.csv) => (good, bad :+ current)
         case ((good, bad), current) => (good :+ current, bad)
       }
 
-      println(s"GOT ${good.size} GOOD ARCHIVES, ${bad.size} BAD ARCHIVES")
+      println(s"DELETING ${duplicate.size} DUPLICATE ARCHIVES...")
+
+      duplicate.foreach { archive =>
+        deleteArchive(archive)
+      }
     }
   }
 

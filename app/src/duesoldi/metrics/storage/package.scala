@@ -19,6 +19,7 @@ package object storage
 
   type StoreAccessRecordArchive = ((ZonedDateTime, ZonedDateTime), String) => Future[Unit]
   type GetAccessRecordArchive = ZonedDateTime => Future[List[Archive]]
+  type DeleteAccessRecordArchive = Archive => Future[ArchiveDeleteResult]
 
   type GetAllAccessRecords = ZonedDateTime => Future[Either[AccessCsv.ParseFailure, List[Access]]]
 
@@ -32,5 +33,11 @@ package object storage
   object UpdateResult
   {
     case class Success(updated: Int) extends UpdateResult
+  }
+
+  sealed trait ArchiveDeleteResult
+  object ArchiveDeleteResult
+  {
+    case class Success(deleted: Int) extends ArchiveDeleteResult
   }
 }

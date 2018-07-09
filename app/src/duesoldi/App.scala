@@ -16,7 +16,7 @@ import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.metrics.rendering.AccessCsv
 import duesoldi.metrics.routes.MetricsController
 import duesoldi.metrics.storage.AccessRecordStore.Access
-import duesoldi.metrics.storage.{AccessRecordArchiveStorage, AccessRecordStorage, GetAccessRecordArchive, StoreAccessRecord}
+import duesoldi.metrics.storage._
 import duesoldi.scheduling.Scheduling
 import duesoldi.scheduling.Scheduling.Task.Periodic
 import hammerspace.collections.MapEnhancements._
@@ -66,7 +66,7 @@ object App
       Scheduling.schedule(events)(Periodic(
         name = "Access record archive tidy-up",
         period = 1.minute,
-        action = () => AccessRecordArchiveStorage.tidyUp(injected[GetAccessRecordArchive])
+        action = () => AccessRecordArchiveStorage.tidyUp(injected[GetAccessRecordArchive], injected[DeleteAccessRecordArchive])
       ))
 
     }

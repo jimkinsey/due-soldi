@@ -71,6 +71,8 @@ object DueSoldiDependencies
     AccessRecordArchiveStore.get(jdbcPerformQuery(AccessRecordArchiveStore.toArchive)(config))
   }
 
+  implicit lazy val deleteAccessRecordArchive: Inject[DeleteAccessRecordArchive] = inject(AccessRecordArchiveStore.delete _)
+
   implicit def getAllAccessRecords(implicit executionContext: ExecutionContext): Inject[GetAllAccessRecords] = config => {
     AccessRecordStorage.getIncludingArchived(getAccessRecords(config), getAccessRecordArchive(config))
   }

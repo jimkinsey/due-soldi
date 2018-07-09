@@ -1,10 +1,12 @@
 package duesoldi.test.integration
 
-import java.time.ZonedDateTime
+import java.time.ZonedDateTime.now
 
+import duesoldi.Env
 import duesoldi.metrics.storage.AccessRecordArchiveStore
 import duesoldi.test.support.setup.{Database, Setup}
 import hammerspace.storage.JDBCConnection
+import hammerspace.storage.JDBCConnection.OpenConnection
 import utest._
 
 object AccessRecordArchiveStoreTests
@@ -18,17 +20,10 @@ extends TestSuite
         Setup.withSetup(
           Database.database
         ) { env =>
-          val details = JDBCConnection.ConnectionDetails(
-            url = env("JDBC_DATABASE_URL"),
-            username = env("JDBC_DATABASE_USERNAME"),
-            password = env("JDBC_DATABASE_PASSWORD")
-          )
-          val open = JDBCConnection.openConnection(details)
-          val prepare = JDBCConnection.prepareStatement(_)
-          val execute = JDBCConnection.executeQuery(_)
-          val performQuery = JDBCConnection.performQuery(open, prepare, execute)(AccessRecordArchiveStore.toArchive)
+          val open = openConnection(env)
+          val performQuery = JDBCConnection.performQuery(open, prepare, executeQuery)(AccessRecordArchiveStore.toArchive)
           for {
-            archive <- AccessRecordArchiveStore.get(performQuery)(ZonedDateTime.now().plusHours(1))
+            archive <- AccessRecordArchiveStore.get(performQuery)(now().plusHours(1))
           } yield {
             assert(archive isEmpty)
           }
@@ -38,31 +33,59 @@ extends TestSuite
         Setup.withSetup(
           Database.database
         ) { env =>
-          val details = JDBCConnection.ConnectionDetails(
-            url = env("JDBC_DATABASE_URL"),
-            username = env("JDBC_DATABASE_USERNAME"),
-            password = env("JDBC_DATABASE_PASSWORD")
-          )
-          val open = JDBCConnection.openConnection(details)
-          val prepare = JDBCConnection.prepareStatement(_)
-          val execute = JDBCConnection.executeQuery(_)
-          val executeUpdate = JDBCConnection.executeUpdate(_)
-          val performQuery = JDBCConnection.performQuery(open, prepare, execute)(AccessRecordArchiveStore.toArchive)
+          val open = openConnection(env)
+          val performQuery = JDBCConnection.performQuery(open, prepare, executeQuery)(AccessRecordArchiveStore.toArchive)
           val performUpdate = JDBCConnection.performUpdate(open, prepare, executeUpdate)
 
-          val twoHoursAgo = ZonedDateTime.now().minusHours(2)
-          val oneHourAgo = ZonedDateTime.now().minusHours(1)
-          val thirtyMinutesAgo = ZonedDateTime.now().minusMinutes(30)
+          val twoHoursAgo = now().minusHours(2)
+          val oneHourAgo = now().minusHours(1)
+          val thirtyMinutesAgo = now().minusMinutes(30)
 
           for {
             _ <- AccessRecordArchiveStore.put(performUpdate)((twoHoursAgo, oneHourAgo), "archive1")
             _ <- AccessRecordArchiveStore.put(performUpdate)((oneHourAgo, thirtyMinutesAgo), "archive2")
-            archive <- AccessRecordArchiveStore.get(performQuery)(ZonedDateTime.now().minusMinutes(90))
+            archive <- AccessRecordArchiveStore.get(performQuery)(now().minusMinutes(90))
           } yield {
             assert(archive.size == 2)
           }
         }
       }
     }
+    "delete" - {
+      "deletes the archive when it exists" - {
+        Setup.withSetup(
+          Database.database
+        ) { env =>
+          val open = openConnection(env)
+          val performQuery = JDBCConnection.performQuery(open, prepare, executeQuery)(AccessRecordArchiveStore.toArchive)
+          val performUpdate = JDBCConnection.performUpdate(open, prepare, executeUpdate)
+
+          for {
+            _ <- AccessRecordArchiveStore.put(performUpdate)((now().minusHours(2), now().minusHours(1)), "archive1")
+            _ <- AccessRecordArchiveStore.put(performUpdate)((now().minusHours(1), now().minusHours(0)), "archive2")
+            preDeletion <- AccessRecordArchiveStore.get(performQuery)(now().minusMinutes(90))
+            toDelete = preDeletion.head
+            _ <- AccessRecordArchiveStore.delete(performUpdate)(toDelete)
+            postDeletion <- AccessRecordArchiveStore.get(performQuery)(now().minusMinutes(90))
+          } yield {
+            assert(postDeletion.size == 1)
+          }
+        }
+      }
+    }
   }
+
+  private lazy val openConnection: Env => OpenConnection = (env) => {
+    val details = JDBCConnection.ConnectionDetails(
+      url = env("JDBC_DATABASE_URL"),
+      username = env("JDBC_DATABASE_USERNAME"),
+      password = env("JDBC_DATABASE_PASSWORD")
+    )
+    JDBCConnection.openConnection(details)
+  }
+
+  private lazy val prepare = JDBCConnection.prepareStatement _
+  private lazy val executeQuery = JDBCConnection.executeQuery _
+  private lazy val executeUpdate = JDBCConnection.executeUpdate _
+
 }

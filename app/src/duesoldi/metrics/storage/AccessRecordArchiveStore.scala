@@ -35,4 +35,8 @@ object AccessRecordArchiveStore
       )
     ) map (_ => {})
   }
+
+  def delete(performUpdate: PerformUpdate): DeleteAccessRecordArchive = (archive) => Future.fromTry {
+    performUpdate("DELETE FROM access_record_archive WHERE id = ?", Seq(archive.id)) map ArchiveDeleteResult.Success
+  }
 }
