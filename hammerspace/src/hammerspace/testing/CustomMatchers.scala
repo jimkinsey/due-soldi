@@ -18,4 +18,8 @@ object CustomMatchers
     def isRightOf(value: R): Boolean = either.toOption.contains(value)
     def isRightWhere(pred: R => Boolean): Boolean = either.toOption.exists(pred)
   }
+  implicit class OptionAssertions[T](option: Option[T])
+  {
+    def isSomeWhere(pred: T => Boolean): Boolean = option.exists(pred)
+  }
 }

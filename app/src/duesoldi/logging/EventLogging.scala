@@ -3,6 +3,7 @@ package duesoldi.logging
 import dearboy.EventBus
 import duesoldi.App.{ServerStartFailure, ServerStarted}
 import duesoldi.metrics.storage.{AccessRecordArchiveStorage, AccessRecordStorage}
+import duesoldi.scheduling.Scheduling
 
 object EventLogging
 {
@@ -18,6 +19,12 @@ object EventLogging
         logger.info(s"Started server on $host:$port")
       case ServerStartFailure(host, port, cause) =>
         logger.error(s"Failed to start server on $host:${port.getOrElse("-")} - ${cause.getMessage}")
+      case Scheduling.Event.WillPerformTask(name, _) =>
+        logger.info(s"Performing scheduled task '$name'...")
+      case Scheduling.Event.DidPerformTask(name, _) =>
+        logger.info(s"Finished performing scheduled task '$name'")
+      case Scheduling.Event.FailurePerformingTask(name, cause) =>
+        logger.error(s"Error while performing scheduled task '$name', ${cause.getMessage}")
     }
   }
 }

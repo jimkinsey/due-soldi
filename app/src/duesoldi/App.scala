@@ -1,7 +1,6 @@
 package duesoldi
 
 import java.time.{ZoneId, ZonedDateTime}
-import java.time.ZonedDateTime
 import java.util.UUID
 
 import dearboy.EventBus
@@ -10,7 +9,7 @@ import duesoldi.blog.routes.{BlogEditingController, BlogEntryController, BlogInd
 import duesoldi.config.{Config, EnvironmentalConfig}
 import duesoldi.controller.{LearnJapaneseController, RobotsController}
 import duesoldi.debug.routes.DebugController
-import duesoldi.dependencies.DueSoldiDependencies.{logger, _}
+import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.dependencies.Injection.injected
 import duesoldi.furniture.routes.FurnitureController
 import duesoldi.logging.{EventLogging, Logger}
@@ -18,14 +17,16 @@ import duesoldi.metrics.rendering.AccessCsv
 import duesoldi.metrics.routes.MetricsController
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.metrics.storage.{AccessRecordArchiveStorage, AccessRecordStorage, StoreAccessRecord}
+import duesoldi.scheduling.Scheduling
 import hammerspace.collections.MapEnhancements._
+import ratatoskr.RequestAccess._
 import sommelier.events.Completed
 import sommelier.serving.Server
 
 import scala.collection.JavaConverters._
+import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Failure
-import ratatoskr.RequestAccess._
 
 object App
 {
@@ -38,19 +39,26 @@ object App
 
   def start(env: Env): Future[Server] = {
     implicit val config: Config = EnvironmentalConfig(env)
+
     val logger = new Logger("App", config.loggingEnabled)
+
     val events = new EventBus
     EventLogging.enable(events, logger)
+
     AccessRecordStorage.enable(events, injected[StoreAccessRecord])
     config.accessRecordArchiveThreshold.foreach { threshold =>
-      AccessRecordArchiveStorage.enable(
-        events = events,
-        threshold = threshold,
-        getLogSize = getAccessRecordLogSize(config),
-        getAccessRecordsToArchive = getAccessRecordsWithCount(config),
-        deleteAccessRecord = deleteAccessRecord(config),
-        storeArchive = storeAccessRecordArchive(config),
-        accessCsv = AccessCsv.render
+      Scheduling.schedule(events)(
+        name = "Access record auto-archive",
+        period = 1.hour,
+        task = () => AccessRecordArchiveStorage.autoArchive(
+          events = events,
+          threshold = threshold,
+          getLogSize = getAccessRecordLogSize(config),
+          getAccessRecordsToArchive = getAccessRecordsWithCount(config),
+          deleteAccessRecord = deleteAccessRecord(config),
+          storeArchive = storeAccessRecordArchive(config),
+          accessCsv = AccessCsv.render
+        )
       )
     }
 
