@@ -18,7 +18,7 @@ import duesoldi.metrics.routes.MetricsController
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.metrics.storage._
 import duesoldi.scheduling.Scheduling
-import duesoldi.scheduling.Scheduling.Task.Periodic
+import duesoldi.scheduling.Scheduling.Task.{OneOff, Periodic}
 import hammerspace.collections.MapEnhancements._
 import ratatoskr.RequestAccess._
 import sommelier.events.Completed
@@ -63,9 +63,9 @@ object App
         )
       ))
 
-      Scheduling.schedule(events)(Periodic(
+      Scheduling.schedule(events)(OneOff(
         name = "Access record archive tidy-up",
-        period = 1.minute,
+        delay = 1.minute,
         action = () => AccessRecordArchiveStorage.tidyUp(injected[GetAccessRecordArchive], injected[DeleteAccessRecordArchive])
       ))
 
