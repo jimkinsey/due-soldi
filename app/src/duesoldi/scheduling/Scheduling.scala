@@ -5,6 +5,7 @@ import java.util.{Timer, TimerTask}
 
 import dearboy.EventBus
 import duesoldi.scheduling.Scheduling.Event.{DidPerformTask, FailurePerformingTask, WillPerformTask}
+import duesoldi.scheduling.Scheduling.Task.{OneOff, Periodic}
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future, Promise}
@@ -12,10 +13,22 @@ import scala.util.{Failure, Success}
 
 object Scheduling
 {
+  type Action = () => Future[Unit]
+
+  sealed trait Task {
+    def name: String
+    def action: Action
+  }
+  object Task
+  {
+    case class Periodic(name: String, period: Duration, action: Action) extends Task
+    case class OneOff(name: String, delay: Duration, action: Action) extends Task
+  }
+
   def schedule(eventBus: EventBus)
-              (name: String, period: Duration, task: () => Future[Unit])
+              (task: Task)
               (implicit executionContext: ExecutionContext): Unit = {
-    val timer = new Timer(name, true)
+    val timer = new Timer(task.name, true)
 
     def start(): Unit = {
       val promise = Promise[Unit]()
@@ -24,22 +37,30 @@ object Scheduling
           override def run() {
             executionContext.execute(
               () => {
-                eventBus publish WillPerformTask(name, ZonedDateTime.now())
-                promise.completeWith(task())
+                eventBus publish WillPerformTask(task.name, ZonedDateTime.now())
+                promise.completeWith(task.action())
               }
             )
           }
         },
-        period.toMillis
+        task match {
+          case periodic: Periodic => periodic.period.toMillis
+          case oneOff: OneOff => oneOff.delay.toMillis
+        }
       )
+
+      def rescheduleIfAppropriate(): Unit = task match {
+        case _: Periodic => start()
+        case _ =>
+      }
 
       promise.future.onComplete {
         case Success(_) =>
-          eventBus publish DidPerformTask(name, ZonedDateTime.now())
-          start()
+          eventBus publish DidPerformTask(task.name, ZonedDateTime.now())
+          rescheduleIfAppropriate()
         case Failure(t) =>
-          eventBus publish FailurePerformingTask(name, t)
-          start()
+          eventBus publish FailurePerformingTask(task.name, t)
+          rescheduleIfAppropriate()
       }
     }
 
