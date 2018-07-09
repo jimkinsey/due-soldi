@@ -1,11 +1,13 @@
 package duesoldi.metrics.storage
 
 import java.time.ZonedDateTime
+import java.util.UUID
 
 import dearboy.EventBus
-import duesoldi.metrics.rendering.MakeAccessCsv
+import duesoldi.metrics.rendering.{AccessCsv, MakeAccessCsv}
 import duesoldi.metrics.storage.AccessRecordArchiveStorage.Event.{ArchiveFailure, ArchiveSuccess}
 import duesoldi.metrics.storage.AccessRecordArchiveStore.Archive
+import duesoldi.metrics.storage.AccessRecordStore.Access
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Failure
@@ -13,22 +15,47 @@ import scala.util.Failure
 object AccessRecordArchiveStorage
 {
 
-  def tidyUp(getArchive: GetAccessRecordArchive, deleteArchive: DeleteAccessRecordArchive)(implicit executionContext: ExecutionContext): Future[Unit] = {
-    for {
-      archives <- getArchive(ZonedDateTime.now().minusYears(39))
-    } yield {
+  def tidyUp(getArchive: GetAccessRecordArchive,
+             deleteArchive: DeleteAccessRecordArchive,
+             putArchive: StoreAccessRecordArchive,
+             threshold: Int)
+            (implicit executionContext: ExecutionContext): Future[Unit] = {
+      // 1. get ALL archives
+      // 2. turn them into records
+      // 3. deduplicate
+      // 4. batch them
+      // 5. create archives from them
+      // 6. insert new archives
+      // 7. delete old archives
 
-      val (_, duplicate) = archives.foldLeft[(List[Archive], List[Archive])](List.empty -> List.empty) {
-        case ((good, bad), current) if good.exists(_.csv == current.csv) => (good, bad :+ current)
-        case ((good, bad), current) => (good :+ current, bad)
+      implicit val zdtOrdering = new Ordering[ZonedDateTime] {
+        override def compare(x: ZonedDateTime, y: ZonedDateTime): Int = {
+          if (x < y) return -1
+          if (x == y) return 0
+          return 1
+        }
       }
 
-      println(s"DELETING ${duplicate.size} DUPLICATE ARCHIVES...")
+      for {
+        oldArchives <- getArchive(ZonedDateTime.now().minusYears(39))
+        _ = println(s"Got ${oldArchives.size} archives to tidy up")
+        records = oldArchives.flatMap(archive => AccessCsv.parse(archive.csv).right.get)
+        _ = println(s"Parsed ${records.size} records from the archives")
+        deduplicated = records.foldLeft[Map[String,Access]](Map.empty)({
+          case (acc, access) => acc ++ Map(access.id -> access)
+        }).values.toSeq
+        _ = println(s"Got ${deduplicated.size} records after de-duplication")
+        groups = deduplicated.sortBy(_.time).grouped(threshold)
+        _ = println(s"Got ${groups.size} groups of $threshold records")
+        newArchives = groups.map(group => (group.head.time -> group.last.time, AccessCsv.render(group))).toSeq
+        _ = println(s"Inserting ${newArchives.size} new archives...")
+//        _ <- Future.sequence(newArchives.map(x => putArchive(x)))
+        _ = println(s"Deleting ${oldArchives.size }old archives...")
+//        _ <- Future.sequence(oldArchives.map(deleteArchive))
+        _ = println("DONE")
+      } yield {
 
-      duplicate.foreach { archive =>
-        deleteArchive(archive)
       }
-    }
   }
 
   def autoArchive(

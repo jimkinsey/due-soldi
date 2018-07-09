@@ -66,7 +66,12 @@ object App
       Scheduling.schedule(events)(OneOff(
         name = "Access record archive tidy-up",
         delay = 1.minute,
-        action = () => AccessRecordArchiveStorage.tidyUp(injected[GetAccessRecordArchive], injected[DeleteAccessRecordArchive])
+        action = () => AccessRecordArchiveStorage.tidyUp(
+          injected[GetAccessRecordArchive],
+          injected[DeleteAccessRecordArchive],
+          injected[StoreAccessRecordArchive],
+          threshold
+        )
       ))
 
     }
