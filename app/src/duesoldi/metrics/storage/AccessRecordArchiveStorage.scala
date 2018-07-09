@@ -28,29 +28,32 @@ object AccessRecordArchiveStorage
       // 6. insert new archives
       // 7. delete old archives
 
-      implicit val zdtOrdering = new Ordering[ZonedDateTime] {
-        override def compare(x: ZonedDateTime, y: ZonedDateTime): Int = {
-          if (x < y) return -1
-          if (x == y) return 0
-          return 1
-        }
-      }
+//      implicit val zdtOrdering = new Ordering[ZonedDateTime] {
+//        override def compare(x: ZonedDateTime, y: ZonedDateTime): Int = {
+//          if (x < y) return -1
+//          if (x == y) return 0
+//          return 1
+//        }
+//      }
+
+      // FIXME going to have to find a more efficient way
 
       for {
         oldArchives <- getArchive(ZonedDateTime.now().minusYears(39))
         _ = println(s"Got ${oldArchives.size} archives to tidy up")
         records = oldArchives.flatMap(archive => AccessCsv.parse(archive.csv).right.get)
         _ = println(s"Parsed ${records.size} records from the archives")
-        deduplicated = records.foldLeft[Map[String,Access]](Map.empty)({
-          case (acc, access) => acc ++ Map(access.id -> access)
-        }).values.toSeq
+        deduplicated = records.foldLeft[Seq[Access]](Seq.empty)({
+          case (acc, record) if acc.exists(_.id == record.id) => acc
+          case (acc, record) => acc :+ record
+        })
         _ = println(s"Got ${deduplicated.size} records after de-duplication")
-        groups = deduplicated.sortBy(_.time).grouped(threshold)
+        groups = deduplicated.grouped(threshold)
         _ = println(s"Got ${groups.size} groups of $threshold records")
         newArchives = groups.map(group => (group.head.time -> group.last.time, AccessCsv.render(group))).toSeq
         _ = println(s"Inserting ${newArchives.size} new archives...")
 //        _ <- Future.sequence(newArchives.map(x => putArchive(x)))
-        _ = println(s"Deleting ${oldArchives.size }old archives...")
+        _ = println(s"Deleting ${oldArchives.size} old archives...")
 //        _ <- Future.sequence(oldArchives.map(deleteArchive))
         _ = println("DONE")
       } yield {
