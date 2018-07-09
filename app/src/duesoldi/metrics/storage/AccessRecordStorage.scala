@@ -4,6 +4,7 @@ import java.time.ZonedDateTime
 
 import dearboy.EventBus
 import duesoldi.metrics.rendering.AccessCsv
+import duesoldi.metrics.storage.AccessRecordArchiveStore.Archive
 import duesoldi.metrics.storage.AccessRecordStorage.Event.{RecordFailure, RecordSuccess}
 import duesoldi.metrics.storage.AccessRecordStore.Access
 
@@ -16,14 +17,8 @@ object AccessRecordStorage
                           (implicit executionContext: ExecutionContext): GetAllAccessRecords = (start: ZonedDateTime) => {
     for {
       newRecords <- getAccessRecords(start)
-
-      _ = println(s"GOT ${newRecords.size} 'new' access records")
-
       archives <- getAccessRecordArchive(start)
-      
-      _ = println(s"GOT ${archives.size} archives")
-
-      archiveFiles = archives.collect { case (_, csv)=> csv }
+      archiveFiles = archives.collect { case Archive(_, _, csv) => csv }
       archiveRecords = archiveFiles.map(AccessCsv.parse).collect {
         case Right(records) => records.filter(_.time.isAfter(start))
       } flatten

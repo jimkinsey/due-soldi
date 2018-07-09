@@ -11,9 +11,10 @@ CREATE TABLE access_record (
 );
 
 CREATE TABLE access_record_archive (
-  fromTime timestamp not null,
-  toTime   timestamp not null,
-  csv      text      not null
+  id       character varying not null PRIMARY KEY,
+  fromTime timestamp         not null,
+  toTime   timestamp         not null,
+  csv      text              not null
 );
 
 CREATE TABLE blog_entry (

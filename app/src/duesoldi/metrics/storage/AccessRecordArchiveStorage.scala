@@ -1,14 +1,32 @@
 package duesoldi.metrics.storage
 
+import java.time.ZonedDateTime
+
 import dearboy.EventBus
 import duesoldi.metrics.rendering.MakeAccessCsv
 import duesoldi.metrics.storage.AccessRecordArchiveStorage.Event.{ArchiveFailure, ArchiveSuccess}
+import duesoldi.metrics.storage.AccessRecordArchiveStore.Archive
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Failure
 
 object AccessRecordArchiveStorage
 {
+
+  def tidyUp(getArchive: GetAccessRecordArchive)(implicit executionContext: ExecutionContext): Future[Unit] = {
+    for {
+      archives <- getArchive(ZonedDateTime.now().minusYears(39))
+    } yield {
+
+      val (good, bad) = archives.foldLeft[(List[Archive], List[Archive])](List.empty -> List.empty) {
+        case ((good, bad), current) if good.exists(_.csv == current.csv) => (good, bad :+ current)
+        case ((good, bad), current) => (good :+ current, bad)
+      }
+
+      println(s"GOT ${good.size} GOOD ARCHIVES, ${bad.size} BAD ARCHIVES")
+    }
+  }
+
   def autoArchive(
     events: EventBus,
     threshold: Int,

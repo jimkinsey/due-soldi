@@ -2,7 +2,9 @@ package duesoldi.test.unit
 
 import java.time.ZonedDateTime.now
 import java.time.format.DateTimeFormatter.ISO_DATE_TIME
+import java.util.UUID
 
+import duesoldi.metrics.storage.AccessRecordArchiveStore.Archive
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.metrics.storage.{AccessRecordStorage, GetAccessRecordArchive, GetAccessRecords}
 import hammerspace.testing.CustomMatchers.EitherAssertions
@@ -39,9 +41,12 @@ extends TestSuite
       "contains archived records since the start date" - {
         val getNew: GetAccessRecords = _ => Future.successful(List(simpleAccess))
         val getArchives: GetAccessRecordArchive = _ => Future.successful(List(
-          (now().minusHours(1) -> now().minusMinutes(30),
+          Archive(
+            UUID.randomUUID.toString,
+            now().minusHours(1) -> now().minusMinutes(30),
             s"""Timestamp,Path,Referer,User-Agent,Duration (ms),Client IP,Country,Status Code,Request ID
-              |"${now().minusMinutes(45).format(ISO_DATE_TIME)}","","","","0","","","200",""""".stripMargin)
+              |"${now().minusMinutes(45).format(ISO_DATE_TIME)}","","","","0","","","200",""""".stripMargin
+          )
         ))
         val getAll = AccessRecordStorage.getIncludingArchived(getNew, getArchives)
         for {
@@ -53,10 +58,13 @@ extends TestSuite
       "excludes archived records from before the start date" - {
         val getNew: GetAccessRecords = _ => Future.successful(List(simpleAccess))
         val getArchives: GetAccessRecordArchive = _ => Future.successful(List(
-          (now().minusHours(2) -> now().minusMinutes(30),
+          Archive(
+            UUID.randomUUID.toString,
+            now().minusHours(2) -> now().minusMinutes(30),
             s"""Timestamp,Path,Referer,User-Agent,Duration (ms),Client IP,Country,Status Code,Request ID
               |"${now().minusMinutes(45).format(ISO_DATE_TIME)}","","","","0","","","200",""
-              |"${now().minusMinutes(90).format(ISO_DATE_TIME)}","","","","0","","","200",""""".stripMargin)
+              |"${now().minusMinutes(90).format(ISO_DATE_TIME)}","","","","0","","","200",""""".stripMargin
+          )
         ))
         val getAll = AccessRecordStorage.getIncludingArchived(getNew, getArchives)
         for {

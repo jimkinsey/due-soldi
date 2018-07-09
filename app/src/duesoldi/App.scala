@@ -16,7 +16,7 @@ import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.metrics.rendering.AccessCsv
 import duesoldi.metrics.routes.MetricsController
 import duesoldi.metrics.storage.AccessRecordStore.Access
-import duesoldi.metrics.storage.{AccessRecordArchiveStorage, AccessRecordStorage, StoreAccessRecord}
+import duesoldi.metrics.storage.{AccessRecordArchiveStorage, AccessRecordStorage, GetAccessRecordArchive, StoreAccessRecord}
 import duesoldi.scheduling.Scheduling
 import hammerspace.collections.MapEnhancements._
 import ratatoskr.RequestAccess._
@@ -47,6 +47,7 @@ object App
 
     AccessRecordStorage.enable(events, injected[StoreAccessRecord])
     config.accessRecordArchiveThreshold.foreach { threshold =>
+
       Scheduling.schedule(events)(
         name = "Access record auto-archive",
         period = 1.hour,
@@ -60,6 +61,13 @@ object App
           accessCsv = AccessCsv.render
         )
       )
+
+      Scheduling.schedule(events)(
+        name = "Access record archive tidy-up",
+        period = 1.hour,
+        task = () => AccessRecordArchiveStorage.tidyUp(injected[GetAccessRecordArchive])
+      )
+
     }
 
     Future fromTry {
