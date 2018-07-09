@@ -1,6 +1,7 @@
 package duesoldi.metrics.storage
 
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 import dearboy.EventBus
 import duesoldi.metrics.rendering.AccessCsv
@@ -17,11 +18,19 @@ object AccessRecordStorage
                           (implicit executionContext: ExecutionContext): GetAllAccessRecords = (start: ZonedDateTime) => {
     for {
       newRecords <- getAccessRecords(start)
+
+      _ = println(s"DEBUG Got ${newRecords.size} new access records")
+
       archives <- getAccessRecordArchive(start)
+
+      _ = println(s"DEBUG Got ${archives.size} archives since ${start.format(DateTimeFormatter.ISO_DATE_TIME)}")
+
       archiveFiles = archives.collect { case Archive(_, _, csv) => csv }
       archiveRecords = archiveFiles.map(AccessCsv.parse).collect {
         case Right(records) => records.filter(_.time.isAfter(start))
       } flatten
+
+      _ = println(s"DEBUG Total records from archive = ${archiveRecords.size}")
     } yield {
       // TODO propagate failure when one of the archives can't be parsed
       Right(newRecords ++ archiveRecords)
