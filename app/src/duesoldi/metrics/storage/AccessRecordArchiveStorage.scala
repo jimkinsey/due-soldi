@@ -1,6 +1,7 @@
 package duesoldi.metrics.storage
 
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 import dearboy.EventBus
@@ -39,22 +40,33 @@ object AccessRecordArchiveStorage
       // FIXME going to have to find a more efficient way
 
       for {
+
         oldArchives <- getArchive(ZonedDateTime.now().minusYears(39))
         _ = println(s"Got ${oldArchives.size} archives to tidy up")
+
         records = oldArchives.flatMap(archive => AccessCsv.parse(archive.csv).right.get)
         _ = println(s"Parsed ${records.size} records from the archives")
+
         deduplicated = records.foldLeft[Seq[Access]](Seq.empty)({
           case (acc, record) if acc.exists(_.id == record.id) => acc
           case (acc, record) => acc :+ record
         })
         _ = println(s"Got ${deduplicated.size} records after de-duplication")
+
         groups = deduplicated.grouped(threshold)
         _ = println(s"Got ${groups.size} groups of $threshold records")
+
         newArchives = groups.map(group => (group.head.time -> group.last.time, AccessCsv.render(group))).toSeq
+        _ = println(s"Created new archives for ranges: ${newArchives.map {
+          case ((from, to), _) => s"\n ${from.format(DateTimeFormatter.ISO_DATE_TIME)} -> ${to.format(DateTimeFormatter.ISO_DATE_TIME)}"
+        } mkString}")
+
         _ = println(s"Inserting ${newArchives.size} new archives...")
 //        _ <- Future.sequence(newArchives.map(x => putArchive(x)))
+
         _ = println(s"Deleting ${oldArchives.size} old archives...")
 //        _ <- Future.sequence(oldArchives.map(deleteArchive))
+
         _ = println("DONE")
       } yield {
 
