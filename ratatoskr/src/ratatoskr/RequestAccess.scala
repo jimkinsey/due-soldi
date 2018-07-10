@@ -1,7 +1,10 @@
 package ratatoskr
 
-import hammerspace.uri.URI
+import java.net.URLDecoder
+
 import hammerspace.collections.MapEnhancements._
+import hammerspace.testing.StreamHelpers._
+import hammerspace.uri.URI
 
 import scala.util.matching.Regex
 
@@ -25,20 +28,28 @@ object RequestAccess
 
     def queryParams: Map[String, Seq[String]] =
       URI.parse(request.url).queryString
-        .map(_
-          .split('&')
-          .foldLeft[Map[String, Seq[String]]](Map.empty) {
-            case (acc, QueryParam(key, value)) if acc.contains(key) =>
-              acc ++ Map(key -> (acc(key) :+ value))
-            case (acc, QueryParam(key, value)) =>
-              acc ++ Map(key -> Seq(value))
-            case (acc, _) =>
-              acc
-          }
-        )
+        .map(parseParams)
         .getOrElse(Map.empty)
 
-    private lazy val QueryParam: Regex = """^(.+)=(.+)$""".r
+    def formValues: Map[String, Seq[String]] = parseParams(request.body.asString)
   }
 
+  private def parseParams(in: String): Map[String, Seq[String]] =
+    in
+      .split('&')
+      .foldLeft[Map[String, Seq[String]]](Map.empty) {
+        case (acc, Param(key, value)) if acc.contains(key) =>
+          acc ++ Map(key -> (acc(key) :+ value))
+        case (acc, Param(key, value)) =>
+          acc ++ Map(key -> Seq(value))
+        case (acc, _) =>
+          acc
+      }
+      .mapValues(_.map(unescapeParamValue))
+
+  private lazy val Param: Regex = """^(.+)=(.+)$""".r
+
+  private def unescapeParamValue(value: String): String = {
+    URLDecoder.decode(value.replace('+', ' '), "UTF-8")
+  }
 }
