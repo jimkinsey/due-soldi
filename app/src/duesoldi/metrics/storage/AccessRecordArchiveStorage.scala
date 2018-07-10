@@ -53,10 +53,10 @@ object AccessRecordArchiveStorage
         })
         _ = println(s"Got ${deduplicated.size} records after de-duplication")
 
-        groups = deduplicated.grouped(threshold)
+        groups = deduplicated.grouped(threshold).toList
         _ = println(s"Got ${groups.size} groups of $threshold records")
 
-        newArchives = groups.map(group => (group.head.time -> group.last.time, AccessCsv.render(group))).toSeq
+        newArchives = groups.map(group => (group.head.time -> group.last.time, AccessCsv.render(group)))
         _ = println(s"Created new archives for ranges: ${newArchives.map {
           case ((from, to), _) => s"\n ${from.format(DateTimeFormatter.ISO_DATE_TIME)} -> ${to.format(DateTimeFormatter.ISO_DATE_TIME)}"
         } mkString}")
