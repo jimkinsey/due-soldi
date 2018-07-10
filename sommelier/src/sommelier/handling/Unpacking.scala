@@ -82,6 +82,10 @@ object Unpacking {
     context.request.queryParams.get(name) rejectWith { QueryParamNotFound(name) } map (_.flatMap(unpacker.unpack))
   }
 
+  def form[T](name: String)(implicit context: Context, unpacker: Unpacker[T]): Result[Seq[T]] = {
+    context.request.formValues.get(name) rejectWith { FormValueNotFound(name) }  map (_.flatMap(unpacker.unpack))
+  }
+
   case class HeaderNotFound(name: String) extends Rejection
   {
     val response: Response = Response(400).content(s"Header '$name' not found in request")
@@ -90,6 +94,11 @@ object Unpacking {
   case class QueryParamNotFound(name: String) extends Rejection
   {
     val response: Response = Response(400).content(s"Query param '$name' not found in request")
+  }
+
+  case class FormValueNotFound(name: String) extends Rejection
+  {
+    val response: Response = Response(400).content(s"Form param '$name' not found in request")
   }
 
   case object RequestHasNoBody extends Rejection
