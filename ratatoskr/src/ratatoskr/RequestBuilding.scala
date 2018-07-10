@@ -1,5 +1,7 @@
 package ratatoskr
 
+import java.net.URLEncoder
+
 import hammerspace.testing.StreamHelpers._
 
 object RequestBuilding
@@ -23,5 +25,15 @@ object RequestBuilding
     def content(content: String): Request = {
       request.copy(body = content.asByteStream("UTF-8"))
     }
+
+    def formValue(formValue: (String, String)): Request = {
+      request.copy(body = addParam(formValue, request.body))
+    }
+  }
+
+  private def addParam(param: (String, String), body: Body) = {
+    val (name, value) = param
+    val separator = if (body.isEmpty) "" else "&"
+    (body.asString + s"$separator$name=${URLEncoder.encode(value, "UTF-8")}").asByteStream("UTF-8")
   }
 }
