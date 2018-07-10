@@ -2,12 +2,10 @@ package duesoldi.metrics.storage
 
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.UUID
 
 import dearboy.EventBus
 import duesoldi.metrics.rendering.{AccessCsv, MakeAccessCsv}
 import duesoldi.metrics.storage.AccessRecordArchiveStorage.Event.{ArchiveFailure, ArchiveSuccess}
-import duesoldi.metrics.storage.AccessRecordArchiveStore.Archive
 import duesoldi.metrics.storage.AccessRecordStore.Access
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -16,28 +14,11 @@ import scala.util.Failure
 object AccessRecordArchiveStorage
 {
 
-  def tidyUp(getArchive: GetAccessRecordArchive,
-             deleteArchive: DeleteAccessRecordArchive,
-             putArchive: StoreAccessRecordArchive,
-             threshold: Int)
-            (implicit executionContext: ExecutionContext): Future[Unit] = {
-      // 1. get ALL archives
-      // 2. turn them into records
-      // 3. deduplicate
-      // 4. batch them
-      // 5. create archives from them
-      // 6. insert new archives
-      // 7. delete old archives
-
-//      implicit val zdtOrdering = new Ordering[ZonedDateTime] {
-//        override def compare(x: ZonedDateTime, y: ZonedDateTime): Int = {
-//          if (x < y) return -1
-//          if (x == y) return 0
-//          return 1
-//        }
-//      }
-
-      // FIXME going to have to find a more efficient way
+  def tidyUp(
+    getArchive: GetAccessRecordArchive,
+    deleteArchive: DeleteAccessRecordArchive,
+    putArchive: StoreAccessRecordArchive,
+    threshold: Int)(implicit executionContext: ExecutionContext): Future[Unit] = {
 
       for {
 
@@ -62,10 +43,12 @@ object AccessRecordArchiveStorage
         } mkString}")
 
         _ = println(s"Inserting ${newArchives.size} new archives...")
-//        _ <- Future.sequence(newArchives.map(x => putArchive(x)))
+        _ <- Future.sequence(newArchives.map {
+          case ((from, to), csv) => putArchive(from -> to, csv)
+        })
 
         _ = println(s"Deleting ${oldArchives.size} old archives...")
-//        _ <- Future.sequence(oldArchives.map(deleteArchive))
+        _ <- Future.sequence(oldArchives.map(deleteArchive))
 
         _ = println("DONE")
       } yield {
