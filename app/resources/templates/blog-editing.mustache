@@ -9,9 +9,18 @@
     </header>
     <section id="blog-editing">
       <form class="blog-entry" action="/admin/blog/edit" method="POST">
-        <input name="id" type="text">
-        <input name="description" type="text">
-        <input name="content" type="textarea">
+        <p>
+            <label>ID</label>
+            <input name="id" type="text"/>
+        </p>
+        <p>
+            <label>Description</label>
+            <input name="description" type="text"/>
+        </p>
+        <p>
+            <label>Content</label>
+            <textarea name="content" rows="40" cols="80"></textarea>
+        </p>
         <button type="submit">Publish</button>
       </form>
     </section>

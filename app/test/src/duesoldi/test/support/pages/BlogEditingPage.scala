@@ -29,11 +29,11 @@ class BlogEditingForm(element: Element)
   }
 
   def content(content: String): BlogEditingForm = {
-    required(element, "input[name='content']").`val`(content)
+    required(element, "textarea[name='content']").`val`(content)
     this
   }
 
-  def values: Map[String, Seq[String]] = element.select("input").asScala.map {
+  def values: Map[String, Seq[String]] = element.select("input, textarea").asScala.map {
     input => input.attr("name") -> Seq(input.`val`())
   } toMap
 }
