@@ -20,7 +20,7 @@ import duesoldi.furniture.storage.FurnitureFiles
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.metrics.storage._
-import duesoldi.rendering.Renderer
+import duesoldi.rendering.{GetTemplate, Renderer}
 import duesoldi.{Env, blog}
 import hammerspace.markdown.MarkdownParser
 import hammerspace.storage.JDBCConnection.{ConnectionDetails, PerformQuery, PerformUpdate}
@@ -75,6 +75,15 @@ object DueSoldiDependencies
 
   implicit def getAllAccessRecords(implicit executionContext: ExecutionContext): Inject[GetAllAccessRecords] = config => {
     AccessRecordStorage.getIncludingArchived(getAccessRecords(config), getAccessRecordArchive(config))
+  }
+
+  implicit lazy val getTemplate: Inject[GetTemplate] = config => {
+    config.templatePath match {
+      case Some(path) =>
+        injected[Logger](logger, config).info(s"Loading mustache templates from '$path'")
+        Renderer.getTemplateFromPath(path)
+      case _ => Renderer.getTemplateFromResources
+    }
   }
 
   implicit def render(implicit executionContext: ExecutionContext): Inject[duesoldi.rendering.Render] = {

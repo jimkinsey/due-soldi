@@ -32,7 +32,7 @@ extends Controller
 
       render <- provided[Render]
       model = BlogEditingPageModel()
-      html <- render("blog-editing", model) rejectWith { failure => 500 }
+      html <- render("blog-editing", model) rejectWith { failure => 500(s"Failed to render $failure") }
     } yield {
       200(html) cookie sessionCookie
     }

@@ -22,7 +22,8 @@ object EnvironmentalConfig
       loggerName = env.getOrElse("LOGGER_NAME", ""),
       secretKey = env.getOrElse("SECRET_KEY", ""),
       features = Features.featureStatuses(env),
-      accessRecordArchiveThreshold = env.get("ACCESS_LOG_ARCHIVE_THRESHOLD").filter(_.matches("\\d+")).map(_.toInt)
+      accessRecordArchiveThreshold = env.get("ACCESS_LOG_ARCHIVE_THRESHOLD").filter(_.matches("\\d+")).map(_.toInt),
+      templatePath = env.get("TEMPLATE_PATH").filter(_.nonEmpty)
     )
   }
 
@@ -39,7 +40,8 @@ object EnvironmentalConfig
       "IMAGE_BASE_URL" -> config.imageBaseUrl,
       "LOGGING_ENABLED" -> config.loggingEnabled.toString,
       "LOGGER_NAME" -> config.loggerName,
-      "SECRET_KEY" -> config.secretKey
+      "SECRET_KEY" -> config.secretKey,
+      "TEMPLATE_PATH" -> config.templatePath.getOrElse("")
     ) ++ config.features.map {
       case (key, value) => s"FEATURE_$key" -> (if (value) "on" else "off")
     }

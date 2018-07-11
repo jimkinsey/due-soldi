@@ -6,4 +6,5 @@ import scala.concurrent.Future
 
 package object rendering {
   type Render = (String, PageModel) => Future[bhuj.Result]
+  type GetTemplate = String => Future[Option[String]]
 }
