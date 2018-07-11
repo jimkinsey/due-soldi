@@ -22,12 +22,22 @@ object RequestBuilding
       request.copy(headers = addHeader(header, request.headers))
     }
 
+    def cookie(cookie: Cookie): Request = {
+      header(cookie.toRequestHeader)
+    }
+
     def content(content: String): Request = {
       request.copy(body = content.asByteStream("UTF-8"))
     }
 
     def formValue(formValue: (String, String)): Request = {
       request.copy(body = addParam(formValue, request.body))
+    }
+
+    def formValues(formValues: Map[String, Seq[String]]): Request = {
+      formValues.foldLeft[Request](request) {
+        case (req, (name, values)) => req.formValue(name -> values.head)
+      }
     }
   }
 

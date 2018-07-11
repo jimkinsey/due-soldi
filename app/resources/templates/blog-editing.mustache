@@ -1,0 +1,19 @@
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Edit blog</title>
+  </head>
+  <body>
+    <header>
+      <h1>Create a Blog Entry</h1>
+    </header>
+    <section id="blog-editing">
+      <form class="blog-entry" action="/admin/blog/edit" method="POST">
+        <input name="id" type="text">
+        <input name="description" type="text">
+        <input name="content" type="textarea">
+        <button type="submit">Publish</button>
+      </form>
+    </section>
+  </body>
+</html>

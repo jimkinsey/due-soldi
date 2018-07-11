@@ -29,3 +29,5 @@ case class OgMetadata(
   description: String,
   image: Option[OgMetadata.Image] = None
 )
+
+case class BlogEditingPageModel() extends PageModel

@@ -4,6 +4,7 @@ import duesoldi.test.support.app.ServerRequests._
 import duesoldi.test.support.app.TestApp
 import duesoldi.test.support.app.TestApp.runningApp
 import duesoldi.test.support.httpclient.BasicAuthorization
+import duesoldi.test.support.pages.{BlogEditingPage, BlogEntryPage}
 import duesoldi.test.support.setup.BlogStorage._
 import duesoldi.test.support.setup.Database._
 import duesoldi.test.support.setup.Setup.withSetup
@@ -11,6 +12,8 @@ import utest._
 import hammerspace.testing.StreamHelpers._
 import ratatoskr.Cookie
 import ratatoskr.ResponseAccess._
+import ratatoskr.RequestBuilding._
+import ratatoskr.Method._
 
 object BlogEditingTests
   extends TestSuite 
@@ -326,7 +329,33 @@ object BlogEditingTests
           }
         }
       }
-//      "can successfully create a blog entry" - { ??? }
+      "can successfully create a blog entry" - {
+        withSetup(
+          database,
+          runningApp,
+          blogEntries()
+        ) { implicit env =>
+          for {
+            editingPage <- get("/admin/blog/edit", headers = TestApp.adminAuth)
+            _ = assert(editingPage.status == 200)
+            form = new BlogEditingPage(editingPage.body.asString).form
+            formValues = form
+                .id("new-entry")
+                .description("A brand new entry")
+                .content("# New Entry!")
+                .values
+            submission <- send(POST(form.action).formValues(formValues).cookie(editingPage.cookie("adminSessionId").get))
+            newEntry <- get("/blog/new-entry")
+            entryPage = new BlogEntryPage(newEntry.body.asString)
+          } yield {
+            assert(
+              submission.status == 201,
+              newEntry.status == 200,
+              entryPage.title == "New Entry!"
+            )
+          }
+        }
+      }
 //      "fails with a useful message if the entry already exists" - { ??? }
 //      "fails with a useful message if the submission is invalid" - { ??? }
     }

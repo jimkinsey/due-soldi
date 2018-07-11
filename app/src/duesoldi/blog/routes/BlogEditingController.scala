@@ -14,6 +14,11 @@ import ratatoskr.ResponseBuilding._
 
 import scala.concurrent.ExecutionContext
 import duesoldi.app.sessions.Sessions.{GetSessionCookie, validSession}
+import duesoldi.blog.model.BlogEntry
+import duesoldi.blog.pages.BlogEditingPageModel
+import duesoldi.rendering.Render
+import hammerspace.markdown
+import hammerspace.markdown.MarkdownParser
 
 
 class BlogEditingController(implicit executionContext: ExecutionContext, appConfig: Config)
@@ -24,10 +29,38 @@ extends Controller
     for {
       getSessionCookie <- provided[GetSessionCookie]
       sessionCookie <- getSessionCookie(context.request) rejectWith 500
+
+      render <- provided[Render]
+      model = BlogEditingPageModel()
+      html <- render("blog-editing", model) rejectWith { failure => 500 }
     } yield {
-      200 cookie sessionCookie
+      200(html) cookie sessionCookie
     }
   }
+
+  POST("/admin/blog/edit").Authorization(basicAdminAuth or validSession) ->- { implicit context =>
+    for {
+      getSessionCookie <- provided[GetSessionCookie]
+      sessionCookie <- getSessionCookie(context.request) rejectWith 500
+
+      parseMarkdown <- provided[markdown.Parse]
+      id <- form[String]("id").firstValue.required { 500 }
+      description <- form[String]("description").firstValue
+      content <- form[String]("content").firstValue.required { 500 }
+      entry = BlogEntry(id, content = parseMarkdown(content), description = description)
+
+      store <- provided[PutBlogEntry]
+      _ <- store(entry) rejectWith { _ => 500 }
+
+      render <- provided[Render]
+      model = BlogEditingPageModel()
+      html <- render("blog-editing", model) rejectWith { failure => 500 }
+    } yield {
+      201(html) cookie sessionCookie
+    }
+  }
+
+
 
   PUT("/admin/blog/:id").Authorization(basicAdminAuth) ->- { implicit context =>
     for {

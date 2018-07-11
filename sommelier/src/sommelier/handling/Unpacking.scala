@@ -155,6 +155,7 @@ object Unpacking {
   implicit class OptionResult[T](result: Result[Option[T]])
   {
     def defaultTo(ifEmpty: => T): Result[T] = result.map(_.getOrElse(ifEmpty))
+    def required(ifEmpty: => Rejection): Result[T] = result.validate(_.isDefined)(ifEmpty).map(_.get)
   }
 
 }
