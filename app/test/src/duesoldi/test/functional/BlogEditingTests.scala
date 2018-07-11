@@ -9,6 +9,8 @@ import duesoldi.test.support.setup.Database._
 import duesoldi.test.support.setup.Setup.withSetup
 import utest._
 import hammerspace.testing.StreamHelpers._
+import ratatoskr.Cookie
+import ratatoskr.ResponseAccess._
 
 object BlogEditingTests
   extends TestSuite 
@@ -299,6 +301,34 @@ object BlogEditingTests
           }
         }
       }
+    }
+    "The blog entry creation page" - {
+      "requires authorization by basic auth or cookie" - {
+        withSetup(
+          database,
+          runningApp,
+          blogEntries()
+        ) { implicit env =>
+          for {
+            noCredentialsOrCookie <- get("/admin/blog/edit")
+            badCredentials <- get("/admin/blog/edit", headers = BasicAuthorization("not-admin", "password"))
+            goodCredentials <- get("/admin/blog/edit", headers = TestApp.adminAuth)
+            goodCookie <- get("/admin/blog/edit", headers = goodCredentials.cookie("adminSessionId").get.toRequestHeader)
+            badCookie <- get("/admin/blog/edit", headers = Cookie("adminSessionId", "").toRequestHeader)
+          } yield {
+            assert(
+              noCredentialsOrCookie.status == 401,
+              badCredentials.status == 403,
+              goodCredentials.status == 200,
+              goodCookie.status == 200,
+              badCookie.status == 401
+            )
+          }
+        }
+      }
+//      "can successfully create a blog entry" - { ??? }
+//      "fails with a useful message if the entry already exists" - { ??? }
+//      "fails with a useful message if the submission is invalid" - { ??? }
     }
   }
 }

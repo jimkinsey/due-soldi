@@ -13,10 +13,22 @@ import sommelier.routing.Routing._
 import ratatoskr.ResponseBuilding._
 
 import scala.concurrent.ExecutionContext
+import duesoldi.app.sessions.Sessions.{GetSessionCookie, validSession}
+
 
 class BlogEditingController(implicit executionContext: ExecutionContext, appConfig: Config)
 extends Controller
 {
+
+  GET("/admin/blog/edit").Authorization(basicAdminAuth or validSession) ->- { implicit context =>
+    for {
+      getSessionCookie <- provided[GetSessionCookie]
+      sessionCookie <- getSessionCookie(context.request) rejectWith 500
+    } yield {
+      200 cookie sessionCookie
+    }
+  }
+
   PUT("/admin/blog/:id").Authorization(basicAdminAuth) ->- { implicit context =>
     for {
       validateIdentifier <- provided[ValidateIdentifier]
@@ -92,4 +104,5 @@ extends Controller
       204
     }
   }
+
 }
