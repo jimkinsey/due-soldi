@@ -4,7 +4,7 @@ trait PageModel extends Product
 
 object BlogIndexPageModel
 {
-  case class Entry(lastModified: String, title: String, id: String)
+  case class Entry(lastModified: String, title: String, id: String, description: String)
 }
 
 case class BlogIndexPageModel(entries: Seq[BlogIndexPageModel.Entry]) extends PageModel

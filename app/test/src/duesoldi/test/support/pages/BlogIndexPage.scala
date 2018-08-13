@@ -22,6 +22,9 @@ class BlogEntry(elem: Element)
   lazy val title: String = elem.select("header h2").text()
   lazy val link: String = elem.select("header a").attr("href")
   lazy val date: String = elem.select("header time").text()
+  lazy val description: String = elem.select("article #description").text()
+
+  override def toString: String = elem.outerHtml()
 }
 
 class Blurb(element: Element)

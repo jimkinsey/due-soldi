@@ -13,7 +13,8 @@ object IndexPageModel
         BlogIndexPageModel.Entry(
           lastModified = lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy")),
           title = MarkdownDocument.title(content).getOrElse("-untitled-"),
-          id = id
+          id = id,
+          description = description.getOrElse("")
         )
     }
   )

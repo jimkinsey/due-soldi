@@ -136,6 +136,20 @@ object BlogIndexPageTests
           }
         }
       }
+      "includes the blog entry description in the entry" - {
+        withSetup(
+          database,
+          runningApp,
+          blogEntry(entry withDescription "Groundbreaking #content")
+        ) { implicit env =>
+          for {
+            response <- get("/blog/")
+            entry = new BlogIndexPage(response.body.asString).blogEntries.head
+          } yield {
+            assert(entry.description == "Groundbreaking #content")
+          }
+        }
+      }
       "has a bio section with a title and some text" - {
         withSetup(
           database,

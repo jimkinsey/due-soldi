@@ -138,6 +138,12 @@ nav ol li a:before {
     padding-top: 0;
 }
 
+#blog-index article #description {
+    margin-top: 0;
+    margin-bottom: 0.5em;
+    font-size: smaller;
+}
+
 #blog-index article {
     border-bottom: 0.1em dotted;
     margin-bottom: 0.5em;
