@@ -164,7 +164,7 @@ a:visited {
 
 img {
     max-width: 100%;
-    filter: blur(0.1q) contrast(3) saturate(4.1) grayscale(1.0) opacity(.75);
+    width: 100%;
 }
 
 code {
