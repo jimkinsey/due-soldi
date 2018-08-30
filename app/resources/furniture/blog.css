@@ -195,12 +195,6 @@ div.embedded-video {
     margin: 1em;
 }
 
-
-#content header #description {
-    filter: none;
-    font-style: italic;
-}
-
 @media only screen and (min-width: 768px) {
     h1 {
         color: inherit;

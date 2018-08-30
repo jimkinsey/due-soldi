@@ -90,24 +90,6 @@ extends TestSuite
           }
         }
       }
-      "includes the description of the blog entry after the title" - {
-        withSetup(
-          database,
-          runningApp,
-          blogEntries(
-            entry.withId("described").withDescription("A test document for testing descriptions")
-          )
-        ) { implicit env =>
-          for {
-            res <- get("/blog/described")
-            page = new BlogEntryPage(res.body.asString)
-          } yield {
-            assert(
-              page.description contains "A test document for testing descriptions"
-            )
-          }
-        }
-      }
       "has the content of the markdown document as HTML" - {
         withSetup(
           database,
