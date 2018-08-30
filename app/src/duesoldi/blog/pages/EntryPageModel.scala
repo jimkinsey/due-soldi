@@ -13,7 +13,7 @@ object EntryPageModel
     BlogEntryPageModel(
       title = title,
       lastModified = entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy")),
-      contentHtml = MarkdownToHtml.html(entry.content.nodes),
+      contentHtml = MarkdownToHtml.html(MarkdownDocument.content(entry.content)),
       twitterMetadata = getTwitterCard(entry),
       ogMetadata = OgMetadata(
         title = title,
@@ -21,7 +21,8 @@ object EntryPageModel
         image = MarkdownDocument.collectFirst(entry.content.nodes) {
           case MarkdownDocument.Image(alt, src, _) => OgMetadata.Image(src, Some(alt))
         }
-      )
+      ),
+      description = entry.description
     )
   }
 }

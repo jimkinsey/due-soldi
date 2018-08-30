@@ -14,7 +14,8 @@ case class BlogEntryPageModel(
   lastModified: String,
   contentHtml: String,
   ogMetadata: OgMetadata,
-  twitterMetadata: Option[TwitterMetadata] = None
+  twitterMetadata: Option[TwitterMetadata] = None,
+  description: Option[String] = None
 ) extends PageModel
 
 case class TwitterMetadata(card: String)

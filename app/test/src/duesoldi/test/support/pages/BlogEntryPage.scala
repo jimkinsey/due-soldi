@@ -12,12 +12,13 @@ with PageFooter
 {
   lazy val dom: Document = Jsoup.parse(html)
   lazy val title: String = dom.title()
-  lazy val h1: Element = dom.select("h1").first()
+  lazy val h1: Element = dom.select("header h1").first()
   lazy val content: Content = new Content(dom.select("#content").first())
   lazy val date: String = dom.select("header time").text()
   lazy val navigation: Navigation = new Navigation(dom.select("nav").asScala.head)
   lazy val twitterMetadata = TwitterMetadata(dom)
   lazy val ogMetadata = OgMetadata(dom)
+  lazy val description = Option(dom.select("#description").first().text())
 }
 
 object TwitterMetadata
