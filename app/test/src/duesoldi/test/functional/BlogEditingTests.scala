@@ -356,6 +356,61 @@ object BlogEditingTests
           }
         }
       }
+      "provides a list of blog entries to edit" - {
+        withSetup(
+          database,
+          runningApp,
+          blogEntries(
+            "welcome" -> "# Welcome",
+            "back" -> "# Back from hiatus!"
+          )
+        ) { implicit env =>
+          for {
+            editingPage <- get("/admin/blog/edit", headers = TestApp.adminAuth)
+            form = new BlogEditingPage(editingPage.body.asString).entrySelectForm
+          } yield {
+            assert(
+              form.entries == Seq("welcome", "back")
+            )
+          }
+        }
+      }
+      "allows an existing entry to be edited" - {
+        withSetup(
+          database,
+          runningApp,
+          blogEntries("first-entry" -> "# Frist Enyrt!")
+        ) { implicit env =>
+          for {
+            editingPage <- send(
+              GET("/admin/blog/edit")
+                .header(TestApp.adminAuth))
+
+            selectForm = new BlogEditingPage(editingPage.body.asString).entrySelectForm
+            selectFormValues = selectForm.entry("first-entry").values
+            selectEntry <- send(
+              GET(selectForm.action)
+                .query(selectFormValues)
+                .cookie(editingPage.cookie("adminSessionId").get))
+
+            editForm = new BlogEditingPage(selectEntry.body.asString).form
+            editFormValues = editForm.content("# First Entry!").values
+            updateEntry <- send(
+              POST(editForm.action)
+                .formValues(editFormValues)
+                .cookie(editingPage.cookie("adminSessionId").get))
+            _ = assert(updateEntry.status == 201)
+
+            updatedEntry <- send(
+              GET("/blog/first-entry"))
+            updatedEntryPage = new BlogEntryPage(updatedEntry.body.asString)
+          } yield {
+            assert(
+              updatedEntryPage.title == "First Entry!"
+            )
+          }
+        }
+      }
 //      "fails with a useful message if the entry already exists" - { ??? }
 //      "fails with a useful message if the submission is invalid" - { ??? }
     }

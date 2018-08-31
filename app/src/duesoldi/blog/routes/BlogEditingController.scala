@@ -8,30 +8,53 @@ import duesoldi.blog.{EntriesFromYaml, EntriesToYaml, EntryFromYaml, EntryToYaml
 import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
 import sommelier.handling.Unpacking._
-import sommelier.routing.Controller
+import sommelier.routing.{Controller, Result, SyncResult}
 import sommelier.routing.Routing._
 import ratatoskr.ResponseBuilding._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import duesoldi.app.sessions.Sessions.{GetSessionCookie, validSession}
 import duesoldi.blog.model.BlogEntry
 import duesoldi.blog.pages.BlogEditingPageModel
 import duesoldi.rendering.Render
 import hammerspace.markdown
-import hammerspace.markdown.MarkdownParser
+import hammerspace.markdown.{MarkdownDocument, MarkdownParser}
 
 
 class BlogEditingController(implicit executionContext: ExecutionContext, appConfig: Config)
 extends Controller
 {
 
+  // TODO id non-editable (for now)
+  // TODO POST result needs to have some data in it - make a reusable method for the whole thing?
+
   GET("/admin/blog/edit").Authorization(basicAdminAuth or validSession) ->- { implicit context =>
     for {
       getSessionCookie <- provided[GetSessionCookie]
       sessionCookie <- getSessionCookie(context.request) rejectWith 500
 
+      getEntry <- provided[GetBlogEntry]
+      selectedEntryId <- query[String]("entry").optional.firstValue
+
+      emptyEntry = BlogEntry("", MarkdownDocument.empty)
+      entry <- if (selectedEntryId.isDefined) {
+        getEntry(selectedEntryId.get) defaultTo emptyEntry
+      } else {
+        Result(emptyEntry)
+      }
+
+      getBlogEntries <- provided[GetAllBlogEntries]
+      entries <- getBlogEntries() rejectWith { _ => 500 }
+      model = BlogEditingPageModel(
+        entries = entries.map(entry => BlogEditingPageModel.Entry(entry.id, entry.description.getOrElse(""), entry.content.raw)),
+        entry = BlogEditingPageModel.Entry(
+          id = entry.id,
+          description = entry.description.getOrElse(""),
+          content = entry.content.raw
+        )
+      )
+
       render <- provided[Render]
-      model = BlogEditingPageModel()
       html <- render("blog-editing", model) rejectWith { failure => 500(s"Failed to render $failure") }
     } yield {
       200(html) cookie sessionCookie
@@ -45,22 +68,30 @@ extends Controller
 
       parseMarkdown <- provided[markdown.Parse]
       id <- form[String]("id").firstValue.required { 500 }
-      description <- form[String]("description").firstValue
+      description <- form[String]("description").optional.firstValue
       content <- form[String]("content").firstValue.required { 500 }
       entry = BlogEntry(id, content = parseMarkdown(content), description = description)
 
-      store <- provided[PutBlogEntry]
+      store <- provided[CreateOrUpdateBlogEntry]
       _ <- store(entry) rejectWith { _ => 500 }
 
+      getBlogEntries <- provided[GetAllBlogEntries]
+      entries <- getBlogEntries() rejectWith { _ => 500 }
+      model = BlogEditingPageModel(
+        entries = entries.map(entry => BlogEditingPageModel.Entry(entry.id, entry.description.getOrElse(""), entry.content.raw)),
+        entry = BlogEditingPageModel.Entry(
+          id = entry.id,
+          description = entry.description.getOrElse(""),
+          content = entry.content.raw
+        )
+      )
+
       render <- provided[Render]
-      model = BlogEditingPageModel()
       html <- render("blog-editing", model) rejectWith { failure => 500 }
     } yield {
       201(html) cookie sessionCookie
     }
   }
-
-
 
   PUT("/admin/blog/:id").Authorization(basicAdminAuth) ->- { implicit context =>
     for {

@@ -10,8 +10,32 @@ import scala.util.control.NoStackTrace
 class BlogEditingPage(html: String)
 extends Page
 {
-  lazy val dom: Document = Jsoup.parse(html)
-  lazy val form: BlogEditingForm = new BlogEditingForm(required(dom,"form.blog-entry"))
+  lazy val dom = Jsoup.parse(html)
+  lazy val form = new BlogEditingForm(required(dom,"form.blog-entry"))
+  lazy val entrySelectForm = new BlogEntrySelectForm(required(dom,"form#blog-entry-select"))
+}
+
+class BlogEntrySelectForm(element: Element)
+{
+  def action: String = element.attr("action")
+
+  def entries: Seq[String] = element.select("select[name='entry'] option").asScala.map(_.`val`)
+
+  def entry(id: String) = {
+    required(element, s"select[name='entry'] option[value='$id']").attr("selected", "true")
+    this
+  }
+
+  def values: Map[String, Seq[String]] = {
+    element.select("input, textarea, select").asScala.map {
+      case formEntry if formEntry.tagName() == "select" =>
+        formEntry.attr("name") -> Option(formEntry.select("option[selected]").first()).map(_.`val`).map(s => Seq(s)).getOrElse(Seq.empty)
+      case input =>
+        input.attr("name") -> Seq(input.`val`())
+    } toMap
+  }
+
+  override def toString: String = element.html()
 }
 
 class BlogEditingForm(element: Element)
@@ -36,6 +60,8 @@ class BlogEditingForm(element: Element)
   def values: Map[String, Seq[String]] = element.select("input, textarea").asScala.map {
     input => input.attr("name") -> Seq(input.`val`())
   } toMap
+
+  override def toString: String = element.html()
 }
 
 object DomHelper

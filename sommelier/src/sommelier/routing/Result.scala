@@ -1,5 +1,7 @@
 package sommelier.routing
 
+import sommelier.routing.SyncResult.Accepted
+
 import scala.concurrent.{ExecutionContext, Future}
 
 sealed trait Result[+T]
@@ -8,6 +10,17 @@ sealed trait Result[+T]
   def map[T1](fn: T => T1): Result[T1]
   def recover[T1 >: T](fn: Rejection => T1): Result[T1]
   def validate(pred: T => Boolean)(rejection: => Rejection): Result[T]
+}
+
+object Result
+{
+  def apply[T](fT: Future[T])(implicit executionContext: ExecutionContext): Result[T] = {
+    AsyncResult(fT.map(Result(_)))
+  }
+
+  def apply[T](t: T): Result[T] = {
+    Accepted(t)
+  }
 }
 
 sealed trait SyncResult[T]

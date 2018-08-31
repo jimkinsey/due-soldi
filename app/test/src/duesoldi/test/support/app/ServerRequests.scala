@@ -2,6 +2,7 @@ package duesoldi.test.support.app
 
 import duesoldi.Env
 import duesoldi.test.support.httpclient.HttpClient
+import hammerspace.uri.URI
 import ratatoskr.{Request, Response}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -9,7 +10,8 @@ import scala.concurrent.{ExecutionContext, Future}
 object ServerRequests
 {
   def send(vanilla: Request)(implicit executionContext: ExecutionContext, env: Env): Future[Response] = {
-    val environmentalised = vanilla.copy(url = s"http://localhost:${env("PORT")}${vanilla.url}", headers = addOverrides(vanilla.headers))
+    val environmentalised = vanilla.copy(url = URI.parse(vanilla.url).copy(scheme = "http", authority = s"localhost:${env("PORT")}").format, headers = addOverrides(vanilla.headers))
+    println(s"SENDING REQUEST TO ${environmentalised.url}")
     cicerone.http(environmentalised).map {
       case Right(response) => response
       case Left(cicerone.UnexpectedException(exception)) => throw exception

@@ -8,21 +8,34 @@
       <h1>Create a Blog Entry</h1>
     </header>
     <section id="blog-editing">
+      <h2>Select</h2>
+      <form id="blog-entry-select" action="/admin/blog/edit" method="POST">
+        <p>
+            <label>Entry</label>
+            <select name="entry">
+                {{#entries}}<option value="{{id}}">{{id}}</option>{{/entries}}
+            </select>
+        </p>
+        <button type="submit">Edit</button>
+      </form>
+      <h2>Edit</h2>
+      {{#entry}}
       <form class="blog-entry" action="/admin/blog/edit" method="POST">
         <p>
             <label>ID</label>
-            <input name="id" type="text"/>
+            <input name="id" type="text" value="{{id}}"/>
         </p>
         <p>
             <label>Description</label>
-            <input name="description" type="text"/>
+            <input name="description" type="text" value="{{description}}"/>
         </p>
         <p>
             <label>Content</label>
-            <textarea name="content" rows="40" cols="80"></textarea>
+            <textarea name="content" rows="40" cols="80">{{{content}}}</textarea>
         </p>
         <button type="submit">Publish</button>
       </form>
+      {{/entry}}
     </section>
   </body>
 </html>

@@ -140,6 +140,8 @@ object DueSoldiDependencies
 
   implicit val deleteAllBlogEntries: Inject[DeleteAllBlogEntries] = inject(BlogStore.deleteAll _)
 
+  implicit def createOrUpdateBlogEntry(implicit executionContext: ExecutionContext): Inject[CreateOrUpdateBlogEntry] = inject(BlogStore.createOrUpdate _)
+
   implicit lazy val parseMarkdown: Inject[hammerspace.markdown.Parse] = _ => MarkdownParser.parseMarkdown
 
   implicit lazy val furniturePathAndContent: Inject[CurrentPathAndContent] = _ => FurnitureFiles.currentPathAndContent

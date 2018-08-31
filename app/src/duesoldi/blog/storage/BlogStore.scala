@@ -28,6 +28,18 @@ object BlogStore
     case object Failure extends DeleteResult
   }
 
+  sealed trait CreateOrUpdateResult
+  object CreateOrUpdateResult
+  {
+    case object Failure extends CreateOrUpdateResult
+    sealed trait Success extends CreateOrUpdateResult
+    object Success
+    {
+      case object Updated extends Success
+      case object Created extends Success
+    }
+  }
+
   def toBlogEntry(parseMarkdown: markdown.Parse): (ResultSet => BlogEntry) = { row =>
     BlogEntry(
       id = row.getString("id"),
@@ -74,6 +86,20 @@ object BlogStore
       Right(Deleted)
     }) recover {
       case _ => Left(DeleteResult.Failure)
+    }
+  }
+
+  def createOrUpdate(get: GetBlogEntry, delete: DeleteBlogEntry, put: PutBlogEntry)(implicit executionContext: ExecutionContext): CreateOrUpdateBlogEntry = entry => {
+    get(entry.id) flatMap {
+      case Some(_) =>
+        for {
+          _ <- delete(entry.id).map(_.left.map(_ => CreateOrUpdateResult.Failure))
+          _ <- put(entry).map(_.left.map(_ => CreateOrUpdateResult.Failure))
+        } yield {
+          Right(CreateOrUpdateResult.Success.Updated)
+        }
+      case None =>
+        put(entry) map { _ => Right(CreateOrUpdateResult.Success.Created) }
     }
   }
 }

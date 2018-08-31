@@ -31,4 +31,9 @@ case class OgMetadata(
   image: Option[OgMetadata.Image] = None
 )
 
-case class BlogEditingPageModel() extends PageModel
+case class BlogEditingPageModel(entries: Seq[BlogEditingPageModel.Entry], entry: BlogEditingPageModel.Entry) extends PageModel
+
+object BlogEditingPageModel
+{
+  case class Entry(id: String, description: String, content: String)
+}

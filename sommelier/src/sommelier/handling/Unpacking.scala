@@ -13,9 +13,10 @@ import ratatoskr.ResponseBuilding._
 import hammerspace.testing.StreamHelpers._
 import ratatoskr.Response
 
-object Unpacking {
-
-  trait Unpacker[T] {
+object Unpacking
+{
+  trait Unpacker[T]
+  {
     def unpack(string: String): Option[T]
   }
 
@@ -156,6 +157,11 @@ object Unpacking {
   {
     def defaultTo(ifEmpty: => T): Result[T] = result.map(_.getOrElse(ifEmpty))
     def required(ifEmpty: => Rejection): Result[T] = result.validate(_.isDefined)(ifEmpty).map(_.get)
+  }
+
+  implicit class AsyncOptionResult[T](fResult: Future[Option[T]])
+  {
+    def defaultTo(ifEmpty: => T)(implicit executionContext: ExecutionContext): Result[T] = Result(fResult.map(_.getOrElse(ifEmpty)))
   }
 
 }
