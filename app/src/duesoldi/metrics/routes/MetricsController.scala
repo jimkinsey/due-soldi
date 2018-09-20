@@ -49,7 +49,10 @@ extends Controller
       getAccessRecords <- provided[GetAllAccessRecords]
       start <- query[ZonedDateTime]("start").optional.firstValue defaultTo sevenDaysAgo
       accesses <- getAccessRecords(start) rejectWith { _ => 500 }
-      content = renderJson(accesses)
+
+      pathFilter <- query[String]("path").optional.firstValue
+      filtered = pathFilter.map(f => accesses.filter(_.path contains f)).getOrElse(accesses)
+      content = renderJson(filtered)
     } yield {
       200 (content)
         .header("Access-Control-Allow-Origin" -> "*")

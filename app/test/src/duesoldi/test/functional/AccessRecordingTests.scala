@@ -202,6 +202,26 @@ extends TestSuite
           }
         }
       }
+      "allows filtering by path" - {
+        withSetup(
+          database,
+          accessRecordingEnabled,
+          runningAppForThisTestOnly,
+          blogEntries("entry-one" -> "# Entry 1!", "entry-two" -> "# Entry 2!")
+        ) { implicit env =>
+          for {
+            _ <- get("/blog/entry-one")
+            _ <- get("/blog/entry-two")
+            response <- get(s"/admin/metrics/access.json?path=/blog/entry-one", headers = TestApp.adminAuth)
+            body = response.body.asString
+          } yield {
+            assert(
+              !(body contains "/blog/entry-two"),
+              body contains "/blog/entry-one"
+            )
+          }
+        }
+      }
       "supports session-based access" - {
         withSetup(
           database,

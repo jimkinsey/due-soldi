@@ -23,6 +23,9 @@
                     <label><input type="checkbox" id="filter-only-public" checked>Only public</label>
                     <label><input type="checkbox" id="filter-exclude-bots" checked>Exclude bots</label>
                 </fieldset>
+                <fieldset>
+                    <label>Path <input type="text" id="path"></label>
+                </fieldset>
             </div>
             <section id="traffic">
                 <header><h2>Traffic</h2></header>
@@ -63,10 +66,17 @@
 
             let selectedPeriod = periods.find((period) => period.label === 'Past 7 days');
 
+            let pathFilter = document.getElementById('path').value;
+
+            document.getElementById('path').onchange = () => {
+                pathFilter = document.getElementById('path').value;
+                refresh();
+            };
+
             const pageFilters = {
                 'only-ok': (record) => record.statusCode < 300,
                 'only-public': (record) => !record.path.match(/^\/admin.*/),
-                'exclude-bots': (record) => record.userAgent && !record.userAgent.match(/bot/i)
+                'exclude-bots': (record) => record.userAgent && !record.userAgent.match(/bot/i),
             };
 
             Object.keys(pageFilters).forEach((name) =>
@@ -80,7 +90,7 @@
             }
             
             function loadData(period) {
-                return fetch(`https://www.jimkinsey.com/admin/metrics/access.json?start=${new Date(Date.now() - period.milliseconds()).toISOString()}`, {
+                return fetch(`/admin/metrics/access.json?start=${new Date(Date.now() - period.milliseconds()).toISOString()}&path=${pathFilter}`, {
                         credentials: 'same-origin'
                     })
                     .then((response) => {
