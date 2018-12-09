@@ -131,6 +131,21 @@ nav ol li a:before {
     padding: 0;
 }
 
+#support header {
+    display: none;
+}
+
+#ko-fi-link {
+    display: inline-block;
+    background-color: grey;
+    color: white;
+    padding: 0.5em;
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    font-family: sans-serif;
+}
+
 #blog-index article header h2 {
     font-size: 1.5em;
     border: none;
