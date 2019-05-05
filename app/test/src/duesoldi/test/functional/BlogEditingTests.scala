@@ -10,7 +10,7 @@ import duesoldi.test.support.setup.Database._
 import duesoldi.test.support.setup.Setup.withSetup
 import utest._
 import hammerspace.testing.StreamHelpers._
-import ratatoskr.Cookie
+import ratatoskr.{Cookie, Method}
 import ratatoskr.ResponseAccess._
 import ratatoskr.RequestBuilding._
 import ratatoskr.Method._
@@ -389,7 +389,7 @@ object BlogEditingTests
             selectForm = new BlogEditingPage(editingPage.body.asString).entrySelectForm
             selectFormValues = selectForm.entry("first-entry").values
             selectEntry <- send(
-              GET(selectForm.action)
+              Method(selectForm.method)(selectForm.action)
                 .query(selectFormValues)
                 .cookie(editingPage.cookie("adminSessionId").get))
 

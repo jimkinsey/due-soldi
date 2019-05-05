@@ -17,6 +17,8 @@ extends Page
 
 class BlogEntrySelectForm(element: Element)
 {
+  def method: String = element.attr("method")
+
   def action: String = element.attr("action")
 
   def entries: Seq[String] = element.select("select[name='entry'] option").asScala.map(_.`val`)
