@@ -147,9 +147,10 @@
                     let page = acc.find((p) => p.path === curr.path);
                     if (page) {
                         page.hits++;
+                        page.referers.push(curr.referer);
                     }
                     else {
-                        acc.push({ hits: 1, path: curr.path });
+                        acc.push({ hits: 1, path: curr.path, referers: [curr.referer] });
                     }
                     return acc;
                 }, []).sort((a,b) => b.hits - a.hits);
@@ -157,10 +158,10 @@
                 let topPagesHTML = `<header><h2>Page views</h2></header>
                     <table>
                         <thead>
-                            <tr><th>Hits</th><th>Path</th></tr>
+                            <tr><th>Hits</th><th>Path</th><th>Referers</th></tr>
                         </thead>
                         <tbody>
-                            ${topPages.map(({hits, path}) => `<tr><td>${hits}</td><td>${path}</td></tr>`).join('\n')}
+                            ${topPages.map(({hits, path, referers}) => `<tr><td>${hits}</td><td>${path}</td><td>${referers.join(', ')}</td></tr>`).join('\n')}
                         </tbody>
                     </table>`;
                 
