@@ -1,5 +1,8 @@
 package duesoldi.test.functional
 
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME
+
 import duesoldi.test.support.app.ServerRequests._
 import duesoldi.test.support.app.TestApp
 import duesoldi.test.support.app.TestApp.runningApp
@@ -14,6 +17,7 @@ import ratatoskr.{Cookie, Method}
 import ratatoskr.ResponseAccess._
 import ratatoskr.RequestBuilding._
 import ratatoskr.Method._
+import hammerspace.testing.CustomMatchers._
 
 object BlogEditingTests
   extends TestSuite 
@@ -371,6 +375,33 @@ object BlogEditingTests
           } yield {
             assert(
               form.entries == Seq("welcome", "back")
+            )
+          }
+        }
+      }
+      "correctly formats the date for editing an existing blog entry" - {
+        withSetup(
+          database,
+          runningApp,
+          blogEntries(
+            "welcome" -> "# Welcome",
+          )
+        ) { implicit env =>
+          for {
+            editingPage <- get("/admin/blog/edit", headers = TestApp.adminAuth)
+            form = new BlogEditingPage(editingPage.body.asString).entrySelectForm
+
+            selectForm = new BlogEditingPage(editingPage.body.asString).entrySelectForm
+            selectFormValues = selectForm.entry("welcome").values
+            selectEntry <- send(
+              Method(selectForm.method)(selectForm.action)
+                .query(selectFormValues)
+                .cookie(editingPage.cookie("adminSessionId").get))
+
+            editForm = new BlogEditingPage(selectEntry.body.asString).form
+          } yield {
+            assert(
+              editForm.values("date").head hasDateFormat ISO_ZONED_DATE_TIME
             )
           }
         }

@@ -2,6 +2,7 @@ package duesoldi.blog.routes
 
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME
 
 import duesoldi.app.AdminAuth.basicAdminAuth
 import duesoldi.app.RequestDependencies._
@@ -54,14 +55,14 @@ extends Controller
             entry.id,
             entry.description.getOrElse(""),
             entry.content.raw,
-            entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy"))
+            entry.lastModified.format(ISO_ZONED_DATE_TIME)
           )
         ),
         entry = BlogEditingPageModel.Entry(
           id = entry.id,
           description = entry.description.getOrElse(""),
           content = entry.content.raw,
-          date = entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy"))
+          date = entry.lastModified.format(ISO_ZONED_DATE_TIME)
         )
       )
 
@@ -95,14 +96,14 @@ extends Controller
             entry.id,
             entry.description.getOrElse(""),
             entry.content.raw,
-            entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy"))
+            entry.lastModified.format(ISO_ZONED_DATE_TIME)
           )
         ),
         entry = BlogEditingPageModel.Entry(
           id = entry.id,
           description = entry.description.getOrElse(""),
           content = entry.content.raw,
-          entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy"))
+          entry.lastModified.format(ISO_ZONED_DATE_TIME)
         )
       )
 
