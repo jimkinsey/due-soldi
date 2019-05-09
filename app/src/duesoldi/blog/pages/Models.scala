@@ -35,5 +35,5 @@ case class BlogEditingPageModel(entries: Seq[BlogEditingPageModel.Entry], entry:
 
 object BlogEditingPageModel
 {
-  case class Entry(id: String, description: String, content: String)
+  case class Entry(id: String, description: String, content: String, date: String)
 }

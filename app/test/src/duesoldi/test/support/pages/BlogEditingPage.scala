@@ -49,6 +49,11 @@ class BlogEditingForm(element: Element)
     this
   }
 
+  def date(date: String): BlogEditingForm = {
+    required(element, "input[name='date']").`val`(date)
+    this
+  }
+
   def description(description: String): BlogEditingForm = {
     required(element, "input[name='description']").`val`(description)
     this

@@ -394,7 +394,10 @@ object BlogEditingTests
                 .cookie(editingPage.cookie("adminSessionId").get))
 
             editForm = new BlogEditingPage(selectEntry.body.asString).form
-            editFormValues = editForm.content("# First Entry!").values
+            editFormValues = editForm
+              .date("2010-10-12T17:05:00Z")
+              .content("# First Entry!")
+              .values
             updateEntry <- send(
               POST(editForm.action)
                 .formValues(editFormValues)
@@ -406,7 +409,8 @@ object BlogEditingTests
             updatedEntryPage = new BlogEntryPage(updatedEntry.body.asString)
           } yield {
             assert(
-              updatedEntryPage.title == "First Entry!"
+              updatedEntryPage.title == "First Entry!",
+              updatedEntryPage.date == "Tuesday, 12 October 2010"
             )
           }
         }

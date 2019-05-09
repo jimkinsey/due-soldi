@@ -1,5 +1,8 @@
 package duesoldi.blog.routes
 
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+
 import duesoldi.app.AdminAuth.basicAdminAuth
 import duesoldi.app.RequestDependencies._
 import duesoldi.blog.storage._
@@ -46,11 +49,19 @@ extends Controller
       getBlogEntries <- provided[GetAllBlogEntries]
       entries <- getBlogEntries() rejectWith { _ => 500 }
       model = BlogEditingPageModel(
-        entries = entries.map(entry => BlogEditingPageModel.Entry(entry.id, entry.description.getOrElse(""), entry.content.raw)),
+        entries = entries.map(entry =>
+          BlogEditingPageModel.Entry(
+            entry.id,
+            entry.description.getOrElse(""),
+            entry.content.raw,
+            entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy"))
+          )
+        ),
         entry = BlogEditingPageModel.Entry(
           id = entry.id,
           description = entry.description.getOrElse(""),
-          content = entry.content.raw
+          content = entry.content.raw,
+          date = entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy"))
         )
       )
 
@@ -68,9 +79,10 @@ extends Controller
 
       parseMarkdown <- provided[markdown.Parse]
       id <- form[String]("id").firstValue.required { 500 }
+      date <- form[ZonedDateTime]("date").optional.firstValue defaultTo ZonedDateTime.now()
       description <- form[String]("description").optional.firstValue
       content <- form[String]("content").firstValue.required { 500 }
-      entry = BlogEntry(id, content = parseMarkdown(content), description = description)
+      entry = BlogEntry(id, content = parseMarkdown(content), description = description, lastModified = date)
 
       store <- provided[CreateOrUpdateBlogEntry]
       _ <- store(entry) rejectWith { _ => 500 }
@@ -78,11 +90,19 @@ extends Controller
       getBlogEntries <- provided[GetAllBlogEntries]
       entries <- getBlogEntries() rejectWith { _ => 500 }
       model = BlogEditingPageModel(
-        entries = entries.map(entry => BlogEditingPageModel.Entry(entry.id, entry.description.getOrElse(""), entry.content.raw)),
+        entries = entries.map(entry =>
+          BlogEditingPageModel.Entry(
+            entry.id,
+            entry.description.getOrElse(""),
+            entry.content.raw,
+            entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy"))
+          )
+        ),
         entry = BlogEditingPageModel.Entry(
           id = entry.id,
           description = entry.description.getOrElse(""),
-          content = entry.content.raw
+          content = entry.content.raw,
+          entry.lastModified.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy"))
         )
       )
 
