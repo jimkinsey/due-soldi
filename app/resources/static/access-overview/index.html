@@ -160,7 +160,7 @@
                             <tr><th>Hits</th><th>Path</th><th>Referers</th></tr>
                         </thead>
                         <tbody>
-                            ${topPages.map(({path, records}) => `<tr><td>${records.length}</td><td>${path}</td><td>${referersAsTable(combinedReferers(records))}</td></tr>`)}
+                            ${topPages.map(({path, records}) => `<tr><td>${records.length}</td><td>${path}</td><td>${referersAsTable(combinedReferers(records))}</td></tr>`).join('\n')}
                         </tbody>
                     </table>`;
                 
