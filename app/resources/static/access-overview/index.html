@@ -76,7 +76,7 @@
             const pageFilters = {
                 'only-ok': (record) => record.statusCode < 300,
                 'only-public': (record) => !record.path.match(/^\/admin.*/),
-                'exclude-bots': (record) => record.userAgent && !record.userAgent.match(/bot/i),
+                'exclude-bots': (record) => record.userAgent && !record.userAgent.match(/bot|crawler|spider|crawling/i),
             };
 
             Object.keys(pageFilters).forEach((name) =>
