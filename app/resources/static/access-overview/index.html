@@ -146,11 +146,10 @@
                 let topPages = data.records.filter(combinedFilter(selectedFilters)).reduce((acc, curr) => {
                     let page = acc.find((p) => p.path === curr.path);
                     if (page) {
-                        page.hits++;
-                        page.referers.push(curr.referer);
+                        page.records.push(curr);
                     }
                     else {
-                        acc.push({ hits: 1, path: curr.path, referers: [curr.referer] });
+                        acc.push({ path: curr.path, records: [curr] });
                     }
                     return acc;
                 }, []).sort((a,b) => b.hits - a.hits);
@@ -161,16 +160,15 @@
                             <tr><th>Hits</th><th>Path</th><th>Referers</th></tr>
                         </thead>
                         <tbody>
-                            ${topPages.map(({hits, path, referers}) => `<tr><td>${hits}</td><td>${path}</td><td>${referers.join(', ')}</td></tr>`).join('\n')}
+                            ${topPages.map(({path, records}) => `<tr><td>${records.length}</td><td>${path}</td><td>${referersAsTable(combinedReferers(records))}</td></tr>`))}
                         </tbody>
                     </table>`;
                 
                 document.getElementById('top-pages').innerHTML = topPagesHTML;
             }
 
-            function renderTopReferers(data) {
-
-                let topReferers = data.records.filter(combinedFilter(selectedFilters)).reduce((acc, curr) => {
+            function combinedReferers(records) {
+                records.filter(combinedFilter(selectedFilters)).reduce((acc, curr) => {
                     let page = acc.find((p) => p.referer === curr.referer);
                     if (page) {
                         page.hits++;
@@ -180,16 +178,25 @@
                     }
                     return acc;
                 }, []).sort((a,b) => b.hits - a.hits);
+            }
+
+            function referersAsTable(refererHits) {
+                `<table>
+                    <thead>
+                        <tr><th>Hits</th><th>Referer</th></tr>
+                    </thead>
+                    <tbody>
+                        ${refererHits.map(({hits, referer}) => `<tr><td>${hits}</td><td>${referer || 'n/a'}</td></tr>`).join('\n')}
+                    </tbody>
+                </table>`
+            }
+
+            function renderTopReferers(data) {
+
+                let topReferers = combinedReferers(data.records);
 
                 let topReferersHTML = `<header><h2>Referers</h2></header>
-                    <table>
-                        <thead>
-                            <tr><th>Hits</th><th>Referer</th></tr>
-                        </thead>
-                        <tbody>
-                            ${topReferers.map(({hits, referer}) => `<tr><td>${hits}</td><td>${referer || 'n/a'}</td></tr>`).join('\n')}
-                        </tbody>
-                    </table>`;
+                    ${referersAsTable(topReferers)}`;
 
                 document.getElementById('top-referers').innerHTML = topReferersHTML;
             }
