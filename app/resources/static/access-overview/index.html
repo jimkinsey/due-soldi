@@ -168,7 +168,7 @@
             }
 
             function combinedReferers(records) {
-                records.filter(combinedFilter(selectedFilters)).reduce((acc, curr) => {
+                return records.filter(combinedFilter(selectedFilters)).reduce((acc, curr) => {
                     let page = acc.find((p) => p.referer === curr.referer);
                     if (page) {
                         page.hits++;
@@ -181,7 +181,7 @@
             }
 
             function referersAsTable(refererHits) {
-                `<table>
+                return `<table>
                     <thead>
                         <tr><th>Hits</th><th>Referer</th></tr>
                     </thead>
