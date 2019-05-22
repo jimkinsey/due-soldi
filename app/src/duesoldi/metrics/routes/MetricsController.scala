@@ -106,7 +106,9 @@ extends Controller
 
   private def renderJson(accessRecords: Seq[Access]): String = {
 
-    def jsonSafe(in: String): String = in.replace("\"", """\"""")
+    def jsonSafe(in: String): String = in
+      .replace("\\", "\\\\")
+      .replace("\"", """\"""")
 
     def optionalJsonField(name: String, value: Option[String]): String = {
       s""" "$name": ${value.map(defined => s""""${jsonSafe(defined)}"""").getOrElse("null")} """
