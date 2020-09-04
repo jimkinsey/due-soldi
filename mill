@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -eou pipefail
+
+MILL_VERSION=${MILL_VERSION:-0.4.1}
+MILL_LOCATION=${MILL_LOCATION:-$HOME/.mill-wrapper}
+
+if [ ! -e $MILL_LOCATION/$MILL_VERSION ]
+then
+  echo "Mill $MILL_VERSION not found at $MILL_LOCATION. Installing..."
+  mkdir -p $MILL_LOCATION
+  if type wget
+  then
+    wget https://github.com/lihaoyi/mill/releases/download/$MILL_VERSION/$MILL_VERSION
+    mv $MILL_VERSION $MILL_LOCATION/$MILL_VERSION
+  elif type curl
+  then
+    curl -L -o $MILL_LOCATION/$MILL_VERSION https://github.com/lihaoyi/mill/releases/download/$MILL_VERSION/$MILL_VERSION
+  else
+    echo "Please install wget or curl to use this script"
+    exit 1
+  fi
+  chmod ugo+x $MILL_LOCATION/$MILL_VERSION
+else
+  echo "Mill already installed at $MILL_LOCATION"
+fi
+
+$MILL_LOCATION/$MILL_VERSION "$@"
