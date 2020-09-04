@@ -3,7 +3,7 @@ script:
 - export PATH=~/bin/mill:$PATH
 - ./build
 jdk:
-- oraclejdk8
+- openjdk8
 sudo: required
 cache:
   directories:
