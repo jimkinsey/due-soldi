@@ -69,7 +69,7 @@ extends Controller
       render <- provided[Render]
       html <- render("blog-editing", model) rejectWith { failure => 500(s"Failed to render $failure") }
     } yield {
-      200(html) cookie sessionCookie
+      200(html) cookie sessionCookie ContentType "text/html; charset=UTF-8"
     }
   }
 
@@ -110,7 +110,7 @@ extends Controller
       render <- provided[Render]
       html <- render("blog-editing", model) rejectWith { failure => 500 }
     } yield {
-      201(html) cookie sessionCookie
+      201(html) cookie sessionCookie ContentType "text/html; charset=UTF-8"
     }
   }
 

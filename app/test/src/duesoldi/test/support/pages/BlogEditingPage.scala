@@ -68,6 +68,8 @@ class BlogEditingForm(element: Element)
     input => input.attr("name") -> Seq(input.`val`())
   } toMap
 
+  def acceptCharset: String = element.attr("accept-charset")
+
   override def toString: String = element.html()
 }
 

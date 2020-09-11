@@ -333,6 +333,23 @@ object BlogEditingTests
           }
         }
       }
+      "uses UTF-8 for encoding" - {
+        withSetup(
+          database,
+          runningApp,
+          blogEntries()
+        ) { implicit env =>
+          for {
+            editingPage <- get("/admin/blog/edit", headers = TestApp.adminAuth)
+            form = new BlogEditingPage(editingPage.body.asString).form
+          } yield {
+            assert(
+              editingPage.headers("Content-type") contains "text/html; charset=UTF-8",
+              form.acceptCharset == "utf-8"
+            )
+          }
+        }
+      }
       "can successfully create a blog entry" - {
         withSetup(
           database,
@@ -346,7 +363,7 @@ object BlogEditingTests
             formValues = form
                 .id("new-entry")
                 .description("A brand new entry")
-                .content("# New Entry!")
+                .content("# New Entry! é")
                 .values
             submission <- send(POST(form.action).formValues(formValues).cookie(editingPage.cookie("adminSessionId").get))
             newEntry <- get("/blog/new-entry")
@@ -355,7 +372,7 @@ object BlogEditingTests
             assert(
               submission.status == 201,
               newEntry.status == 200,
-              entryPage.title == "New Entry!"
+              entryPage.title == "New Entry! é"
             )
           }
         }
