@@ -73,6 +73,22 @@ extends TestSuite
           }
         }
       }
+      "supports use of unicode characters" - {
+        withSetup(
+          database,
+          runningApp,
+          blogEntries("year-in-review" -> "# tédious blah")
+        ) { implicit env =>
+          for {
+            res <- get("/blog/year-in-review")
+          } yield {
+            val page = new BlogEntryPage(res.body.asString)
+            assert(
+              page.h1.text == "tédious blah"
+            )
+          }
+        }
+      }
       "has the title of the Markdown document in the h1 and title elements" - {
         withSetup(
           database,
