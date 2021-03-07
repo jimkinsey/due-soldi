@@ -1,0 +1,53 @@
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Edit artwork</title>
+  </head>
+  <body>
+    <header>
+      <h1>Create an Artwork</h1>
+    </header>
+    <section id="artwork-editing">
+      <h2>Select</h2>
+      <form id="artwork-select" action="/admin/artwork/edit" method="GET">
+        <p>
+          <label>Artwork</label>
+          <select name="artwork">
+            {{#artworks}}<option value="{{id}}">{{id}}</option>{{/artworks}}
+          </select>
+        </p>
+        <button type="submit">Edit</button>
+      </form>
+      <h2>Edit</h2>
+      {{#artwork}}
+      <form class="artwork" action="/admin/artwork/edit" method="POST" accept-charset="utf-8">
+        <p>
+          <label>ID</label>
+          <input name="id" type="text"  value="{{id}}"/>
+        </p>
+        <p>
+          <label>Title</label>
+          <input name="title" type="text" value="{{title}}"/>
+        </p>
+        <p>
+          <label>Timeframe</label>
+          <input name="timeframe" type="text" value="{{timeframe}}"/>
+        </p>
+        <p>
+          <label>Materials</label>
+          <input name="materials" type="text" value="{{materials}}"/>
+        </p>
+          <p>
+          <label>Image</label>
+          <input name="image-url" type="text" value="{{imageURL}}"/>
+         </p>
+        <p>
+          <label>Description</label>
+          <textarea name="description">{{{description}}}</textarea>
+        </p>
+        <button type="submit">Publish</button>
+      </form>
+      {{/artwork}}
+    </section>
+  </body>
+</html>

@@ -13,9 +13,11 @@ import scala.language.implicitConversions
 object MarkdownParser
 {
   def parseMarkdown(raw: String): MarkdownDocument = {
-    val parser: IParse = Parser.builder().build()
-    val document: Node = parser.parse(raw)
-    MarkdownDocument(translated(document.getChildren), raw)
+    Option(raw).fold(MarkdownDocument.empty) { doc =>
+      val parser: IParse = Parser.builder().build()
+      val document: Node = parser.parse(doc)
+      MarkdownDocument(translated(document.getChildren), doc)
+    }
   }
 
   private implicit def basedSequenceToString(basedSequence: BasedSequence): String = basedSequence.toString

@@ -9,6 +9,11 @@ extends TestSuite
 {
   val tests = this
   {
+    'handles_null
+    {
+      val res = parseMarkdown(null)
+      assert(res == MarkdownDocument.empty)
+    }
     'level_headings
     {
       (1 to 6).foreach { level =>

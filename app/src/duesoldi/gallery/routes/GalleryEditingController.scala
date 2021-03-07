@@ -1,17 +1,16 @@
 package duesoldi.gallery.routes
 
+import com.sun.org.apache.xalan.internal.lib.ExsltDatetime.date
 import duesoldi.app.AdminAuth.basicAdminAuth
 import duesoldi.app.RequestDependencies._
 import duesoldi.app.sessions.Sessions.{GetSessionCookie, validSession}
-import duesoldi.blog.model.BlogEntry
-import duesoldi.blog.pages.BlogEditingPageModel
-import duesoldi.blog.storage._
 import duesoldi.blog.validation.ValidateIdentifier
-import duesoldi.blog.{EntriesFromYaml, EntriesToYaml, EntryFromYaml, EntryToYaml}
 import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
+import duesoldi.gallery.model.Artwork
+import duesoldi.gallery.pages.ArtworkEditingPageModel
 import duesoldi.gallery.{ArtworkFromYaml, ArtworkToYaml, ArtworksFromYaml, ArtworksToYaml}
-import duesoldi.gallery.storage.{DeleteAllArtworks, DeleteArtwork, GetAllArtworks, GetArtwork, PutArtwork, PutArtworks}
+import duesoldi.gallery.storage.{CreateOrUpdateArtwork, DeleteAllArtworks, DeleteArtwork, GetAllArtworks, GetArtwork, PutArtwork, PutArtworks}
 import duesoldi.rendering.Render
 import hammerspace.markdown
 import hammerspace.markdown.MarkdownDocument
@@ -32,87 +31,108 @@ extends Controller
   // TODO id non-editable (for now)
   // TODO POST result needs to have some data in it - make a reusable method for the whole thing?
 
-//  GET("/admin/artwork/edit").Authorization(basicAdminAuth or validSession) ->- { implicit context =>
-//    for {
-//      getSessionCookie <- provided[GetSessionCookie]
-//      sessionCookie <- getSessionCookie(context.request) rejectWith 500
-//
-//      getEntry <- provided[GetBlogEntry]
-//      selectedEntryId <- query[String]("entry").optional.firstValue
-//
-//      emptyEntry = BlogEntry("", MarkdownDocument.empty)
-//      entry <- if (selectedEntryId.isDefined) {
-//        getEntry(selectedEntryId.get) defaultTo emptyEntry
-//      } else {
-//        Result(emptyEntry)
-//      }
-//
-//      getBlogEntries <- provided[GetAllBlogEntries]
-//      entries <- getBlogEntries() rejectWith { _ => 500 }
-//      model = BlogEditingPageModel(
-//        entries = entries.map(entry =>
-//          BlogEditingPageModel.Entry(
-//            entry.id,
-//            entry.description.getOrElse(""),
-//            entry.content.raw,
-//            entry.lastModified.format(ISO_ZONED_DATE_TIME)
-//          )
-//        ),
-//        entry = BlogEditingPageModel.Entry(
-//          id = entry.id,
-//          description = entry.description.getOrElse(""),
-//          content = entry.content.raw,
-//          date = entry.lastModified.format(ISO_ZONED_DATE_TIME)
-//        )
-//      )
-//
-//      render <- provided[Render]
-//      html <- render("blog-editing", model) rejectWith { failure => 500(s"Failed to render $failure") }
-//    } yield {
-//      200(html) cookie sessionCookie ContentType "text/html; charset=UTF-8"
-//    }
-//  }
+  GET("/admin/artwork/edit").Authorization(basicAdminAuth or validSession) ->- { implicit context =>
+    for {
+      getSessionCookie <- provided[GetSessionCookie]
+      sessionCookie <- getSessionCookie(context.request) rejectWith 500
 
-//  POST("/admin/blog/edit").Authorization(basicAdminAuth or validSession) ->- { implicit context =>
-//    for {
-//      getSessionCookie <- provided[GetSessionCookie]
-//      sessionCookie <- getSessionCookie(context.request) rejectWith 500
-//
-//      parseMarkdown <- provided[markdown.Parse]
-//      id <- form[String]("id").firstValue.required { 500 }
-//      date <- form[ZonedDateTime]("date").optional.firstValue defaultTo ZonedDateTime.now()
-//      description <- form[String]("description").optional.firstValue
-//      content <- form[String]("content").firstValue.required { 500 }
-//      entry = BlogEntry(id, content = parseMarkdown(content), description = description, lastModified = date)
-//
-//      store <- provided[CreateOrUpdateBlogEntry]
-//      _ <- store(entry) rejectWith { _ => 500 }
-//
-//      getBlogEntries <- provided[GetAllBlogEntries]
-//      entries <- getBlogEntries() rejectWith { _ => 500 }
-//      model = BlogEditingPageModel(
-//        entries = entries.map(entry =>
-//          BlogEditingPageModel.Entry(
-//            entry.id,
-//            entry.description.getOrElse(""),
-//            entry.content.raw,
-//            entry.lastModified.format(ISO_ZONED_DATE_TIME)
-//          )
-//        ),
-//        entry = BlogEditingPageModel.Entry(
-//          id = entry.id,
-//          description = entry.description.getOrElse(""),
-//          content = entry.content.raw,
-//          entry.lastModified.format(ISO_ZONED_DATE_TIME)
-//        )
-//      )
-//
-//      render <- provided[Render]
-//      html <- render("blog-editing", model) rejectWith { failure => 500 }
-//    } yield {
-//      201(html) cookie sessionCookie ContentType "text/html; charset=UTF-8"
-//    }
-//  }
+      getArtwork <- provided[GetArtwork]
+      selectedArtworkId <- query[String]("artwork").optional.firstValue
+
+      emptyArtwork = Artwork(
+        id = "",
+        title = "",
+        imageURL = ""
+      )
+      artwork <- if (selectedArtworkId.isDefined) {
+        getArtwork(selectedArtworkId.get) defaultTo emptyArtwork
+      } else {
+        Result(emptyArtwork)
+      }
+
+      getArtworks <- provided[GetAllArtworks]
+      artworks <- getArtworks() rejectWith { _ => 500 }
+      model = ArtworkEditingPageModel(
+        artworks = artworks.map(work =>
+          ArtworkEditingPageModel.Artwork(
+            id = work.id,
+            title = work.title,
+            timeframe = work.timeframe.getOrElse(""),
+            materials = work.materials.getOrElse(""),
+            imageURL = work.imageURL,
+            description = work.description.map(_.raw).getOrElse("")
+          )
+        ),
+        artwork = ArtworkEditingPageModel.Artwork(
+          id = artwork.id,
+          title = artwork.title,
+          timeframe = artwork.timeframe.getOrElse(""),
+          materials = artwork.materials.getOrElse(""),
+          imageURL = artwork.imageURL,
+          description = artwork.description.map(_.raw).getOrElse("")
+        )
+      )
+
+      render <- provided[Render]
+      html <- render("artwork-editing", model) rejectWith { failure => 500(s"Failed to render $failure") }
+    } yield {
+      200(html) cookie sessionCookie ContentType "text/html; charset=UTF-8"
+    }
+  }
+
+  POST("/admin/artwork/edit").Authorization(basicAdminAuth or validSession) ->- { implicit context =>
+    for {
+      getSessionCookie <- provided[GetSessionCookie]
+      sessionCookie <- getSessionCookie(context.request) rejectWith 500
+
+      parseMarkdown <- provided[markdown.Parse]
+      id <- form[String]("id").firstValue.required { 500 }
+      title <- form[String]("title").firstValue.required { 500 }
+      imageURL <- form[String]("image-url").firstValue.required { 500 }
+      description <- form[String]("description").optional.firstValue
+      timeframe <- form[String]("timeframe").optional.firstValue
+      materials <- form[String]("materials").optional.firstValue
+      artwork = Artwork(
+        id,
+        title = title,
+        imageURL = imageURL,
+        materials = materials,
+        timeframe = timeframe,
+        description = description.map(parseMarkdown)
+      )
+
+      store <- provided[CreateOrUpdateArtwork]
+      _ <- store(artwork) rejectWith { _ => 500 }
+
+      getArtworks <- provided[GetAllArtworks]
+      artworks <- getArtworks() rejectWith { _ => 500 }
+      model = ArtworkEditingPageModel(
+        artworks = artworks.map(work =>
+          ArtworkEditingPageModel.Artwork(
+            id = work.id,
+            title = work.title,
+            timeframe = work.timeframe.getOrElse(""),
+            materials = work.materials.getOrElse(""),
+            imageURL = work.imageURL,
+            description = work.description.map(_.raw).getOrElse("")
+          )
+        ),
+        artwork = ArtworkEditingPageModel.Artwork(
+          id = artwork.id,
+          title = artwork.title,
+          timeframe = artwork.timeframe.getOrElse(""),
+          materials = artwork.materials.getOrElse(""),
+          imageURL = artwork.imageURL,
+          description = artwork.description.map(_.raw).getOrElse("")
+        )
+      )
+
+      render <- provided[Render]
+      html <- render("artwork-editing", model) rejectWith { failure => 500 }
+    } yield {
+      201(html) cookie sessionCookie ContentType "text/html; charset=UTF-8"
+    }
+  }
 
   PUT("/admin/artwork/:id").Authorization(basicAdminAuth) ->- { implicit context =>
     for {

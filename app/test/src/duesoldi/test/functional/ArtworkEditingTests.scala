@@ -4,19 +4,16 @@ import duesoldi.test.support.app.ServerRequests._
 import duesoldi.test.support.app.TestApp
 import duesoldi.test.support.app.TestApp.runningApp
 import duesoldi.test.support.httpclient.BasicAuthorization
-import duesoldi.test.support.pages.{ArtworkPage}
-import duesoldi.test.support.setup.GalleryStorage._
+import duesoldi.test.support.pages.{ArtworkEditingPage, ArtworkPage}
 import duesoldi.test.support.setup.Database._
+import duesoldi.test.support.setup.GalleryStorage._
 import duesoldi.test.support.setup.Setup.withSetup
-import hammerspace.testing.CustomMatchers._
 import hammerspace.testing.StreamHelpers._
 import ratatoskr.Method._
 import ratatoskr.RequestBuilding._
 import ratatoskr.ResponseAccess._
 import ratatoskr.{Cookie, Method}
 import utest._
-
-import java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME
 
 object ArtworkEditingTests
   extends TestSuite 
@@ -296,161 +293,140 @@ object ArtworkEditingTests
         }
       }
     }
-////    "The blog entry creation page" - {
-////      "requires authorization by basic auth or cookie" - {
-////        withSetup(
-////          database,
-////          runningApp,
-////          blogEntries()
-////        ) { implicit env =>
-////          for {
-////            noCredentialsOrCookie <- get("/admin/blog/edit")
-////            badCredentials <- get("/admin/blog/edit", headers = BasicAuthorization("not-admin", "password"))
-////            goodCredentials <- get("/admin/blog/edit", headers = TestApp.adminAuth)
-////            goodCookie <- get("/admin/blog/edit", headers = goodCredentials.cookie("adminSessionId").get.toRequestHeader)
-////            badCookie <- get("/admin/blog/edit", headers = Cookie("adminSessionId", "").toRequestHeader)
-////          } yield {
-////            assert(
-////              noCredentialsOrCookie.status == 401,
-////              badCredentials.status == 403,
-////              goodCredentials.status == 200,
-////              goodCookie.status == 200,
-////              badCookie.status == 401
-////            )
-////          }
-////        }
-////      }
-////      "uses UTF-8 for encoding" - {
-////        withSetup(
-////          database,
-////          runningApp,
-////          blogEntries()
-////        ) { implicit env =>
-////          for {
-////            editingPage <- get("/admin/blog/edit", headers = TestApp.adminAuth)
-////            form = new BlogEditingPage(editingPage.body.asString).form
-////          } yield {
-////            assert(
-////              editingPage.headers("Content-type") contains "text/html; charset=UTF-8",
-////              form.acceptCharset == "utf-8"
-////            )
-////          }
-////        }
-////      }
-////      "can successfully create a blog entry" - {
-////        withSetup(
-////          database,
-////          runningApp,
-////          blogEntries()
-////        ) { implicit env =>
-////          for {
-////            editingPage <- get("/admin/blog/edit", headers = TestApp.adminAuth)
-////            _ = assert(editingPage.status == 200)
-////            form = new BlogEditingPage(editingPage.body.asString).form
-////            formValues = form
-////                .id("new-entry")
-////                .description("A brand new entry")
-////                .content("# New Entry! é")
-////                .values
-////            submission <- send(POST(form.action).formValues(formValues).cookie(editingPage.cookie("adminSessionId").get))
-////            newEntry <- get("/blog/new-entry")
-////            entryPage = new BlogEntryPage(newEntry.body.asString)
-////          } yield {
-////            assert(
-////              submission.status == 201,
-////              newEntry.status == 200,
-////              entryPage.title == "New Entry! é"
-////            )
-////          }
-////        }
-////      }
-////      "provides a list of blog entries to edit" - {
-////        withSetup(
-////          database,
-////          runningApp,
-////          blogEntries(
-////            "welcome" -> "# Welcome",
-////            "back" -> "# Back from hiatus!"
-////          )
-////        ) { implicit env =>
-////          for {
-////            editingPage <- get("/admin/blog/edit", headers = TestApp.adminAuth)
-////            form = new BlogEditingPage(editingPage.body.asString).entrySelectForm
-////          } yield {
-////            assert(
-////              form.entries == Seq("welcome", "back")
-////            )
-////          }
-////        }
-////      }
-////      "correctly formats the date for editing an existing blog entry" - {
-////        withSetup(
-////          database,
-////          runningApp,
-////          blogEntries(
-////            "welcome" -> "# Welcome",
-////          )
-////        ) { implicit env =>
-////          for {
-////            editingPage <- get("/admin/blog/edit", headers = TestApp.adminAuth)
-////            form = new BlogEditingPage(editingPage.body.asString).entrySelectForm
-////
-////            selectForm = new BlogEditingPage(editingPage.body.asString).entrySelectForm
-////            selectFormValues = selectForm.entry("welcome").values
-////            selectEntry <- send(
-////              Method(selectForm.method)(selectForm.action)
-////                .query(selectFormValues)
-////                .cookie(editingPage.cookie("adminSessionId").get))
-////
-////            editForm = new BlogEditingPage(selectEntry.body.asString).form
-////          } yield {
-////            assert(
-////              editForm.values("date").head hasDateFormat ISO_ZONED_DATE_TIME
-////            )
-////          }
-////        }
-////      }
-////      "allows an existing entry to be edited" - {
-////        withSetup(
-////          database,
-////          runningApp,
-////          blogEntries("first-entry" -> "# Frist Enyrt!")
-////        ) { implicit env =>
-////          for {
-////            editingPage <- send(
-////              GET("/admin/blog/edit")
-////                .header(TestApp.adminAuth))
-////
-////            selectForm = new BlogEditingPage(editingPage.body.asString).entrySelectForm
-////            selectFormValues = selectForm.entry("first-entry").values
-////            selectEntry <- send(
-////              Method(selectForm.method)(selectForm.action)
-////                .query(selectFormValues)
-////                .cookie(editingPage.cookie("adminSessionId").get))
-////
-////            editForm = new BlogEditingPage(selectEntry.body.asString).form
-////            editFormValues = editForm
-////              .date("2010-10-12T17:05:00Z")
-////              .content("# First Entry!")
-////              .values
-////            updateEntry <- send(
-////              POST(editForm.action)
-////                .formValues(editFormValues)
-////                .cookie(editingPage.cookie("adminSessionId").get))
-////            _ = assert(updateEntry.status == 201)
-////
-////            updatedEntry <- send(
-////              GET("/blog/first-entry"))
-////            updatedEntryPage = new BlogEntryPage(updatedEntry.body.asString)
-////          } yield {
-////            assert(
-////              updatedEntryPage.title == "First Entry!",
-////              updatedEntryPage.date == "Tuesday, 12 October 2010"
-////            )
-////          }
-//        }
-//      }
-//      "fails with a useful message if the entry already exists" - { ??? }
-//      "fails with a useful message if the submission is invalid" - { ??? }
+    "The artwork creation page" - {
+      "requires authorization by basic auth or cookie" - {
+        withSetup(
+          database,
+          runningApp,
+          artworks()
+        ) { implicit env =>
+          for {
+            noCredentialsOrCookie <- get("/admin/artwork/edit")
+            badCredentials <- get("/admin/artwork/edit", headers = BasicAuthorization("not-admin", "password"))
+            goodCredentials <- get("/admin/artwork/edit", headers = TestApp.adminAuth)
+            goodCookie <- get("/admin/artwork/edit", headers = goodCredentials.cookie("adminSessionId").get.toRequestHeader)
+            badCookie <- get("/admin/artwork/edit", headers = Cookie("adminSessionId", "").toRequestHeader)
+          } yield {
+            assert(
+              noCredentialsOrCookie.status == 401,
+              badCredentials.status == 403,
+              goodCredentials.status == 200,
+              goodCookie.status == 200,
+              badCookie.status == 401
+            )
+          }
+        }
+      }
+      "uses UTF-8 for encoding" - {
+        withSetup(
+          database,
+          runningApp,
+          artworks()
+        ) { implicit env =>
+          for {
+            editingPage <- get("/admin/artwork/edit", headers = TestApp.adminAuth)
+            form = new ArtworkEditingPage(editingPage.body.asString).form
+          } yield {
+            assert(
+              editingPage.headers("Content-type") contains "text/html; charset=UTF-8",
+              form.acceptCharset == "utf-8"
+            )
+          }
+        }
+      }
+      "can successfully create an artwork" - {
+        withSetup(
+          database,
+          runningApp,
+          artworks()
+        ) { implicit env =>
+          for {
+            editingPage <- get("/admin/artwork/edit", headers = TestApp.adminAuth)
+            _ = assert(editingPage.status == 200)
+            form = new ArtworkEditingPage(editingPage.body.asString).form
+            formValues = form
+              .id("new-artwork")
+              .title("New Artwork")
+              .timeframe("early 2021")
+              .materials("wax crayon on paper")
+              .imageURL("/path/to/image.png")
+              .description("A _new_ artwork")
+              .values
+            submission <- send(POST(form.action).formValues(formValues).cookie(editingPage.cookie("adminSessionId").get))
+            newWork <- get("/gallery/new-artwork")
+            artworkPage = new ArtworkPage(newWork.body.asString)
+          } yield {
+            assert(
+              submission.status == 201,
+              newWork.status == 200,
+              artworkPage.title == "New Artwork",
+              artworkPage.artworkImageURL == "/path/to/image.png",
+              artworkPage.timeframe contains "early 2021",
+              artworkPage.materials contains "wax crayon on paper",
+              artworkPage.description contains ("<p>A <i>new</i> artwork</p>")
+            )
+          }
+        }
+      }
+      "provides a list of artworks to edit" - {
+        withSetup(
+          database,
+          runningApp,
+          artworks(
+            artwork.withId("one"),
+            artwork.withId("two"),
+          )
+        ) { implicit env =>
+          for {
+            editingPage <- get("/admin/artwork/edit", headers = TestApp.adminAuth)
+            form = new ArtworkEditingPage(editingPage.body.asString).artworkSelectForm
+          } yield {
+            assert(
+              form.entries == Seq("one", "two")
+            )
+          }
+        }
+      }
+      "allows an existing artwork to be edited" - {
+        withSetup(
+          database,
+          runningApp,
+          artworks(artwork.withId("one").withTitle("ONE"))
+        ) { implicit env =>
+          for {
+            editingPage <- send(
+              GET("/admin/artwork/edit")
+                .header(TestApp.adminAuth))
+
+            selectForm = new ArtworkEditingPage(editingPage.body.asString).artworkSelectForm
+            selectFormValues = selectForm.entry("one").values
+            selectEntry <- send(
+              Method(selectForm.method)(selectForm.action)
+                .query(selectFormValues)
+                .cookie(editingPage.cookie("adminSessionId").get))
+
+            editForm = new ArtworkEditingPage(selectEntry.body.asString).form
+
+            editFormValues = editForm
+              .title("One")
+              .values
+
+            updateEntry <- send(
+              POST(editForm.action)
+                .formValues(editFormValues)
+                .cookie(editingPage.cookie("adminSessionId").get))
+            _ = assert(updateEntry.status == 201)
+
+            updatedArtwork <- send(
+              GET("/gallery/one"))
+            updatedArtworkPage = new ArtworkPage(updatedArtwork.body.asString)
+          } yield {
+            assert(
+              updatedArtworkPage.title == "One"
+            )
+          }
+        }
+      }
+    }
   }
 }

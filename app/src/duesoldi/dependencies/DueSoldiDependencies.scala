@@ -20,7 +20,7 @@ import duesoldi.gallery.ArtworkPageModel
 import duesoldi.gallery.model.Artwork
 import duesoldi.gallery.pages.BuildArtworkPageModel
 import duesoldi.gallery.serialisation.ArtworkYaml
-import duesoldi.gallery.storage.{DeleteAllArtworks, DeleteArtwork, GalleryStore, GetAllArtworks, GetArtwork, PutArtwork, PutArtworks}
+import duesoldi.gallery.storage.{CreateOrUpdateArtwork, DeleteAllArtworks, DeleteArtwork, GalleryStore, GetAllArtworks, GetArtwork, PutArtwork, PutArtworks}
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.metrics.storage._
@@ -163,6 +163,8 @@ object DueSoldiDependencies
   implicit val deleteAllArtworks: Inject[DeleteAllArtworks] = inject(GalleryStore.deleteAll _)
 
   implicit def createOrUpdateBlogEntry(implicit executionContext: ExecutionContext): Inject[CreateOrUpdateBlogEntry] = inject(BlogStore.createOrUpdate _)
+
+  implicit def createOrUpdateArtwork(implicit executionContext: ExecutionContext): Inject[CreateOrUpdateArtwork] = inject(GalleryStore.createOrUpdate _)
 
   implicit lazy val parseMarkdown: Inject[hammerspace.markdown.Parse] = _ => MarkdownParser.parseMarkdown
 
