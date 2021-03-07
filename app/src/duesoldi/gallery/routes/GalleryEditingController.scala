@@ -10,8 +10,8 @@ import duesoldi.blog.validation.ValidateIdentifier
 import duesoldi.blog.{EntriesFromYaml, EntriesToYaml, EntryFromYaml, EntryToYaml}
 import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
-import duesoldi.gallery.ArtworkFromYaml
-import duesoldi.gallery.storage.{GetArtwork, PutArtwork}
+import duesoldi.gallery.{ArtworkFromYaml, ArtworkToYaml, ArtworksFromYaml, ArtworksToYaml}
+import duesoldi.gallery.storage.{DeleteAllArtworks, DeleteArtwork, GetAllArtworks, GetArtwork, PutArtwork, PutArtworks}
 import duesoldi.rendering.Render
 import hammerspace.markdown
 import hammerspace.markdown.MarkdownDocument
@@ -130,64 +130,64 @@ extends Controller
       201 ("")
     }
   }
-//
-//  DELETE("/admin/artwork/:id").Authorization(basicAdminAuth) ->- { implicit context =>
-//    for {
-//      validateIdentifier <- provided[ValidateIdentifier]
-//      deleteEntry <- provided[DeleteBlogEntry]
-//
-//      id <- pathParam[String]("id").validate(id => validateIdentifier(id).isEmpty) { 400 ("Invalid identifier") }
-//      _ <- deleteEntry(id) rejectWith { _ => 500 ("Failed to delete blog entry")}
-//    } yield {
-//      204
-//    }
-//  }
-//
-//  GET("/admin/artwork/:id").Authorization(basicAdminAuth) ->- { implicit context =>
-//    for {
-//      validateIdentifier <- provided[ValidateIdentifier]
-//      getEntry <- provided[GetBlogEntry]
-//      format <- provided[EntryToYaml]
-//
-//      id <- pathParam[String]("id").validate(id => validateIdentifier(id).isEmpty) { 400 ("Invalid identifier") }
-//      entry <- getEntry(id) rejectWith { 404 }
-//    } yield {
-//      200 (format(entry))
-//    }
-//  }
 
-//  GET("/admin/blog").Authorization(basicAdminAuth) ->- { implicit context =>
-//    for {
-//      getEntries <- provided[GetAllBlogEntries]
-//      format <- provided[EntriesToYaml]
-//
-//      entries <- getEntries()
-//    } yield {
-//      200 (format(entries))
-//    }
-//  }
+  DELETE("/admin/artwork/:id").Authorization(basicAdminAuth) ->- { implicit context =>
+    for {
+      validateIdentifier <- provided[ValidateIdentifier]
+      deleteArtwork      <- provided[DeleteArtwork]
 
-//  PUT("/admin/blog").Authorization(basicAdminAuth) ->- { implicit context =>
-//    for {
-//      putEntries <- provided[PutBlogEntries]
-//      parse <- provided[EntriesFromYaml]
-//
-//      content <- body[String]
-//      entries <- parse(content) rejectWith { failure => 400 (s"Failed to parse document - $failure") }
-//      _ <- putEntries(entries) rejectWith { failure => 500 (s"Failed to store entries - $failure") }
-//    } yield {
-//      201
-//    }
-//  }
+      id <- pathParam[String]("id").validate(id => validateIdentifier(id).isEmpty) { 400 ("Invalid identifier") }
+      _  <- deleteArtwork(id) rejectWith { _ => 500 ("Failed to delete blog entry")}
+    } yield {
+      204
+    }
+  }
 
-//  DELETE("/admin/blog").Authorization(basicAdminAuth) ->- { implicit context =>
-//    for {
-//      deleteEntries <- provided[DeleteAllBlogEntries]
-//
-//      _ <- deleteEntries() rejectWith { _ => 500 }
-//    } yield {
-//      204
-//    }
-//  }
+  GET("/admin/artwork/:id").Authorization(basicAdminAuth) ->- { implicit context =>
+    for {
+      validateIdentifier <- provided[ValidateIdentifier]
+      getArtwork <- provided[GetArtwork]
+      format <- provided[ArtworkToYaml]
+
+      id <- pathParam[String]("id").validate(id => validateIdentifier(id).isEmpty) { 400 ("Invalid identifier") }
+      artwork <- getArtwork(id) rejectWith { 404 }
+    } yield {
+      200 (format(artwork))
+    }
+  }
+
+  GET("/admin/artwork").Authorization(basicAdminAuth) ->- { implicit context =>
+    for {
+      getArtworks <- provided[GetAllArtworks]
+      format <- provided[ArtworksToYaml]
+
+      artworks <- getArtworks()
+    } yield {
+      200 (format(artworks))
+    }
+  }
+
+  PUT("/admin/artwork").Authorization(basicAdminAuth) ->- { implicit context =>
+    for {
+      putArtworks <- provided[PutArtworks]
+      parse <- provided[ArtworksFromYaml]
+
+      content <- body[String]
+      artworks <- parse(content) rejectWith { failure => 400 (s"Failed to parse document - $failure") }
+      _ <- putArtworks(artworks) rejectWith { failure => 500 (s"Failed to store artworks - $failure") }
+    } yield {
+      201
+    }
+  }
+
+  DELETE("/admin/artwork").Authorization(basicAdminAuth) ->- { implicit context =>
+    for {
+      deleteWorks <- provided[DeleteAllArtworks]
+
+      _ <- deleteWorks() rejectWith { _ => 500 }
+    } yield {
+      204
+    }
+  }
 
 }
