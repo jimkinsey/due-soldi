@@ -23,3 +23,13 @@ CREATE TABLE blog_entry (
   content     text              not null,
   description text              null
 );
+
+CREATE TABLE artwork(
+    id            character varying not null PRIMARY KEY,
+    title         character varying not null,
+    last_modified timestamp         not null,
+    description   text              null,
+    timeframe     character varying null,
+    materials     character varying null,
+    image_url     character varying not null
+);

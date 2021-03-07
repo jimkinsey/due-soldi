@@ -2,7 +2,6 @@ package duesoldi
 
 import java.time.{ZoneId, ZonedDateTime}
 import java.util.UUID
-
 import dearboy.EventBus
 import duesoldi.app.{RequestId, TrailingSlashRedirection}
 import duesoldi.blog.routes.{BlogEditingController, BlogEntryController, BlogIndexController}
@@ -12,6 +11,7 @@ import duesoldi.debug.routes.DebugController
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.dependencies.Injection.injected
 import duesoldi.furniture.routes.FurnitureController
+import duesoldi.gallery.routes.{ArtworkController, GalleryEditingController}
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.metrics.rendering.AccessCsv
 import duesoldi.metrics.routes.MetricsController
@@ -71,6 +71,8 @@ object App
           new BlogEntryController(),
           new BlogIndexController(),
           new BlogEditingController(),
+          new ArtworkController(),
+          new GalleryEditingController(),
           new FurnitureController(),
           RobotsController,
           LearnJapaneseController,

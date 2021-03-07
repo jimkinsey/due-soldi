@@ -1,7 +1,6 @@
 package duesoldi.dependencies
 
 import java.sql.ResultSet
-
 import dearboy.EventBus
 import duesoldi.app.sessions.Sessions
 import duesoldi.app.sessions.Sessions.GetSessionCookie
@@ -17,11 +16,16 @@ import duesoldi.dependencies.Features.forFeature
 import duesoldi.dependencies.Injection._
 import duesoldi.furniture.CurrentPathAndContent
 import duesoldi.furniture.storage.FurnitureFiles
+import duesoldi.gallery.ArtworkPageModel
+import duesoldi.gallery.model.Artwork
+import duesoldi.gallery.pages.BuildArtworkPageModel
+import duesoldi.gallery.serialisation.ArtworkYaml
+import duesoldi.gallery.storage.{GalleryStore, GetArtwork, PutArtwork}
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.metrics.storage._
 import duesoldi.rendering.{GetTemplate, Renderer}
-import duesoldi.{Env, blog}
+import duesoldi.{Env, blog, gallery}
 import hammerspace.markdown.MarkdownParser
 import hammerspace.storage.JDBCConnection.{ConnectionDetails, PerformQuery, PerformUpdate}
 import hammerspace.storage._
@@ -96,6 +100,8 @@ object DueSoldiDependencies
 
   implicit val entryPageModel: Inject[BuildEntryPageModel] = inject(EntryPageModel.pageModel _)
 
+  implicit val artworkPageModel: Inject[BuildArtworkPageModel] = inject(ArtworkPageModel.build _)
+
   implicit val indexPageModel:  Inject[BuildIndexPageModel] = _ => IndexPageModel.pageModel
 
   implicit def makeHeadersPage: Inject[MakeHeadersPage] = _ => HeadersPageMaker.makeHeadersPage
@@ -128,11 +134,17 @@ object DueSoldiDependencies
     BlogStore.getOne(jdbcPerformQuery[BlogEntry](BlogStore.toBlogEntry(parseMarkdown(config)))(config))
   }
 
+  implicit val getArtwork: Inject[GetArtwork] = { config =>
+    GalleryStore.getOne(jdbcPerformQuery[Artwork](GalleryStore.toArtwork(parseMarkdown(config)))(config))
+  }
+
   implicit val getAllBlogEntries: Inject[GetAllBlogEntries] = { config =>
     BlogStore.getAll(jdbcPerformQuery[BlogEntry](BlogStore.toBlogEntry(parseMarkdown(config)))(config))
   }
 
   implicit val putBlogEntry: Inject[PutBlogEntry] = inject(BlogStore.put _)
+
+  implicit val putArtwork: Inject[PutArtwork] = inject(GalleryStore.put _)
 
   implicit def putAllBlogEntries(implicit executionContext: ExecutionContext): Inject[PutBlogEntries] = inject(BlogStore.putAll _)
 
@@ -151,6 +163,8 @@ object DueSoldiDependencies
   }
 
   implicit lazy val blogEntryFromYaml: Inject[blog.EntryFromYaml] = _ => EntryYaml.parse
+
+  implicit lazy val artworkFromYaml: Inject[gallery.ArtworkFromYaml] = _ => ArtworkYaml.parse
 
   implicit lazy val blogEntryToYaml: Inject[blog.EntryToYaml] = _ => EntryYaml.format
 
