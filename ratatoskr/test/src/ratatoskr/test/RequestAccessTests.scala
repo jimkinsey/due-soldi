@@ -1,11 +1,11 @@
 package ratatoskr.test
 
-import ratatoskr.Method.GET
+import ratatoskr.Method.{GET, POST}
 import ratatoskr._
 import ratatoskr.RequestAccess._
 import utest._
-
 import hammerspace.testing.StreamHelpers._
+import hammerspace.testing.CustomMatchers._
 
 object RequestAccessTests
 extends TestSuite
@@ -81,6 +81,188 @@ extends TestSuite
             |  "foo": 42
             |}""".stripMargin)))
       }
+    }
+    "Multi-part form values" - {
+
+      "is an error when the request is not multi-part" - {
+        val request = Request(
+          method = POST,
+          url = "/",
+          body = "".asByteStream("UTF-8")
+        )
+        val formValues = request.multipartFormValues
+        assert(formValues isLeft)
+      }
+
+      "is an error when no boundary is specified in the content type header" - {
+        val request = Request(
+          method = POST,
+          url = "/",
+          body = "".asByteStream("UTF-8"),
+          headers = Map(
+            "Content-Type" -> Seq("multipart/form-data")
+          ),
+        )
+        val formValues = request.multipartFormValues
+        assert(formValues isLeftOf "No boundary specified in multi-part content-type header [multipart/form-data]")
+      }
+
+      "is an error when the content does not begin with the boundary" - {
+        val request = Request(
+          method = POST,
+          url = "/",
+          body = "No boundaries here!!!".asByteStream("UTF-8"),
+          headers = Map(
+            "Content-Type" -> Seq("multipart/form-data; boundary=--b")
+          ),
+        )
+        val formValues = request.multipartFormValues
+        assert(formValues isLeftOf "Multi-part request body does not begin with boundary [--b]")
+      }
+
+      "is an error when there is no further boundary to mark a section" - {
+        val request = Request(
+          method = POST,
+          url = "/",
+          body =
+            """
+              |----b
+              |Content-Disposition: form-data; name="key"
+              |
+              |value""".stripMargin.asByteStream("UTF-8"),
+          headers = Map(
+            "Content-Type" -> Seq("multipart/form-data; boundary=--b")
+          ),
+        )
+        val formValues = request.multipartFormValues
+        assert(formValues isLeftOf "Terminating boundary marker [--b] not found")
+      }
+
+      "is an error when there is no Content-Disposition data" - {
+        val request = Request(
+          method = POST,
+          url = "/",
+          body =
+            """
+              |----b
+              |blah
+              |
+              |value
+              |----b""".stripMargin.asByteStream("UTF-8"),
+          headers = Map(
+            "Content-Type" -> Seq("multipart/form-data; boundary=--b")
+          ),
+        )
+        val formValues = request.multipartFormValues
+        assert(formValues isLeftOf "Invalid Content-Disposition line [blah]")
+      }
+
+      "is an error when there is no name specified in the Content-Disposition data" - {
+        val request = Request(
+          method = POST,
+          url = "/",
+          body =
+            """
+              |----b
+              |Content-Disposition: form-data
+              |
+              |value
+              |----b""".stripMargin.asByteStream("UTF-8"),
+          headers = Map(
+            "Content-Type" -> Seq("multipart/form-data; boundary=--b")
+          ),
+        )
+        val formValues = request.multipartFormValues
+        assert(formValues isLeftOf "Invalid Content-Disposition line [Content-Disposition: form-data]")
+      }
+
+      "is an error when there is no value data in the section" - {
+        val request = Request(
+          method = POST,
+          url = "/",
+          body =
+            """
+              |----b
+              |Content-Disposition: form-data; name="key"
+              |
+              |----b""".stripMargin.asByteStream("UTF-8"),
+          headers = Map(
+            "Content-Type" -> Seq("multipart/form-data; boundary=--b")
+          ),
+        )
+        val formValues = request.multipartFormValues
+        assert(formValues isLeftOf "No value data in multipart/form-data for [key]")
+      }
+
+      "includes the value for the key specified in the section's content-disposition" - {
+        val request = Request(
+          method = POST,
+          url = "/",
+          body =
+            """
+              |----b
+              |Content-Disposition: form-data; name="key"
+              |
+              |value
+              |----b""".stripMargin.asByteStream("UTF-8"),
+          headers = Map(
+            "Content-Type" -> Seq("multipart/form-data; boundary=--b")
+          ),
+        )
+        val formValues = request.multipartFormValues
+        assert(formValues.isRightWhere(_("key").head.data.asString == "value"))
+      }
+
+      "includes the value for the key specified in the section's content-disposition where there are multiple sections" - {
+        val request = Request(
+          method = POST,
+          url = "/",
+          body =
+            """
+              |----b
+              |Content-Disposition: form-data; name="key1"
+              |
+              |value1
+              |----b
+              |Content-Disposition: form-data; name="key2"
+              |
+              |value2
+              |----b""".stripMargin.asByteStream("UTF-8"),
+          headers = Map(
+            "Content-Type" -> Seq("multipart/form-data; boundary=--b")
+          ),
+        )
+        val formValues = request.multipartFormValues
+        assert(
+          formValues.isRightWhere(_.keySet == Set("key1", "key2"))
+        )
+      }
+
+      "includes the value for the key specified in the section's content-disposition where there are multiple sections with the same key" - {
+        val request = Request(
+          method = POST,
+          url = "/",
+          body =
+            """
+              |----b
+              |Content-Disposition: form-data; name="key"
+              |
+              |value1
+              |----b
+              |Content-Disposition: form-data; name="key"
+              |
+              |value2
+              |----b""".stripMargin.asByteStream("UTF-8"),
+          headers = Map(
+            "Content-Type" -> Seq("multipart/form-data; boundary=--b")
+          ),
+        )
+        val formValues = request.multipartFormValues
+        assert(
+          formValues.isRightWhere(_("key").length == 2)
+        )
+      }
+
     }
   }
 }
