@@ -1,19 +1,22 @@
 package ratatoskr
 
-import java.net.URLDecoder
 import hammerspace.collections.MapEnhancements._
+import hammerspace.collections.StreamEnhancements.EnhancedStream
 import hammerspace.testing.StreamHelpers._
 import hammerspace.uri.URI
 
-import java.util.Scanner
+import java.net.URLDecoder
 import scala.util.matching.Regex
 
-case class MultipartFormValue(data: Stream[Byte])
+case class MultipartFormValue(
+  name: String,
+  data: Stream[Byte],
+  contentType: Option[String] = None
+)
 
 object RequestAccess
 {
-  implicit class RequestAccessor(request: Request)
-  {
+  implicit class RequestAccessor(request: Request) {
     def header(name: String): Option[Seq[String]] = request.headers.lowKeys.get(name.toLowerCase)
 
     def cookie(name: String): Option[Cookie] = {
@@ -35,60 +38,36 @@ object RequestAccess
 
     def formValues: Map[String, Seq[String]] = parseParams(request.body.asString)
 
-    val Boundary = """.*boundary=(.+)$""".r
-    val ContentDisposition = """^Content-Disposition:\s*form-data;\s*name="(.+)"\s*$""".r
-
-    def multipartFormValues: Either[String,Map[String, Seq[MultipartFormValue]]] = {
+    def multipartFormValues: Stream[MultipartFormValue] = {
       request.header("Content-Type")
         .flatMap(_.headOption)
         .collect { case Boundary(b) => s"\n--$b".getBytes }
-        .toRight { s"No boundary specified in multi-part content-type header [${request.header("Content-Type").flatMap(_.headOption).getOrElse("n/a")}]" }
-        .flatMap { boundary =>
+        .fold[Stream[MultipartFormValue]](Stream.empty) { boundary =>
+          request.body
+            .separatedBy(boundary)
+            .foldLeft[Stream[MultipartFormValue]](Stream.empty) { case (acc, chunk) =>
+              val firstLine = new String(chunk.dropWhile(_ == '\n').takeWhile(_ != '\n').toArray)
 
-          def loop(
-            acc: Map[String, Seq[MultipartFormValue]],
-            content: Stream[Byte]
-          ): Either[String, Map[String, Seq[MultipartFormValue]]]= {
-            if (content.length <= boundary.length + 1) {
-              Right(acc)
-            } else {
+              firstLine match {
+                case ContentDisposition(name) =>
+                  val remainder = chunk.drop(firstLine.length + 1)
+                  val secondLine = new String(remainder.dropWhile(_ == '\n').takeWhile(_ != '\n').toArray)
 
-              if (content.indexOfSlice(boundary) == 0) {
-                val remainder = content.drop(boundary.length + 1)
-
-                val end = remainder.indexOfSlice(boundary)
-
-                if (end > 0) {
-                  val firstLine = new String(remainder.takeWhile(_ != '\n').toArray)
-
-                  firstLine match {
-                    case ContentDisposition(name) =>
-                      val value = remainder.slice(firstLine.length, end).dropWhile(_ == '\n')
-                      if (value.nonEmpty) {
-                        acc.get(name) match {
-                          case Some(seq) =>
-                            loop(acc.updated(name, seq :+ MultipartFormValue(data = value)), remainder.drop(end))
-                          case None =>
-                            loop(acc + (name -> Seq(MultipartFormValue(data = value))), remainder.drop(end))
-                        }
-                      } else {
-                        Left(s"No value data in multipart/form-data for [$name]")
-                      }
+                  val (contentType, data) = secondLine match {
+                    case ContentType(typ) =>
+                      (Some(typ), remainder.removePrefix(secondLine.getBytes()).dropWhile(_.toChar.isWhitespace))
                     case _ =>
-                      Left(s"Invalid Content-Disposition line [$firstLine]")
+                      (None, remainder.dropWhile(_.toChar.isWhitespace))
                   }
-                } else {
-                  Left(s"Terminating boundary marker [${new String(boundary).trim().drop(2)}] not found")
-                }
-              } else {
-                Left(s"Multi-part request body does not begin with boundary [${new String(boundary).trim().drop(2)}]")
+
+                  acc.append(Stream(MultipartFormValue(name, data, contentType)))
+                case _ =>
+                  acc
               }
             }
-          }
-
-          loop(Map.empty, request.body)
         }
     }
+
   }
 
   private def parseParams(in: String): Map[String, Seq[String]] =
@@ -109,4 +88,9 @@ object RequestAccess
   private def unescapeParamValue(value: String): String = {
     URLDecoder.decode(value.replace('+', ' '), "UTF-8")
   }
+
+  private lazy val Boundary = """.*boundary=(.+)$""".r
+  private lazy val ContentDisposition = """^Content-Disposition:\s*form-data;\s*name="(.+)"\s*$""".r
+  private lazy val ContentType = """^Content-Type:\s*(.+)\s*""".r
+
 }

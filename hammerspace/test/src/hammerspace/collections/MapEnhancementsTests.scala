@@ -2,7 +2,7 @@ package hammerspace.collections
 
 import hammerspace.collections.MapEnhancements._
 import hammerspace.collections.StandardCoercions._
-
+import hammerspace.collections.StreamEnhancements.EnhancedStream
 import utest._
 
 object MapEnhancementsTests
@@ -27,3 +27,4 @@ object MapEnhancementsTests
       }
     }
   }
+
