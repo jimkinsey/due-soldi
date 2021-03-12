@@ -101,7 +101,7 @@ object DueSoldiDependencies
 
   implicit val entryPageModel: Inject[BuildEntryPageModel] = inject(EntryPageModel.pageModel _)
 
-  implicit val artworkPageModel: Inject[BuildArtworkPageModel] = inject(ArtworkPageModel.build _)
+  implicit val artworkPageModel: Inject[BuildArtworkPageModel] = config => ArtworkPageModel.build(config.imageBaseUrl) _
 
   implicit val indexPageModel:  Inject[BuildIndexPageModel] = _ => IndexPageModel.pageModel
 

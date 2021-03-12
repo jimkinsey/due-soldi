@@ -1,11 +1,14 @@
 package duesoldi.test.functional
 
+import duesoldi.Env
 import duesoldi.test.support.app.ServerRequests._
 import duesoldi.test.support.app.TestApp.runningApp
 import duesoldi.test.support.pages.{ArtworkPage, OgMetadata}
+import duesoldi.test.support.setup.ConfigOverride.configOverride
 import duesoldi.test.support.setup.GalleryStorage._
 import duesoldi.test.support.setup.Database._
 import duesoldi.test.support.setup.Setup.withSetup
+import duesoldi.test.support.setup.SyncSetup
 import hammerspace.testing.CustomMatchers._
 import hammerspace.testing.StreamHelpers._
 import utest._
@@ -114,6 +117,7 @@ extends TestSuite
       "includes the URL to the artwork image" - {
         withSetup(
           database,
+          configOverride("IMAGE_BASE_URL" -> "https://images"),
           runningApp,
           artworks(
             artwork.withId("untitled-masterpiece")
@@ -124,7 +128,7 @@ extends TestSuite
             res <- get("/gallery/untitled-masterpiece")
             page = new ArtworkPage(res.body.asString)
           } yield {
-            assert(page.artworkImageURL == "/path/to/image.png")
+            assert(page.artworkImageURL == "https://images/path/to/image.png")
           }
         }
       }

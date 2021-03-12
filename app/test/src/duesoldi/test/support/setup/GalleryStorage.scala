@@ -9,6 +9,13 @@ import java.time.format.DateTimeFormatter
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.implicitConversions
 
+object ConfigOverride
+{
+  def configOverride(vars: (String, String)*) = new SyncSetup {
+    override def setup(env: Env): Env = Map(vars:_*)
+  }
+}
+
 object GalleryStorage
 {
   val artwork = ArtworkBuilder()

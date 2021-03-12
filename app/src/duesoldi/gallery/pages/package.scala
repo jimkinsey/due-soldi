@@ -18,13 +18,15 @@ case class ArtworkPageModel(
 ) extends PageModel
 
 object ArtworkPageModel {
-  def build(getEntryTwitterMetadata: GetEntryTwitterMetadata)(artwork: Artwork): ArtworkPageModel = {
+  def build(
+    imageBaseURL: String
+  )(artwork: Artwork): ArtworkPageModel = {
     ArtworkPageModel(
       title = artwork.title,
       timeframe = artwork.timeframe,
       materials = artwork.materials,
       description = artwork.description.map(md => MarkdownToHtml.html(md.nodes)).orElse(Some("")),
-      imageURL = artwork.imageURL
+      imageURL = imageBaseURL + artwork.imageURL
     )
   }
 }
