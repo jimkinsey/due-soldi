@@ -69,7 +69,19 @@ extends TestSuite {
 
     }
 
+    "taking the stream up until the last slice" - {
 
+      "leaves the original stream when it does not contain the slice" - {
+        val res = (1 to 10).toStream takeUntil (11 to 20)
+        assert(res == (1 to 10).toStream)
+      }
+
+      "returns the stream up to the last instance of the slice when it does contain it" - {
+        val res = Seq(1,2,1,2,1,2,1).toStream takeUntilLast Seq(2)
+        assert(res == Seq(1,2,1,2,1).toStream)
+      }
+
+    }
 
   }
 

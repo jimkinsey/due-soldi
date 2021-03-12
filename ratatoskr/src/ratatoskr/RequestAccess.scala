@@ -68,9 +68,9 @@ object RequestAccess
 
                 val (contentType, data) = secondLine match {
                   case ContentType(typ) =>
-                    (Some(typ), remainder.drop(secondLine.length + 2).dropWhile(_.toChar.isWhitespace).takeUntil("\r".getBytes()))
+                    (Some(typ), remainder.drop(secondLine.length + 2).dropWhile(_.toChar.isWhitespace).takeUntilLast("\r".getBytes()))
                   case _ =>
-                    (None, remainder.dropWhile(_.toChar.isWhitespace).takeUntil("\r".getBytes()))
+                    (None, remainder.dropWhile(_.toChar.isWhitespace).takeUntilLast("\r".getBytes()))
                 }
 
                 acc.append(Stream(MultipartFormValue(name, data, contentType, Option(filename))))

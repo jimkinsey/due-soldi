@@ -181,6 +181,29 @@ extends TestSuite
         )
       }
 
+      "includes the value for the key specified in the section's content-disposition when the value contains a carriage return" - {
+        val request = Request(
+          method = POST,
+          url = "/",
+          body = bodyWithCarriageReturns(
+            """
+              |----b
+              |Content-Disposition: form-data; name="key"[CR]
+              |
+              |line 1[CR]
+              |line 2[CR]
+              |----b""".stripMargin),
+          headers = Map(
+            "Content-Type" -> Seq("multipart/form-data; boundary=--b")
+          ),
+        )
+        val formValues = request.multipartFormValues
+        val data = formValues.find(_.name == "key").map(_.data.asString)
+        assert(
+          data contains "line 1\r\nline 2"
+        )
+      }
+
       "includes the value for the key specified in the section's content-disposition where there are multiple sections" - {
         val request = Request(
           method = POST,
