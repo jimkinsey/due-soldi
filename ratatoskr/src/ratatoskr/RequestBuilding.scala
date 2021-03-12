@@ -1,9 +1,11 @@
 package ratatoskr
 
 import java.net.URLEncoder
-
 import hammerspace.testing.StreamHelpers._
 import hammerspace.uri.URI
+import ratatoskr.RequestAccess.RequestAccessor
+
+import java.util.UUID
 
 object RequestBuilding
 {
@@ -39,6 +41,47 @@ object RequestBuilding
       formValues.foldLeft[Request](request) {
         case (req, (name, values)) => req.formValue(name -> values.head)
       }
+    }
+
+    def multipartFormValue(value: (String, String)): Request = {
+      val boundary = request.multipartBoundary.get
+
+      val prefix: Stream[Byte] = request.body.length match {
+        case 0 => s"--${boundary}\n".getBytes().toStream
+        case _ => request.body
+      }
+
+      request.copy(body =
+        prefix.append(
+          ("Content-Disposition: form-data; name=\"" + value._1 + "\"\r\n" + value._2 + "\n--" + boundary + "\n").getBytes())
+      )
+    }
+
+    def multipartFormValueFile(
+      name: String,
+      filename: String,
+      contentType: String,
+      data: Stream[Byte]
+    ): Request = {
+      val boundary = request.multipartBoundary.get
+
+      val prefix: Stream[Byte] = request.body.length match {
+        case 0 => s"--${boundary}\n".getBytes().toStream
+        case _ => request.body
+      }
+
+      request.copy(body =
+        prefix
+          .append(("Content-Disposition: form-data; name=\"" + name + "\"; filename=\"" + filename + "\"\r\n").getBytes())
+          .append(("Content-Type: " + contentType + "\r\n").getBytes())
+          .append(data)
+          .append(s"\n--${boundary}\n".getBytes().toStream)
+      )
+    }
+
+    def multipart(): Request = {
+      request
+        .header("Content-Type" -> s"multipart/form-data; boundary=${s"--${UUID.randomUUID().toString}"}")
     }
 
     def query(queryValues: Map[String, Seq[String]]): Request = {

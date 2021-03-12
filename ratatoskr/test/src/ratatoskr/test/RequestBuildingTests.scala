@@ -2,7 +2,8 @@ package ratatoskr.test
 
 import hammerspace.testing.StreamHelpers._
 import ratatoskr.Method._
-import ratatoskr.Request
+import ratatoskr.{Request}
+import ratatoskr.RequestAccess.RequestAccessor
 import ratatoskr.RequestBuilding._
 import utest._
 
@@ -27,6 +28,121 @@ extends TestSuite
         assert(body == "data=%7B%22foo%22%3A+42%7D")
       }
     }
+
+    "Setting up a multipart request" - {
+
+      "initialises the content type if not already set" - {
+        val request: Request = POST("/", "").multipart()
+        assert(request.headers.get("Content-Type") exists (_.head startsWith "multipart/form-data; boundary="))
+      }
+
+    }
+
+    "Setting a simple multipart form value" - {
+
+      "prefixes the body with the boundary if the body is empty" - {
+        val request: Request = POST("/", "").multipart().multipartFormValue("data" -> "42")
+        val body = request.body.asString
+        val boundary = request.multipartBoundary.get
+        assert(body.lines.toList(0) == s"--$boundary")
+      }
+
+      "appends a Content-Disposition line containing the name, followed by a CRLF" - {
+        val request = POST("/", "").multipart().multipartFormValue("data" -> "42")
+        val body = request.body.asString
+        assert(body contains "Content-Disposition: form-data; name=\"data\"\r\n")
+      }
+
+      "appends the data after the content disposition line" - {
+        val request = POST("/", "").multipart().multipartFormValue("data" -> "42")
+        val body = request.body.asString
+        assert(body.lines.toList(2) == "42")
+      }
+
+      "appends the boundary after the data" - {
+        val request = POST("/", "").multipart().multipartFormValue("data" -> "42")
+        val body = request.body.asString
+        assert(body.lines.toList(3) == s"--${request.multipartBoundary.get}")
+      }
+
+    }
+
+    "Setting a multipart form value for a file" - {
+
+      "prefixes the body with the boundary if the body is empty" - {
+        val request: Request =
+          POST("/", "")
+            .multipart()
+            .multipartFormValueFile(
+              name = "cv",
+              filename = "cv.md",
+              contentType = "text/markdown",
+              data = "# Curriculum Vitae".getBytes().toStream
+            )
+        val body = request.body.asString
+        val boundary = request.multipartBoundary.get
+        assert(body.lines.toList(0) == s"--$boundary")
+      }
+
+      "appends a Content-Disposition line containing the name and filename, followed by a CRLF" - {
+        val request =
+          POST("/", "")
+            .multipart()
+            .multipartFormValueFile(
+              name = "cv",
+              filename = "cv.md",
+              contentType = "text/markdown",
+              data = "# Curriculum Vitae".getBytes().toStream
+            )
+        val body = request.body.asString
+        assert(body contains "Content-Disposition: form-data; name=\"cv\"; filename=\"cv.md\"\r\n")
+      }
+
+      "appends a Content-Type line containing the content type, followed by a CRLF" - {
+        val request =
+          POST("/", "")
+            .multipart()
+            .multipartFormValueFile(
+              name = "cv",
+              filename = "cv.md",
+              contentType = "text/markdown",
+              data = "# Curriculum Vitae".getBytes().toStream
+            )
+        val body = request.body.asString
+        assert(body contains "Content-Type: text/markdown\r\n")
+      }
+
+      "appends the data after the content disposition line" - {
+        val request =
+          POST("/", "")
+            .multipart()
+            .multipartFormValueFile(
+              name = "cv",
+              filename = "cv.md",
+              contentType = "text/markdown",
+              data = "# Curriculum Vitae".getBytes().toStream
+            )
+        val body = request.body.asString
+        assert(body.lines.toList(3) == "# Curriculum Vitae")
+      }
+
+      "appends the boundary after the data" - {
+        val request =
+          POST("/", "")
+            .multipart()
+            .multipartFormValueFile(
+              name = "cv",
+              filename = "cv.md",
+              contentType = "text/markdown",
+              data = "# Curriculum Vitae".getBytes().toStream
+            )
+        val body = request.body.asString
+        assert(body.lines.toList.last == s"--${request.multipartBoundary.get}")
+      }
+
+
+    }
+
     "Setting a query" - {
       "appends the query string to the URL" - {
         val request: Request = GET("http://localhost/action").query(Map("foo" -> Seq("42")))

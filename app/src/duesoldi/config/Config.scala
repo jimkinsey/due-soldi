@@ -14,6 +14,7 @@ case class Config(
   loggingEnabled: Boolean,
   loggerName: String,
   secretKey: String,
+  assetBucket: String,
   features: Map[String, Boolean],
   accessRecordArchiveThreshold: Option[Int] = None,
   templatePath: Option[String] = None

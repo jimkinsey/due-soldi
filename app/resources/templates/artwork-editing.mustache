@@ -20,7 +20,7 @@
       </form>
       <h2>Edit</h2>
       {{#artwork}}
-      <form class="artwork" action="/admin/artwork/edit" method="POST" accept-charset="utf-8">
+      <form class="artwork" action="/admin/artwork/edit" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
         <p>
           <label>ID</label>
           <input name="id" type="text"  value="{{id}}"/>
@@ -44,6 +44,10 @@
         <p>
           <label>Description</label>
           <textarea name="description">{{{description}}}</textarea>
+        </p>
+        <p>
+          <label>Upload an image</label>
+          <input type="file" id="main-image-file" name="image"/>
         </p>
         <button type="submit">Publish</button>
       </form>

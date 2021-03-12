@@ -55,6 +55,20 @@ extends TestSuite {
 
     }
 
+    "taking the stream up to a slice" - {
+
+      "leaves the original stream when it does not contain the slice" - {
+        val res = (1 to 10).toStream takeUntil (11 to 20)
+        assert(res == (1 to 10).toStream)
+      }
+
+      "returns the stream up to the slice when it does contain it" - {
+        val res = (1 to 10).toStream takeUntil (5 to 6)
+        assert(res == (1 to 4).toStream)
+      }
+
+    }
+
 
 
   }

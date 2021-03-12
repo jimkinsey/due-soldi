@@ -1,26 +1,23 @@
 package duesoldi.gallery.routes
 
-import com.sun.org.apache.xalan.internal.lib.ExsltDatetime.date
 import duesoldi.app.AdminAuth.basicAdminAuth
 import duesoldi.app.RequestDependencies._
 import duesoldi.app.sessions.Sessions.{GetSessionCookie, validSession}
+import duesoldi.assets.StoreAsset
 import duesoldi.blog.validation.ValidateIdentifier
 import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.gallery.model.Artwork
 import duesoldi.gallery.pages.ArtworkEditingPageModel
+import duesoldi.gallery.storage._
 import duesoldi.gallery.{ArtworkFromYaml, ArtworkToYaml, ArtworksFromYaml, ArtworksToYaml}
-import duesoldi.gallery.storage.{CreateOrUpdateArtwork, DeleteAllArtworks, DeleteArtwork, GetAllArtworks, GetArtwork, PutArtwork, PutArtworks}
 import duesoldi.rendering.Render
 import hammerspace.markdown
-import hammerspace.markdown.MarkdownDocument
 import ratatoskr.ResponseBuilding._
 import sommelier.handling.Unpacking._
 import sommelier.routing.Routing._
 import sommelier.routing.{Controller, Result}
 
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME
 import scala.concurrent.ExecutionContext
 
 
@@ -100,6 +97,10 @@ extends Controller
         timeframe = timeframe,
         description = description.map(parseMarkdown)
       )
+
+      imageFile <- uploadedFiles("image").optional.firstValue
+      storeAsset <- provided[StoreAsset]
+      _ <- whenAvailable(imageFile) { f => storeAsset(imageURL, f.data) rejectWith { _ => 500 } } ({})
 
       store <- provided[CreateOrUpdateArtwork]
       _ <- store(artwork) rejectWith { _ => 500 }

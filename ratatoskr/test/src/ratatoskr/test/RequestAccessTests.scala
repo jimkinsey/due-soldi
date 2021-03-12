@@ -114,8 +114,6 @@ extends TestSuite
             """
               |----b
               |blah
-              |
-              |value
               |----b""".stripMargin.asByteStream("UTF-8"),
           headers = Map(
             "Content-Type" -> Seq("multipart/form-data; boundary=--b")
@@ -132,10 +130,10 @@ extends TestSuite
           body =
             """
               |----b
-              |Content-Disposition: form-data
+              |Content-Disposition: form-data[CR]
               |
               |value
-              |----b""".stripMargin.asByteStream("UTF-8"),
+              |----b""".replace("[CR]", "\r").stripMargin.asByteStream("UTF-8"),
           headers = Map(
             "Content-Type" -> Seq("multipart/form-data; boundary=--b")
           ),
@@ -151,9 +149,9 @@ extends TestSuite
           body =
             """
               |----b
-              |Content-Disposition: form-data; name="key"
+              |Content-Disposition: form-data; name="key"[CR]
               |
-              |----b""".stripMargin.asByteStream("UTF-8"),
+              |----b""".replace("[CR]", "\r").stripMargin.asByteStream("UTF-8"),
           headers = Map(
             "Content-Type" -> Seq("multipart/form-data; boundary=--b")
           ),
@@ -169,10 +167,10 @@ extends TestSuite
           body =
             """
               |----b
-              |Content-Disposition: form-data; name="key"
+              |Content-Disposition: form-data; name="key"[CR]
               |
               |value
-              |----b""".stripMargin.asByteStream("UTF-8"),
+              |----b""".replace("[CR]", "\r").stripMargin.asByteStream("UTF-8"),
           headers = Map(
             "Content-Type" -> Seq("multipart/form-data; boundary=--b")
           ),
@@ -190,14 +188,14 @@ extends TestSuite
           body =
             """
               |----b
-              |Content-Disposition: form-data; name="key1"
+              |Content-Disposition: form-data; name="key1"[CR]
               |
               |value1
               |----b
-              |Content-Disposition: form-data; name="key2"
+              |Content-Disposition: form-data; name="key2"[CR]
               |
               |value2
-              |----b""".stripMargin.asByteStream("UTF-8"),
+              |----b""".replace("[CR]", "\r").stripMargin.asByteStream("UTF-8"),
           headers = Map(
             "Content-Type" -> Seq("multipart/form-data; boundary=--b")
           ),
@@ -216,11 +214,11 @@ extends TestSuite
           body =
             """
               |----b
-              |Content-Disposition: form-data; name="key"
-              |Content-Type: text/plain
+              |Content-Disposition: form-data; name="key"[CR]
+              |Content-Type: text/plain[CR]
               |
               |Hello, world!
-              |----b""".stripMargin.asByteStream("UTF-8"),
+              |----b""".replace("[CR]", "\r").stripMargin.asByteStream("UTF-8"),
           headers = Map(
             "Content-Type" -> Seq("multipart/form-data; boundary=--b")
           ),
@@ -228,6 +226,49 @@ extends TestSuite
         val formValues = request.multipartFormValues
         assert(
           formValues.find(_.name == "key") exists (_.contentType contains "text/plain")
+        )
+      }
+
+      "includes the filename, when specified in the content disposition" - {
+        val request = Request(
+          method = POST,
+          url = "/",
+          body =
+            """
+              |----b
+              |Content-Disposition: form-data; name="key"; filename="greeting.txt"[CR]
+              |Content-Type: text/plain[CR]
+              |Hello, world!
+              |----b""".replace("[CR]", "\r").stripMargin.asByteStream("UTF-8"),
+          headers = Map(
+            "Content-Type" -> Seq("multipart/form-data; boundary=--b")
+          ),
+        )
+        val formValues = request.multipartFormValues
+        assert(
+          formValues.find(_.name == "key") exists (_.filename contains "greeting.txt")
+        )
+      }
+
+      "includes the file data, when a file name and content type are specified" - {
+        val request = Request(
+          method = POST,
+          url = "/",
+          body =
+            """
+              |----b
+              |Content-Disposition: form-data; name="key"; filename="greeting.txt"[CR]
+              |Content-Type: text/plain[CR]
+              |Hello, world!
+              |----b""".replace("[CR]", "\r").stripMargin.asByteStream("UTF-8"),
+          headers = Map(
+            "Content-Type" -> Seq("multipart/form-data; boundary=--b")
+          ),
+        )
+        val formValues = request.multipartFormValues
+        val textFileContent = formValues.find(_.name == "key").map(_.data.asString)
+        assert(
+          textFileContent contains "Hello, world!"
         )
       }
 

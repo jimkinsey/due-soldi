@@ -11,7 +11,8 @@ import scala.util.matching.Regex
 case class MultipartFormValue(
   name: String,
   data: Stream[Byte],
-  contentType: Option[String] = None
+  contentType: Option[String] = None,
+  filename: Option[String] = None
 )
 
 object RequestAccess
@@ -38,33 +39,45 @@ object RequestAccess
 
     def formValues: Map[String, Seq[String]] = parseParams(request.body.asString)
 
-    def multipartFormValues: Stream[MultipartFormValue] = {
+    def multipartBoundary: Option[String] = {
       request.header("Content-Type")
         .flatMap(_.headOption)
-        .collect { case Boundary(b) => s"\n--$b".getBytes }
-        .fold[Stream[MultipartFormValue]](Stream.empty) { boundary =>
-          request.body
-            .separatedBy(boundary)
-            .foldLeft[Stream[MultipartFormValue]](Stream.empty) { case (acc, chunk) =>
-              val firstLine = new String(chunk.dropWhile(_ == '\n').takeWhile(_ != '\n').toArray)
+        .collect { case Boundary(b) => b }
+    }
 
-              firstLine match {
-                case ContentDisposition(name) =>
-                  val remainder = chunk.drop(firstLine.length + 1)
-                  val secondLine = new String(remainder.dropWhile(_ == '\n').takeWhile(_ != '\n').toArray)
+    def multipartFormValues(name: String): Option[Seq[MultipartFormValue]] = {
+      multipartFormValues.filter(_.name == name) match {
+        case seq if seq.isEmpty => None
+        case seq => Some(seq)
+      }
+    }
 
-                  val (contentType, data) = secondLine match {
-                    case ContentType(typ) =>
-                      (Some(typ), remainder.removePrefix(secondLine.getBytes()).dropWhile(_.toChar.isWhitespace))
-                    case _ =>
-                      (None, remainder.dropWhile(_.toChar.isWhitespace))
-                  }
+    def multipartFormValues: Stream[MultipartFormValue] = {
+      multipartBoundary.fold[Stream[MultipartFormValue]](Stream.empty) { boundary =>
+        request.body
+          .dropWhile(_.toChar.isWhitespace)
+          .drop(boundary.length + 2)
+          .separatedBy(s"\n--$boundary".getBytes)
+          .foldLeft[Stream[MultipartFormValue]](Stream.empty) { case (acc, chunk) =>
+            val firstLine = new String(chunk.dropWhile(_.toChar.isWhitespace).takeUntil("\r\n".getBytes()).toArray)
 
-                  acc.append(Stream(MultipartFormValue(name, data, contentType)))
-                case _ =>
-                  acc
-              }
+            firstLine match {
+              case ContentDisposition(name, filename) =>
+                val remainder = chunk.drop(firstLine.length + 2)
+                val secondLine = new String(remainder.dropWhile(_.toChar.isWhitespace).takeUntil("\r\n".getBytes()).toArray)
+
+                val (contentType, data) = secondLine match {
+                  case ContentType(typ) =>
+                    (Some(typ), remainder.drop(secondLine.length + 2).dropWhile(_.toChar.isWhitespace))
+                  case _ =>
+                    (None, remainder.dropWhile(_.toChar.isWhitespace))
+                }
+
+                acc.append(Stream(MultipartFormValue(name, data, contentType, Option(filename))))
+              case _ =>
+                acc
             }
+          }
         }
     }
 
@@ -90,7 +103,7 @@ object RequestAccess
   }
 
   private lazy val Boundary = """.*boundary=(.+)$""".r
-  private lazy val ContentDisposition = """^Content-Disposition:\s*form-data;\s*name="(.+)"\s*$""".r
-  private lazy val ContentType = """^Content-Type:\s*(.+)\s*""".r
+  private lazy val ContentDisposition = """Content-Disposition:\s*form-data;\s*name="([^"]+)"(?:;\sfilename="([^"]+)")?.*""".r
+  private lazy val ContentType = """Content-Type:\s*(.+)\s*""".r
 
 }

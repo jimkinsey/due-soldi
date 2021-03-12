@@ -27,6 +27,13 @@ object StreamEnhancements {
       }
     }
 
+    def takeUntil(slice: GenSeq[T]): Stream[T] = {
+      stream.indexOfSlice(slice) match {
+        case -1 => stream
+        case i => stream.slice(0, i)
+      }
+    }
+
   }
 
 }

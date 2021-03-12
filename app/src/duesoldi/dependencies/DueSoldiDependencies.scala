@@ -4,6 +4,7 @@ import java.sql.ResultSet
 import dearboy.EventBus
 import duesoldi.app.sessions.Sessions
 import duesoldi.app.sessions.Sessions.GetSessionCookie
+import duesoldi.assets.{S3AssetStore, StoreAsset}
 import duesoldi.blog.model.BlogEntry
 import duesoldi.blog.pages._
 import duesoldi.blog.serialisation.EntryYaml
@@ -191,6 +192,8 @@ object DueSoldiDependencies
   implicit lazy val artworksFromYaml: Inject[gallery.ArtworksFromYaml] = _ => ArtworkYaml.parseAll
 
   implicit lazy val getSessionCookie: Inject[GetSessionCookie] = config => Sessions.getSessionCookie(config.secretKey)
+
+  implicit lazy val storeAsset: Inject[StoreAsset] = config => S3AssetStore.storeAsset(config.assetBucket)
 }
 
 object Features

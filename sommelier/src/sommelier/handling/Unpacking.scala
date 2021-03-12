@@ -1,7 +1,6 @@
 package sommelier.handling
 
 import java.time.ZonedDateTime
-
 import sommelier.routing.SyncResult.{Accepted, Rejected}
 import sommelier.routing.{AsyncResult, PathParams, Rejection, Result, SyncResult}
 
@@ -11,7 +10,8 @@ import scala.util.Try
 import ratatoskr.RequestAccess._
 import ratatoskr.ResponseBuilding._
 import hammerspace.testing.StreamHelpers._
-import ratatoskr.Response
+import ratatoskr.{MultipartFormValue, Response}
+import sommelier.UploadedFile
 
 object Unpacking
 {
@@ -84,7 +84,26 @@ object Unpacking
   }
 
   def form[T](name: String)(implicit context: Context, unpacker: Unpacker[T]): Result[Seq[T]] = {
-    context.request.formValues.get(name) rejectWith { FormValueNotFound(name) }  map (_.flatMap(unpacker.unpack))
+    context.request.formValues.get(name)
+      .orElse(context.request.multipartFormValues(name).map(_.map(_.data.asString)))
+      .rejectWith { FormValueNotFound(name) }
+      .map(_.flatMap(unpacker.unpack))
+  }
+
+  def uploadedFile(name: String)(implicit context: Context): Result[UploadedFile] = {
+    uploadedFiles(name).map(_.head)
+  }
+
+  def uploadedFiles(name: String)(implicit context: Context): Result[Seq[UploadedFile]] = {
+    context.request.multipartFormValues(name)
+      .map(_.collect { case MultipartFormValue(_, data, Some(contentType), Some(filename)) =>
+        UploadedFile(filename, contentType, data)
+      })
+      .rejectWith { FormValueNotFound(name) }
+  }
+
+  def whenAvailable[A,B](optional: Option[A])(ifAvailable: A => Result[B])(ifUnavailable: => B): Result[B] = {
+    optional.map(ifAvailable).getOrElse(Accepted(ifUnavailable))
   }
 
   case class HeaderNotFound(name: String) extends Rejection
