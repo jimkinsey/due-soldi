@@ -110,11 +110,11 @@ extends TestSuite
         val request = Request(
           method = POST,
           url = "/",
-          body =
+          body = bodyWithCarriageReturns(
             """
               |----b
-              |blah
-              |----b""".stripMargin.asByteStream("UTF-8"),
+              |blah[CR]
+              |----b""".stripMargin),
           headers = Map(
             "Content-Type" -> Seq("multipart/form-data; boundary=--b")
           ),
@@ -127,13 +127,13 @@ extends TestSuite
         val request = Request(
           method = POST,
           url = "/",
-          body =
+          body = bodyWithCarriageReturns(
             """
               |----b
               |Content-Disposition: form-data[CR]
               |
-              |value
-              |----b""".replace("[CR]", "\r").stripMargin.asByteStream("UTF-8"),
+              |value[CR]
+              |----b""".stripMargin),
           headers = Map(
             "Content-Type" -> Seq("multipart/form-data; boundary=--b")
           ),
@@ -146,12 +146,12 @@ extends TestSuite
         val request = Request(
           method = POST,
           url = "/",
-          body =
+          body = bodyWithCarriageReturns(
             """
               |----b
               |Content-Disposition: form-data; name="key"[CR]
               |
-              |----b""".replace("[CR]", "\r").stripMargin.asByteStream("UTF-8"),
+              |----b""".stripMargin),
           headers = Map(
             "Content-Type" -> Seq("multipart/form-data; boundary=--b")
           ),
@@ -164,13 +164,13 @@ extends TestSuite
         val request = Request(
           method = POST,
           url = "/",
-          body =
+          body = bodyWithCarriageReturns(
             """
               |----b
               |Content-Disposition: form-data; name="key"[CR]
               |
-              |value
-              |----b""".replace("[CR]", "\r").stripMargin.asByteStream("UTF-8"),
+              |value[CR]
+              |----b""".stripMargin),
           headers = Map(
             "Content-Type" -> Seq("multipart/form-data; boundary=--b")
           ),
@@ -185,17 +185,17 @@ extends TestSuite
         val request = Request(
           method = POST,
           url = "/",
-          body =
+          body = bodyWithCarriageReturns(
             """
               |----b
               |Content-Disposition: form-data; name="key1"[CR]
               |
-              |value1
+              |value1[CR]
               |----b
               |Content-Disposition: form-data; name="key2"[CR]
               |
-              |value2
-              |----b""".replace("[CR]", "\r").stripMargin.asByteStream("UTF-8"),
+              |value2[CR]
+              |----b""".stripMargin),
           headers = Map(
             "Content-Type" -> Seq("multipart/form-data; boundary=--b")
           ),
@@ -211,14 +211,14 @@ extends TestSuite
         val request = Request(
           method = POST,
           url = "/",
-          body =
+          body = bodyWithCarriageReturns(
             """
               |----b
               |Content-Disposition: form-data; name="key"[CR]
               |Content-Type: text/plain[CR]
               |
-              |Hello, world!
-              |----b""".replace("[CR]", "\r").stripMargin.asByteStream("UTF-8"),
+              |Hello, world![CR]
+              |----b""".stripMargin),
           headers = Map(
             "Content-Type" -> Seq("multipart/form-data; boundary=--b")
           ),
@@ -233,13 +233,13 @@ extends TestSuite
         val request = Request(
           method = POST,
           url = "/",
-          body =
+          body = bodyWithCarriageReturns(
             """
               |----b
               |Content-Disposition: form-data; name="key"; filename="greeting.txt"[CR]
               |Content-Type: text/plain[CR]
-              |Hello, world!
-              |----b""".replace("[CR]", "\r").stripMargin.asByteStream("UTF-8"),
+              |Hello, world![CR]
+              |----b""".stripMargin),
           headers = Map(
             "Content-Type" -> Seq("multipart/form-data; boundary=--b")
           ),
@@ -254,13 +254,13 @@ extends TestSuite
         val request = Request(
           method = POST,
           url = "/",
-          body =
+          body = bodyWithCarriageReturns(
             """
               |----b
               |Content-Disposition: form-data; name="key"; filename="greeting.txt"[CR]
               |Content-Type: text/plain[CR]
-              |Hello, world!
-              |----b""".replace("[CR]", "\r").stripMargin.asByteStream("UTF-8"),
+              |Hello, world![CR]
+              |----b""".stripMargin),
           headers = Map(
             "Content-Type" -> Seq("multipart/form-data; boundary=--b")
           ),
@@ -273,5 +273,9 @@ extends TestSuite
       }
 
     }
+  }
+
+  private def bodyWithCarriageReturns(string: String): Stream[Byte] = {
+    string.replace("[CR]", "\r").asByteStream("UTF-8")
   }
 }
