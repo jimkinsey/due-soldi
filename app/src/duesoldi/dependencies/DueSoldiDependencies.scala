@@ -18,10 +18,10 @@ import duesoldi.dependencies.Injection._
 import duesoldi.furniture.CurrentPathAndContent
 import duesoldi.furniture.storage.FurnitureFiles
 import duesoldi.gallery.ArtworkPageModel
-import duesoldi.gallery.model.Artwork
+import duesoldi.gallery.model.{Artwork, Series}
 import duesoldi.gallery.pages.BuildArtworkPageModel
-import duesoldi.gallery.serialisation.ArtworkYaml
-import duesoldi.gallery.storage.{CreateOrUpdateArtwork, DeleteAllArtworks, DeleteArtwork, GalleryStore, GetAllArtworks, GetArtwork, PutArtwork, PutArtworks}
+import duesoldi.gallery.serialisation.{ArtworkYaml, SeriesYaml}
+import duesoldi.gallery.storage.{CreateOrUpdateArtwork, DeleteAllArtworks, DeleteArtwork, GalleryStore, GetAllArtworks, GetArtwork, GetSeries, PutArtwork, PutArtworks, PutManySeries, PutSeries}
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.metrics.storage._
@@ -139,6 +139,10 @@ object DueSoldiDependencies
     GalleryStore.getOne(jdbcPerformQuery[Artwork](GalleryStore.toArtwork(parseMarkdown(config)))(config))
   }
 
+  implicit val getSeries: Inject[GetSeries] = { config =>
+    GalleryStore.getOneSeries(jdbcPerformQuery[Series](GalleryStore.toSeries(parseMarkdown(config)))(config))
+  }
+
   implicit val getAllBlogEntries: Inject[GetAllBlogEntries] = { config =>
     BlogStore.getAll(jdbcPerformQuery[BlogEntry](BlogStore.toBlogEntry(parseMarkdown(config)))(config))
   }
@@ -151,9 +155,13 @@ object DueSoldiDependencies
 
   implicit val putArtwork: Inject[PutArtwork] = inject(GalleryStore.put _)
 
+  implicit val putSeries: Inject[PutSeries] = inject(GalleryStore.putSeries _)
+
   implicit def putAllBlogEntries(implicit executionContext: ExecutionContext): Inject[PutBlogEntries] = inject(BlogStore.putAll _)
 
   implicit def putAllArtworks(implicit executionContext: ExecutionContext): Inject[PutArtworks] = inject(GalleryStore.putAll _)
+
+  implicit def putAllSeries(implicit executionContext: ExecutionContext): Inject[PutManySeries] = inject(GalleryStore.putAllSeries _)
 
   implicit val deleteBlogEntry: Inject[DeleteBlogEntry] = inject(BlogStore.delete _)
 
@@ -190,6 +198,10 @@ object DueSoldiDependencies
   implicit lazy val blogEntriesFromYaml: Inject[blog.EntriesFromYaml] = _ => EntryYaml.parseAll
 
   implicit lazy val artworksFromYaml: Inject[gallery.ArtworksFromYaml] = _ => ArtworkYaml.parseAll
+
+  implicit lazy val seriesFromYaml: Inject[gallery.SeriesFromYaml] = _ => SeriesYaml.parse
+
+  implicit lazy val manySeriesFromYaml: Inject[gallery.ManySeriesFromYaml] = _ => SeriesYaml.parseAll
 
   implicit lazy val getSessionCookie: Inject[GetSessionCookie] = config => Sessions.getSessionCookie(config.secretKey)
 

@@ -30,6 +30,12 @@ object JDBCConnection
         } yield {
           count
         }
+
+        if (results.isFailure) {
+          println(s"Failed to perform query for SQL [$sql] with vars [$vars]");
+          results.failed.get.printStackTrace()
+        }
+
         results.fin({ Try(connection.close()) })
       }
   }
@@ -45,6 +51,12 @@ object JDBCConnection
         } yield {
           translated.toList
         }
+
+        if (results.isFailure) {
+          println(s"Failed to perform query for SQL [$sql] with vars [$vars]");
+          results.failed.get.printStackTrace()
+        }
+
         results.fin({ Try(connection.close()) })
       }
   }

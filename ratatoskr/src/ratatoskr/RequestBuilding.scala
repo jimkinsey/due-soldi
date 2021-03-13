@@ -53,7 +53,7 @@ object RequestBuilding
 
       request.copy(body =
         prefix.append(
-          ("Content-Disposition: form-data; name=\"" + value._1 + "\"\r\n" + value._2 + "\n--" + boundary + "\n").getBytes())
+          ("Content-Disposition: form-data; name=\"" + value._1 + "\"\r\n" + value._2 + "\r\n--" + boundary + "\n").getBytes())
       )
     }
 
@@ -75,7 +75,7 @@ object RequestBuilding
           .append(("Content-Disposition: form-data; name=\"" + name + "\"; filename=\"" + filename + "\"\r\n").getBytes())
           .append(("Content-Type: " + contentType + "\r\n").getBytes())
           .append(data)
-          .append(s"\n--${boundary}\n".getBytes().toStream)
+          .append(s"\r\n--${boundary}\n".getBytes().toStream)
       )
     }
 

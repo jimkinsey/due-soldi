@@ -132,6 +132,30 @@ extends TestSuite
           }
         }
       }
+      "includes navigation back to the series page, when the artwork is part of a series" - {
+        withSetup(
+          database,
+          configOverride("IMAGE_BASE_URL" -> "https://images"),
+          runningApp,
+          series(
+            series.withId("late-works")
+              .withTitle("Late works")
+          ),
+          artworks(
+            artwork.withId("untitled-masterpiece")
+              .withImageURL("/path/to/image.png")
+              .belongingToSeries("late-works")
+          )
+        ) { implicit env =>
+          for {
+            res <- get("/gallery/untitled-masterpiece")
+            page = new ArtworkPage(res.body.asString)
+          } yield {
+            assert(page.seriesURL contains "/gallery/series/late-works")
+            assert(page.seriesTitle contains "Late works")
+          }
+        }
+      }
       "has a copyright notice" - {
         withSetup(
           database,

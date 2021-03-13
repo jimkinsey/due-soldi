@@ -1,6 +1,6 @@
 package duesoldi.gallery.serialisation
 
-import duesoldi.gallery.model.Artwork
+import duesoldi.gallery.model.{Artwork, Series}
 import duesoldi.gallery.serialisation.ArtworkMap.ArtworkMap
 import duesoldi.gallery.serialisation.ArtworkYaml.ParseFailure.{Invalid, Malformed}
 import hammerspace.markdown.MarkdownDocument
@@ -37,6 +37,7 @@ object ArtworkYaml
        |timeframe: ${work.timeframe.getOrElse("")}
        |materials: ${work.materials.getOrElse("")}
        |title: ${work.title}
+       |series-id: ${work.seriesId.getOrElse("")}
        |description: |
        |${indentBlock(work.description.getOrElse(MarkdownDocument.empty).raw)}""".stripMargin
 
@@ -55,3 +56,5 @@ object ArtworkYaml
     case object Invalid extends ParseFailure
   }
 }
+
+

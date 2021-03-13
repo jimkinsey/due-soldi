@@ -31,5 +31,12 @@ CREATE TABLE artwork(
     description   text              null,
     timeframe     character varying null,
     materials     character varying null,
-    image_url     character varying not null
+    image_url     character varying not null,
+    series_id     character varying null
+);
+
+CREATE TABLE series(
+    id          character varying not null PRIMARY KEY,
+    title       character varying not null,
+    description text              null
 );

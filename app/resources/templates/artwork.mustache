@@ -4,6 +4,11 @@
     <title>{{title}}</title>
   </head>
   <body>
+    <nav>
+      <ol>
+          {{#series}}<li><a id="series-link" href="{{url}}">{{title}}</a></li>{{/series}}
+      </ol>
+    </nav>
     <main id="content">
       <header>
         <h1>{{title}}</h1>

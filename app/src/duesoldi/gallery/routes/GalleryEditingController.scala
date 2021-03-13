@@ -10,7 +10,7 @@ import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.gallery.model.Artwork
 import duesoldi.gallery.pages.ArtworkEditingPageModel
 import duesoldi.gallery.storage._
-import duesoldi.gallery.{ArtworkFromYaml, ArtworkToYaml, ArtworksFromYaml, ArtworksToYaml}
+import duesoldi.gallery.{ArtworkFromYaml, ArtworkToYaml, ArtworksFromYaml, ArtworksToYaml, ManySeriesFromYaml, SeriesFromYaml}
 import duesoldi.rendering.Render
 import hammerspace.markdown
 import ratatoskr.ResponseBuilding._
@@ -82,6 +82,8 @@ extends Controller
       getSessionCookie <- provided[GetSessionCookie]
       sessionCookie <- getSessionCookie(context.request) rejectWith 500
 
+      _ = println("Getting data from form...")
+
       parseMarkdown <- provided[markdown.Parse]
       id <- form[String]("id").firstValue.required { 500 }
       title <- form[String]("title").firstValue.required { 500 }
@@ -98,12 +100,18 @@ extends Controller
         description = description.map(parseMarkdown)
       )
 
+      _ = println("Getting uploaded file...")
+
       imageFile <- uploadedFiles("image").optional.firstValue
       storeAsset <- provided[StoreAsset]
       _ <- whenAvailable(imageFile) { f => storeAsset(imageURL, f.data) rejectWith { _ => 500 } } ({})
 
+      _ = println("Storing artwork...")
+
       store <- provided[CreateOrUpdateArtwork]
       _ <- store(artwork) rejectWith { _ => 500 }
+
+      _ = println("Getting artworks to build view model...")
 
       getArtworks <- provided[GetAllArtworks]
       artworks <- getArtworks() rejectWith { _ => 500 }
@@ -128,6 +136,8 @@ extends Controller
         )
       )
 
+      _ = println("Rendering HTML...")
+
       render <- provided[Render]
       html <- render("artwork-editing", model) rejectWith { failure => 500 }
     } yield {
@@ -145,9 +155,30 @@ extends Controller
       id      <- pathParam[String]("id").validate(id => validateIdentifier(id).isEmpty) { 400 ("Invalid identifier") }
       content <- body[String]
       _       <- getArtwork(id).map(_.toLeft(false)) rejectWith { _ => 409 (s"Artwork with ID '$id' already exists")}
-      entry   <- parse(content) rejectWith { failure => 400 (s"Failed to parse this content [$failure] [$content]")}
-      _       <- putArtwork(entry) rejectWith { _ => 500 ("Failed to store artwork") }
+      artwork <- parse(content) rejectWith { failure => 400 (s"Failed to parse this content [$failure] [$content]")}
+      _       <- putArtwork(artwork) rejectWith { _ => 500 ("Failed to store artwork") }
     } yield {
+      201 ("")
+    }
+  }
+
+  PUT("/admin/series/:id").Authorization(basicAdminAuth) ->- { implicit context =>
+    for {
+      validateIdentifier <- provided[ValidateIdentifier]
+      parse              <- provided[SeriesFromYaml]
+      putSeries          <- provided[PutSeries]
+      getSeries          <- provided[GetSeries]
+
+
+      id      <- pathParam[String]("id").validate(id => validateIdentifier(id).isEmpty) { 400 ("Invalid identifier") }
+      _ = println(s"PUTTING SERIES WITH ID $id")
+
+      content <- body[String]
+      _       <- getSeries(id).map(_.toLeft(false)) rejectWith { _ => 409 (s"Series with ID '$id' already exists")}
+      series  <- parse(content) rejectWith { failure => 400 (s"Failed to parse this content [$failure] [$content]")}
+      _       <- putSeries(series) rejectWith { _ => 500 ("Failed to store series") }
+    } yield {
+      println("SUCCESSFULLY PUT SERIES")
       201 ("")
     }
   }
@@ -191,11 +222,11 @@ extends Controller
   PUT("/admin/artwork").Authorization(basicAdminAuth) ->- { implicit context =>
     for {
       putArtworks <- provided[PutArtworks]
-      parse <- provided[ArtworksFromYaml]
+      parse       <- provided[ArtworksFromYaml]
 
-      content <- body[String]
+      content  <- body[String]
       artworks <- parse(content) rejectWith { failure => 400 (s"Failed to parse document - $failure") }
-      _ <- putArtworks(artworks) rejectWith { failure => 500 (s"Failed to store artworks - $failure") }
+      _        <- putArtworks(artworks) rejectWith { failure => 500 (s"Failed to store artworks - $failure") }
     } yield {
       201
     }
@@ -208,6 +239,25 @@ extends Controller
       _ <- deleteWorks() rejectWith { _ => 500 }
     } yield {
       204
+    }
+  }
+
+  PUT("/admin/series").Authorization(basicAdminAuth) ->- { implicit context =>
+    for {
+      putSeries <- provided[PutManySeries]
+      parse     <- provided[ManySeriesFromYaml]
+
+      content <- body[String]
+      series  <- parse(content) rejectWith { failure => 400 (s"Failed to parse document - $failure") }
+
+      _ = println(s"Parsed series: [$series]")
+
+      _       <- putSeries(series) rejectWith { failure => 500 (s"Failed to store series - $failure") }
+    } yield {
+
+      println(s"Successfully stored series [${series}]")
+
+      201
     }
   }
 

@@ -11,5 +11,11 @@ case class Artwork(
   description: Option[MarkdownDocument] = None,
   lastModified: ZonedDateTime = ZonedDateTime.now(),
   timeframe: Option[String] = None,
-  materials: Option[String] = None
+  materials: Option[String] = None,
+  seriesId: Option[String] = None
+)
+
+case class Series(
+  id: String,
+  title: String
 )

@@ -19,6 +19,7 @@ object ConfigOverride
 object GalleryStorage
 {
   val artwork = ArtworkBuilder()
+  val series = SeriesBuilder()
 
   case class ArtworkBuilder(
     id: String = "id",
@@ -27,7 +28,8 @@ object GalleryStorage
     description: Option[String] = None,
     timeframe: Option[String] = None,
     imageURL: String = "/path/to/image.png",
-    materials: Option[String] = None
+    materials: Option[String] = None,
+    seriesID: Option[String] = None
   ) {
     def withId(id: String): ArtworkBuilder = copy(id = id)
     def withDescription(description: String): ArtworkBuilder = copy(description = Some(description))
@@ -35,6 +37,7 @@ object GalleryStorage
     def withTimeframe(timeframe: String): ArtworkBuilder = copy(timeframe = Some(timeframe))
     def withImageURL(url: String): ArtworkBuilder = copy(imageURL = url)
     def withMaterials(materials: String): ArtworkBuilder = copy(materials = Some(materials))
+    def belongingToSeries(id: String): ArtworkBuilder = copy(seriesID = Some(id))
 
     lazy val toYaml: String = {
       s"""id: $id
@@ -43,9 +46,30 @@ object GalleryStorage
          |materials: ${materials.getOrElse("")}
          |image-url: $imageURL
          |last-modified: ${lastModified.format(DateTimeFormatter.ISO_ZONED_DATE_TIME)}
+         |series-id: ${seriesID.getOrElse("")}
          |description: |
-         |${description.getOrElse("").lines.map(line => s"    $line").mkString("\n")}
-       """.stripMargin
+         |${description.getOrElse("").indented}
+         """.stripMargin
+    }
+  }
+
+  case class SeriesBuilder(
+    id: String = "id",
+    title: String = "title"
+  ) {
+    def withId(id: String): SeriesBuilder = copy(id = id)
+    def withTitle(title: String): SeriesBuilder = copy(title = title)
+
+    lazy val toYaml: String = {
+      s"""id: $id
+         |title: $title
+         """.stripMargin
+    }
+  }
+
+  implicit class YamlOps(yaml: String) {
+    def indented: String = {
+      yaml.lines.map(line => s"    $line").mkString("\n")
     }
   }
 
@@ -57,14 +81,22 @@ object GalleryStorage
     case (id, title, imageURL) => ArtworkBuilder(id = id, title = title, imageURL = imageURL)
   }
 
-//  def artwork(entry: ArtworkBuilder)(implicit executionContext: ExecutionContext) = artworks(entry)
-
   def artworks(entries: ArtworkBuilder*)(implicit executionContext: ExecutionContext) = new AsyncSetup {
     override def setup(env: Env): Future[Env] = {
       implicit val e: Env = env
       val user :: password :: Nil = env("ADMIN_CREDENTIALS").split(":").toList
       Future.sequence(
         entries.map(entry => ServerRequests.put(s"/admin/artwork/${entry.id}", entry.toYaml, BasicAuthorization(user, password)))
+      ) map ( _ => Map.empty )
+    }
+  }
+
+  def series(series: SeriesBuilder*)(implicit executionContext: ExecutionContext) = new AsyncSetup {
+    override def setup(env: Env): Future[Env] = {
+      implicit val e: Env = env
+      val user :: password :: Nil = env("ADMIN_CREDENTIALS").split(":").toList
+      Future.sequence(
+        series.map(series => ServerRequests.put(s"/admin/series/${series.id}", series.toYaml, BasicAuthorization(user, password)))
       ) map ( _ => Map.empty )
     }
   }

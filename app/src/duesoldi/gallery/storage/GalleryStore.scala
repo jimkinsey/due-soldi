@@ -2,7 +2,7 @@ package duesoldi.gallery.storage
 
 import duesoldi.gallery.storage.GalleryStore.DeleteResult.Deleted
 import duesoldi.gallery.storage.GalleryStore.PutResult.Created
-import duesoldi.gallery.model.Artwork
+import duesoldi.gallery.model.{Artwork, Series}
 import hammerspace.markdown
 import hammerspace.storage.JDBCConnection.{PerformQuery, PerformUpdate}
 
@@ -40,29 +40,46 @@ object GalleryStore
   }
 
   def toArtwork(parseMarkdown: markdown.Parse): (ResultSet => Artwork) = { row =>
-    Artwork(
+    val a = Artwork(
       id = row.getString("id"),
       title = row.getString("title"),
       lastModified = row.getTimestamp("last_modified").toInstant.atZone(ZoneId.of("UTC+1")),
       description = Option(parseMarkdown(row.getString("description"))),
       imageURL = row.getString("image_url"),
       timeframe = Option(row.getString("timeframe")),
-      materials = Option(row.getString("materials"))
+      materials = Option(row.getString("materials")),
+      seriesId = Option(row.getString("series_id"))
+    )
+    println(s"GOT ARTWORK $a")
+    a
+  }
+
+  def toSeries(parseMarkdown: markdown.Parse): (ResultSet => Series) = { row =>
+    Series(
+      id = row.getString("id"),
+      title = row.getString("title")
+      // TODO description
     )
   }
 
   def getOne(performQuery: PerformQuery[Artwork])(id: String): Future[Option[Artwork]] = Future.fromTry {
-    performQuery("SELECT id, title, last_modified, description, image_url, timeframe, materials FROM artwork WHERE id = ?", Seq(id)).map {
+    performQuery("SELECT id, title, last_modified, description, image_url, timeframe, materials, series_id FROM artwork WHERE id = ?", Seq(id)).map {
+      _.headOption
+    }
+  }
+
+  def getOneSeries(performQuery: PerformQuery[Series])(id: String): Future[Option[Series]] = Future.fromTry {
+    performQuery("SELECT id, title, description FROM series WHERE id = ?", Seq(id)).map {
       _.headOption
     }
   }
 
   def getAll(performQuery: PerformQuery[Artwork]): () => Future[List[Artwork]] = () => Future.fromTry {
-    performQuery("SELECT id, title, last_modified, description, image_url, timeframe, materials FROM artwork", Seq.empty)
+    performQuery("SELECT id, title, last_modified, description, image_url, timeframe, materials, series_id FROM artwork", Seq.empty)
   }
 
   def put(performUpdate: PerformUpdate)(work: Artwork): Future[Either[PutResult.Failure.type,PutResult.Created.type]] = Future.successful {
-    performUpdate("INSERT INTO artwork ( id, title, last_modified, description, image_url, timeframe, materials ) VALUES ( ?, ?, ?, ?, ?, ?, ? )",
+    performUpdate("INSERT INTO artwork ( id, title, last_modified, description, image_url, timeframe, materials, series_id ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )",
       Seq(
         work.id,
         work.title,
@@ -70,7 +87,23 @@ object GalleryStore
         work.description.map(_.raw).orNull,
         work.imageURL,
         work.timeframe.orNull,
-        work.materials.orNull
+        work.materials.orNull,
+        work.seriesId.orNull
+      )
+    ) match {
+      case Success(_) => Right(PutResult.Created)
+      case Failure(f) =>
+        System.err.println(s"PUT FAILURE = $f")
+        Left(PutResult.Failure)
+    }
+  }
+
+  def putSeries(performUpdate: PerformUpdate)(series: Series): Future[Either[PutResult.Failure.type,PutResult.Created.type]] = Future.successful {
+    performUpdate("INSERT INTO series ( id, title, description ) VALUES ( ?, ?, ? )",
+      Seq(
+        series.id,
+        series.title,
+        null // TODO
       )
     ) match {
       case Success(_) => Right(PutResult.Created)
@@ -82,6 +115,10 @@ object GalleryStore
 
   def putAll(performUpdate: PerformUpdate)(implicit executionContext: ExecutionContext) = (works: Seq[Artwork]) => {
     Future.sequence(works.map(put(performUpdate))) map (_.collectFirst { case f @ Left(_) => f } getOrElse Right(Created))
+  }
+
+  def putAllSeries(performUpdate: PerformUpdate)(implicit executionContext: ExecutionContext) = (series: Seq[Series]) => {
+    Future.sequence(series.map(putSeries(performUpdate))) map (_.collectFirst { case f @ Left(_) => f } getOrElse Right(Created))
   }
 
   def delete(performUpdate: PerformUpdate)(id: String): Future[Either[DeleteResult.Failure.type, DeleteResult.Deleted.type]] = Future.fromTry {

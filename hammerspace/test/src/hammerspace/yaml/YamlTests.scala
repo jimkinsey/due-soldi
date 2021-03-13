@@ -92,5 +92,8 @@ extends TestSuite
         assert(objects isRightOf Seq(Map("obj" -> "1"), Map("obj" -> "2")))
       }
     }
+
+    // TODO weird case where a margin before the final three quotes caused a hang
+
   }
 }

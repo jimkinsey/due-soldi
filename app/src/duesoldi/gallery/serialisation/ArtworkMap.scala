@@ -1,7 +1,7 @@
 package duesoldi.gallery.serialisation
 
 import java.time.ZonedDateTime
-import duesoldi.gallery.model.Artwork
+import duesoldi.gallery.model.{Artwork, Series}
 import hammerspace.markdown.MarkdownParser
 
 object ArtworkMap
@@ -28,8 +28,9 @@ object ArtworkMap
       timeframe = map.field[String]("timeframe")
       materials = map.field[String]("materials")
       lastModified = map.field[ZonedDateTime]("last-modified").getOrElse(ZonedDateTime.now())
+      seriesID = map.field[String]("series-id")
     } yield {
-      Artwork(id, title, imageURL, description, lastModified, timeframe, materials)
+      Artwork(id, title, imageURL, description, lastModified, timeframe, materials, seriesID)
     }
 
   def artworks(maps: Seq[ArtworkMap]): Either[Failure, Seq[Artwork]] = {
@@ -39,3 +40,5 @@ object ArtworkMap
     }
   }
 }
+
+
