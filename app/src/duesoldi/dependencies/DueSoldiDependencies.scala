@@ -21,7 +21,7 @@ import duesoldi.gallery.{ArtworkPageModel, GalleryHomePageModel}
 import duesoldi.gallery.model.{Artwork, Series}
 import duesoldi.gallery.pages.{BuildArtworkPageModel, BuildGalleryHomePageModel}
 import duesoldi.gallery.serialisation.{ArtworkYaml, SeriesYaml}
-import duesoldi.gallery.storage.{CreateOrUpdateArtwork, DeleteAllArtworks, DeleteArtwork, GalleryStore, GetAllArtworks, GetArtwork, GetSeries, PutArtwork, PutArtworks, PutManySeries, PutSeries}
+import duesoldi.gallery.storage.{CreateOrUpdateArtwork, DeleteAllArtworks, DeleteArtwork, GalleryStore, GetAllArtworks, GetAllSeries, GetArtwork, GetSeries, PutArtwork, PutArtworks, PutManySeries, PutSeries}
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.metrics.storage._
@@ -151,6 +151,10 @@ object DueSoldiDependencies
 
   implicit val getAllArtworks: Inject[GetAllArtworks] = { config =>
     GalleryStore.getAll(jdbcPerformQuery[Artwork](GalleryStore.toArtwork(parseMarkdown(config)))(config))
+  }
+
+  implicit val getAllSeries: Inject[GetAllSeries] = { config =>
+    GalleryStore.getAllSeries(jdbcPerformQuery[Series](GalleryStore.toSeries(parseMarkdown(config)))(config))
   }
 
   implicit val putBlogEntry: Inject[PutBlogEntry] = inject(BlogStore.put _)

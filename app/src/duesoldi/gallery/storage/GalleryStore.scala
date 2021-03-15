@@ -72,6 +72,10 @@ object GalleryStore
     }
   }
 
+  def getAllSeries(performQuery: PerformQuery[Series]): () => Future[List[Series]] = () => Future.fromTry {
+    performQuery("SELECT id, title, description FROM series", Seq.empty)
+  }
+
   def getAll(performQuery: PerformQuery[Artwork]): () => Future[List[Artwork]] = () => Future.fromTry {
     performQuery("SELECT id, title, last_modified, description, image_url, timeframe, materials, series_id FROM artwork", Seq.empty)
   }

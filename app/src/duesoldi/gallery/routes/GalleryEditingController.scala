@@ -47,12 +47,15 @@ extends Controller
         Result(emptyArtwork)
       }
 
-      // TODO select from existing series
       // TODO allow inline create / edit of series
       // TODO series pages ,gallery page, redirect from /gallery/series|artwork to /gallery, change artwork URL
 
       getArtworks <- provided[GetAllArtworks]
       artworks <- getArtworks() rejectWith { _ => 500 }
+
+      getAllSeries <- provided[GetAllSeries]
+      allSeries <- getAllSeries() rejectWith { _ => 500 }
+
       model = ArtworkEditingPageModel(
         artworks = artworks.map(work =>
           ArtworkEditingPageModel.Artwork(
@@ -70,7 +73,8 @@ extends Controller
           timeframe = artwork.timeframe.getOrElse(""),
           materials = artwork.materials.getOrElse(""),
           imageURL = artwork.imageURL,
-          description = artwork.description.map(_.raw).getOrElse("")
+          description = artwork.description.map(_.raw).getOrElse(""),
+          allSeries = allSeries.map { s => ArtworkEditingPageModel.Series(s.id, s.title) }
         )
       )
 
@@ -93,13 +97,15 @@ extends Controller
       description <- form[String]("description").optional.firstValue
       timeframe <- form[String]("timeframe").optional.firstValue
       materials <- form[String]("materials").optional.firstValue
+      seriesID <- form[String]("series").optional.firstValue
       artwork = Artwork(
         id,
         title = title,
         imageURL = imageURL,
         materials = materials,
         timeframe = timeframe,
-        description = description.map(parseMarkdown)
+        description = description.map(parseMarkdown),
+        seriesId = seriesID
       )
 
       imageFile <- uploadedFiles("image").optional.firstValue

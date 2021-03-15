@@ -22,6 +22,13 @@
       {{#artwork}}
       <form class="artwork" action="/admin/artwork/edit" method="POST" accept-charset="utf-8" enctype="multipart/form-data">
         <p>
+          <label>Series</label>
+          <select name="series">
+            <option disabled selected value> -- select a series -- </option>
+            {{#allSeries}}<option value="{{id}}">{{title}}</option>{{/allSeries}}
+          </select>
+        </p>
+        <p>
           <label>ID</label>
           <input name="id" type="text"  value="{{id}}"/>
         </p>

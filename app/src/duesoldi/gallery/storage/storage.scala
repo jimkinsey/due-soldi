@@ -15,6 +15,7 @@ package object storage
   type CreateOrUpdateArtwork = (Artwork) => Future[Either[GalleryStore.CreateOrUpdateResult.Failure.type, GalleryStore.CreateOrUpdateResult.Success]]
 
   type GetSeries = (String) => Future[Option[Series]]
+  type GetAllSeries = () => Future[List[Series]]
   type PutSeries = (Series) => Future[Either[GalleryStore.PutResult.Failure.type, GalleryStore.PutResult.Created.type]]
   type PutManySeries = (Seq[Series]) => Future[Either[GalleryStore.PutResult.Failure.type, GalleryStore.PutResult.Created.type]]
 }

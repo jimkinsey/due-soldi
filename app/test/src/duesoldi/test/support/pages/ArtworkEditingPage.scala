@@ -1,5 +1,6 @@
 package duesoldi.test.support.pages
 
+import duesoldi.test.support.pages.ArtworkEditingForm.Series
 import duesoldi.test.support.pages.DomHelper.required
 import org.jsoup.Jsoup
 import org.jsoup.nodes.{Document, Element}
@@ -74,11 +75,34 @@ class ArtworkEditingForm(element: Element)
     this
   }
 
-  def values: Map[String, Seq[String]] = element.select("input, textarea").asScala.map {
-    input => input.attr("name") -> Seq(input.`val`())
-  } toMap
+  def values: Map[String, Seq[String]] = {
+    element.select("input, textarea, select").asScala.map {
+      case formEntry if formEntry.tagName() == "select" =>
+        formEntry.attr("name") -> Option(formEntry.select("option[selected]").first()).map(_.`val`).map(s => Seq(s)).getOrElse(Seq.empty)
+      case input =>
+        input.attr("name") -> Seq(input.`val`())
+    } toMap
+  }
 
   def acceptCharset: String = element.attr("accept-charset")
 
+  def availableSeries: List[ArtworkEditingForm.Series] =
+    element.select("select[name='series'] option").asScala.map(e => new Series(e)).toList
+
+  def seriesID(id: String): ArtworkEditingForm = {
+    element.select("select[name='series'] option").asScala.foreach(_.removeAttr("selected"))
+    required(element, s"select[name='series'] option[value='$id']").attr("selected", "true")
+    this
+  }
+
   override def toString: String = element.html()
+}
+
+object ArtworkEditingForm {
+
+  class Series(elem: Element) {
+    lazy val title: String = elem.text()
+    lazy val id: String = elem.`val`()
+  }
+
 }

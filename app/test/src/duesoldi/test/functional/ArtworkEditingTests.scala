@@ -427,6 +427,44 @@ object ArtworkEditingTests
           }
         }
       }
+      "allows a series to be selected from a dropdown, when they exist" - {
+        withSetup(
+          database,
+          runningApp,
+          series(series.withId("doodles").withTitle("Doodles")),
+          artworks()
+        ) { implicit env =>
+          for {
+            editingPage <- get("/admin/artwork/edit", headers = TestApp.adminAuth)
+            _ = assert(editingPage.status == 200)
+            form = new ArtworkEditingPage(editingPage.body.asString).form
+            formValues = form
+              .id("new-artwork")
+              .title("New Artwork")
+              .timeframe("early 2021")
+              .materials("wax crayon on paper")
+              .imageURL("/path/to/image.png")
+              .description("A _new_ artwork")
+              .seriesID(form.availableSeries.find(_.title == "Doodles").map(_.id).getOrElse(""))
+              .values
+            submission <- send(POST(form.action).formValues(formValues).cookie(editingPage.cookie("adminSessionId").get))
+            newWork <- get("/gallery/new-artwork")
+            artworkPage = new ArtworkPage(newWork.body.asString)
+          } yield {
+            assert(
+              submission.status == 201,
+              newWork.status == 200,
+              artworkPage.title == "New Artwork",
+              artworkPage.artworkImageURL == "/path/to/image.png",
+              artworkPage.timeframe contains "early 2021",
+              artworkPage.materials contains "wax crayon on paper",
+              artworkPage.description contains ("<p>A <i>new</i> artwork</p>"),
+              artworkPage.seriesTitle contains "Doodles"
+            )
+          }
+        }
+      }
+
     }
   }
 }
