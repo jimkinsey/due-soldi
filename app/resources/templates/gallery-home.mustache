@@ -1,0 +1,19 @@
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Gallery</title>
+  </head>
+  <body>
+    <main id="content">
+      <header>
+        <h1>Gallery</h1>
+      </header>
+      <ul>
+        {{#artworks}}<li><a id="artwork-link" href="{{url}}">{{title}}</li>{{/artworks}}
+      </ul>
+    </main>
+    <footer>
+      <small id="copyright">&copy; 2013-2021 Jim Kinsey</small>
+    </footer>
+  </body>
+</html>

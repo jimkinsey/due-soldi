@@ -47,6 +47,10 @@ extends Controller
         Result(emptyArtwork)
       }
 
+      // TODO select from existing series
+      // TODO allow inline create / edit of series
+      // TODO series pages ,gallery page, redirect from /gallery/series|artwork to /gallery, change artwork URL
+
       getArtworks <- provided[GetAllArtworks]
       artworks <- getArtworks() rejectWith { _ => 500 }
       model = ArtworkEditingPageModel(
@@ -82,8 +86,6 @@ extends Controller
       getSessionCookie <- provided[GetSessionCookie]
       sessionCookie <- getSessionCookie(context.request) rejectWith 500
 
-      _ = println("Getting data from form...")
-
       parseMarkdown <- provided[markdown.Parse]
       id <- form[String]("id").firstValue.required { 500 }
       title <- form[String]("title").firstValue.required { 500 }
@@ -100,18 +102,12 @@ extends Controller
         description = description.map(parseMarkdown)
       )
 
-      _ = println("Getting uploaded file...")
-
       imageFile <- uploadedFiles("image").optional.firstValue
       storeAsset <- provided[StoreAsset]
       _ <- whenAvailable(imageFile) { f => storeAsset(imageURL, f.data) rejectWith { _ => 500 } } ({})
 
-      _ = println("Storing artwork...")
-
       store <- provided[CreateOrUpdateArtwork]
       _ <- store(artwork) rejectWith { _ => 500 }
-
-      _ = println("Getting artworks to build view model...")
 
       getArtworks <- provided[GetAllArtworks]
       artworks <- getArtworks() rejectWith { _ => 500 }
@@ -135,8 +131,6 @@ extends Controller
           description = artwork.description.map(_.raw).getOrElse("")
         )
       )
-
-      _ = println("Rendering HTML...")
 
       render <- provided[Render]
       html <- render("artwork-editing", model) rejectWith { failure => 500 }
@@ -171,14 +165,11 @@ extends Controller
 
 
       id      <- pathParam[String]("id").validate(id => validateIdentifier(id).isEmpty) { 400 ("Invalid identifier") }
-      _ = println(s"PUTTING SERIES WITH ID $id")
-
       content <- body[String]
       _       <- getSeries(id).map(_.toLeft(false)) rejectWith { _ => 409 (s"Series with ID '$id' already exists")}
       series  <- parse(content) rejectWith { failure => 400 (s"Failed to parse this content [$failure] [$content]")}
       _       <- putSeries(series) rejectWith { _ => 500 ("Failed to store series") }
     } yield {
-      println("SUCCESSFULLY PUT SERIES")
       201 ("")
     }
   }
@@ -250,13 +241,8 @@ extends Controller
       content <- body[String]
       series  <- parse(content) rejectWith { failure => 400 (s"Failed to parse document - $failure") }
 
-      _ = println(s"Parsed series: [$series]")
-
       _       <- putSeries(series) rejectWith { failure => 500 (s"Failed to store series - $failure") }
     } yield {
-
-      println(s"Successfully stored series [${series}]")
-
       201
     }
   }

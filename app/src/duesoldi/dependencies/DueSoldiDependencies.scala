@@ -17,9 +17,9 @@ import duesoldi.dependencies.Features.forFeature
 import duesoldi.dependencies.Injection._
 import duesoldi.furniture.CurrentPathAndContent
 import duesoldi.furniture.storage.FurnitureFiles
-import duesoldi.gallery.ArtworkPageModel
+import duesoldi.gallery.{ArtworkPageModel, GalleryHomePageModel}
 import duesoldi.gallery.model.{Artwork, Series}
-import duesoldi.gallery.pages.BuildArtworkPageModel
+import duesoldi.gallery.pages.{BuildArtworkPageModel, BuildGalleryHomePageModel}
 import duesoldi.gallery.serialisation.{ArtworkYaml, SeriesYaml}
 import duesoldi.gallery.storage.{CreateOrUpdateArtwork, DeleteAllArtworks, DeleteArtwork, GalleryStore, GetAllArtworks, GetArtwork, GetSeries, PutArtwork, PutArtworks, PutManySeries, PutSeries}
 import duesoldi.logging.{EventLogging, Logger}
@@ -102,6 +102,8 @@ object DueSoldiDependencies
   implicit val entryPageModel: Inject[BuildEntryPageModel] = inject(EntryPageModel.pageModel _)
 
   implicit val artworkPageModel: Inject[BuildArtworkPageModel] = config => ArtworkPageModel.build(config.imageBaseUrl) _
+
+  implicit val galleryHomePageModel: Inject[BuildGalleryHomePageModel] = _ => GalleryHomePageModel.build() _
 
   implicit val indexPageModel:  Inject[BuildIndexPageModel] = _ => IndexPageModel.pageModel
 

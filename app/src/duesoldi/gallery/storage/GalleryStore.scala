@@ -40,7 +40,7 @@ object GalleryStore
   }
 
   def toArtwork(parseMarkdown: markdown.Parse): (ResultSet => Artwork) = { row =>
-    val a = Artwork(
+    Artwork(
       id = row.getString("id"),
       title = row.getString("title"),
       lastModified = row.getTimestamp("last_modified").toInstant.atZone(ZoneId.of("UTC+1")),
@@ -50,8 +50,6 @@ object GalleryStore
       materials = Option(row.getString("materials")),
       seriesId = Option(row.getString("series_id"))
     )
-    println(s"GOT ARTWORK $a")
-    a
   }
 
   def toSeries(parseMarkdown: markdown.Parse): (ResultSet => Series) = { row =>
@@ -93,7 +91,6 @@ object GalleryStore
     ) match {
       case Success(_) => Right(PutResult.Created)
       case Failure(f) =>
-        System.err.println(s"PUT FAILURE = $f")
         Left(PutResult.Failure)
     }
   }

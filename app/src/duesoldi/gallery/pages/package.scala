@@ -8,6 +8,24 @@ import hammerspace.markdown.MarkdownToHtml
 
 package object pages {
   type BuildArtworkPageModel = (Artwork, Option[Series]) => ArtworkPageModel
+  type BuildGalleryHomePageModel = (Seq[Artwork]) => GalleryHomePageModel
+}
+
+case class GalleryHomePageModel(
+  artworks: Seq[GalleryHomePageModel.ArtworkModel]
+) extends PageModel
+
+object GalleryHomePageModel {
+  def build()(works: Seq[Artwork]): GalleryHomePageModel = {
+    GalleryHomePageModel(
+      artworks = works.map( work => ArtworkModel(
+        title = work.title,
+        url = s"/gallery/${work.id}"
+      ))
+    )
+  }
+
+  case class ArtworkModel(title: String, url: String)
 }
 
 case class ArtworkPageModel(
