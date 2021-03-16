@@ -11,6 +11,7 @@ import duesoldi.gallery.model.{Artwork, Series}
 import duesoldi.gallery.pages.ArtworkEditingPageModel
 import duesoldi.gallery.storage._
 import duesoldi.gallery.{ArtworkFromYaml, ArtworkToYaml, ArtworksFromYaml, ArtworksToYaml, ManySeriesFromYaml, SeriesFromYaml}
+import duesoldi.images.ImageResize
 import duesoldi.rendering.Render
 import hammerspace.markdown
 import ratatoskr.ResponseBuilding._
@@ -20,6 +21,7 @@ import sommelier.routing.Routing._
 import sommelier.routing.SyncResult.Accepted
 import sommelier.routing.{Controller, Result}
 
+import java.nio.file.Paths
 import scala.concurrent.ExecutionContext
 
 
@@ -130,8 +132,16 @@ extends Controller
       )
 
       imageFile  <- uploadedFiles("image").optional.firstValue
-      storeAsset <- provided[StoreAsset]
-      _          <- whenAvailable(imageFile) { f => storeAsset(imageURL, f.data) rejectWith { _ => 500 } } ({})
+      _          <- whenAvailable(imageFile) { f =>
+        for {
+          storeAsset <- provided[StoreAsset]
+          _          <- storeAsset(imageURL, f.data) rejectWith { _ => 500 }
+          resize     <- provided[ImageResize]
+          thumbnail  <- resize(f.data, 200) rejectWith { _ => 500 }
+          thumbURL   =  imageURL.take(imageURL.lastIndexOf('.')) + "-w200.jpg" // FIXME file extension
+          _          <- storeAsset(thumbURL, thumbnail) rejectWith { _ => 500}
+        } yield {}
+      } ({})
 
       store <- provided[CreateOrUpdateArtwork]
       _     <- store(artwork) rejectWith { _ => 500 }

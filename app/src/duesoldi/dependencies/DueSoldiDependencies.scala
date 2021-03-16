@@ -22,6 +22,7 @@ import duesoldi.gallery.model.{Artwork, Series}
 import duesoldi.gallery.pages.{BuildArtworkPageModel, BuildGalleryHomePageModel}
 import duesoldi.gallery.serialisation.{ArtworkYaml, SeriesYaml}
 import duesoldi.gallery.storage.{CreateOrUpdateArtwork, DeleteAllArtworks, DeleteArtwork, GalleryStore, GetAllArtworks, GetAllSeries, GetArtwork, GetSeries, PutArtwork, PutArtworks, PutManySeries, PutSeries}
+import duesoldi.images.{ScalrImageResizing, ImageResize}
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.metrics.storage.AccessRecordStore.Access
 import duesoldi.metrics.storage._
@@ -212,6 +213,8 @@ object DueSoldiDependencies
   implicit lazy val getSessionCookie: Inject[GetSessionCookie] = config => Sessions.getSessionCookie(config.secretKey)
 
   implicit lazy val storeAsset: Inject[StoreAsset] = config => S3AssetStore.storeAsset(config.assetBucket)
+
+  implicit lazy val resizeImage: Inject[ImageResize] = _ => ScalrImageResizing.imageResize()
 }
 
 object Features

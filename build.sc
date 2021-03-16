@@ -68,7 +68,8 @@ object app extends ScalaModule {
   def ivyDeps = Agg(
     ivy"org.postgresql:postgresql:9.4.1212",
     ivy"com.github.jimkinsey::bhuj:0.2-SNAPSHOT",
-    ivy"com.amazonaws:aws-java-sdk-s3:1.11.327"
+    ivy"com.amazonaws:aws-java-sdk-s3:1.11.327",
+    ivy"org.imgscalr:imgscalr-lib:4.2"
   )
   object test extends Tests{
     def ivyDeps = Agg(
