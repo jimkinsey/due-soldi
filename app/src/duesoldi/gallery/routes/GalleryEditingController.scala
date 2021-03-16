@@ -7,15 +7,17 @@ import duesoldi.assets.StoreAsset
 import duesoldi.blog.validation.ValidateIdentifier
 import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
-import duesoldi.gallery.model.Artwork
+import duesoldi.gallery.model.{Artwork, Series}
 import duesoldi.gallery.pages.ArtworkEditingPageModel
 import duesoldi.gallery.storage._
 import duesoldi.gallery.{ArtworkFromYaml, ArtworkToYaml, ArtworksFromYaml, ArtworksToYaml, ManySeriesFromYaml, SeriesFromYaml}
 import duesoldi.rendering.Render
 import hammerspace.markdown
 import ratatoskr.ResponseBuilding._
+import sommelier.handling.Context
 import sommelier.handling.Unpacking._
 import sommelier.routing.Routing._
+import sommelier.routing.SyncResult.Accepted
 import sommelier.routing.{Controller, Result}
 
 import scala.concurrent.ExecutionContext
@@ -88,16 +90,35 @@ extends Controller
   POST("/admin/artwork/edit").Authorization(basicAdminAuth or validSession) ->- { implicit context =>
     for {
       getSessionCookie <- provided[GetSessionCookie]
-      sessionCookie <- getSessionCookie(context.request) rejectWith 500
+      sessionCookie    <- getSessionCookie(context.request) rejectWith 500
 
-      parseMarkdown <- provided[markdown.Parse]
-      id <- form[String]("id").firstValue.required { 500 }
-      title <- form[String]("title").firstValue.required { 500 }
-      imageURL <- form[String]("image-url").firstValue.required { 500 }
-      description <- form[String]("description").optional.firstValue
-      timeframe <- form[String]("timeframe").optional.firstValue
-      materials <- form[String]("materials").optional.firstValue
-      seriesID <- form[String]("series").optional.firstValue
+      parseMarkdown    <- provided[markdown.Parse]
+      id               <- form[String]("id").firstValue.required { 500 }
+      title            <- form[String]("title").firstValue.required { 500 }
+      imageURL         <- form[String]("image-url").firstValue.required { 500 }
+      description      <- form[String]("description").optional.firstValue
+      timeframe        <- form[String]("timeframe").optional.firstValue
+      materials        <- form[String]("materials").optional.firstValue
+      selectedSeriesID <- form[String]("series").optional.firstValue
+      newSeriesID      <- form[String]("new-series-id").optional.firstValue
+      newSeriesTitle   <- form[String]("new-series-title").optional.firstValue
+
+      seriesID <- {(selectedSeriesID, newSeriesID, newSeriesTitle) match {
+        case (Some(_), _, _) =>
+          Accepted(selectedSeriesID)
+
+        case (None, Some(id), Some(title)) =>
+          for {
+            putSeries <- provided[PutSeries]
+            _         <- putSeries(Series(id, title)).rejectWith { _ => 500 }
+          } yield {
+            newSeriesID
+          }
+
+        case _ =>
+          Accepted(None)
+      }}
+
       artwork = Artwork(
         id,
         title = title,
@@ -108,15 +129,15 @@ extends Controller
         seriesId = seriesID
       )
 
-      imageFile <- uploadedFiles("image").optional.firstValue
+      imageFile  <- uploadedFiles("image").optional.firstValue
       storeAsset <- provided[StoreAsset]
-      _ <- whenAvailable(imageFile) { f => storeAsset(imageURL, f.data) rejectWith { _ => 500 } } ({})
+      _          <- whenAvailable(imageFile) { f => storeAsset(imageURL, f.data) rejectWith { _ => 500 } } ({})
 
       store <- provided[CreateOrUpdateArtwork]
-      _ <- store(artwork) rejectWith { _ => 500 }
+      _     <- store(artwork) rejectWith { _ => 500 }
 
       getArtworks <- provided[GetAllArtworks]
-      artworks <- getArtworks() rejectWith { _ => 500 }
+      artworks    <- getArtworks() rejectWith { _ => 500 }
       model = ArtworkEditingPageModel(
         artworks = artworks.map(work =>
           ArtworkEditingPageModel.Artwork(
@@ -139,7 +160,7 @@ extends Controller
       )
 
       render <- provided[Render]
-      html <- render("artwork-editing", model) rejectWith { failure => 500 }
+      html   <- render("artwork-editing", model) rejectWith { failure => 500 }
     } yield {
       201(html) cookie sessionCookie ContentType "text/html; charset=UTF-8"
     }

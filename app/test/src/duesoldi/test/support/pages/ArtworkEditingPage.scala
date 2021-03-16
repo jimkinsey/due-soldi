@@ -95,6 +95,16 @@ class ArtworkEditingForm(element: Element)
     this
   }
 
+  def newSeriesID(id: String): ArtworkEditingForm = {
+    required(element, "input[name='new-series-id']").`val`(id)
+    this
+  }
+
+  def newSeriesTitle(title: String): ArtworkEditingForm = {
+    required(element, "input[name='new-series-title']").`val`(title)
+    this
+  }
+
   override def toString: String = element.html()
 }
 

@@ -464,6 +464,36 @@ object ArtworkEditingTests
           }
         }
       }
+      "allows a new series to be created and associated with the artwork" - {
+        withSetup(
+          database,
+          runningApp,
+          series(),
+          artworks()
+        ) { implicit env =>
+          for {
+            editingPage <- get("/admin/artwork/edit", headers = TestApp.adminAuth)
+            _ = assert(editingPage.status == 200)
+            form = new ArtworkEditingPage(editingPage.body.asString).form
+            formValues = form
+              .id("new-artwork")
+              .title("New Artwork")
+              .imageURL("/path/to/image.png")
+              .newSeriesID("new-series")
+              .newSeriesTitle("New series")
+              .values
+            submission <- send(POST(form.action).formValues(formValues).cookie(editingPage.cookie("adminSessionId").get))
+            newWork <- get("/gallery/new-artwork")
+            artworkPage = new ArtworkPage(newWork.body.asString)
+          } yield {
+            assert(
+              submission.status == 201,
+              newWork.status == 200,
+              artworkPage.seriesTitle contains "New series"
+            )
+          }
+        }
+      }
 
     }
   }
