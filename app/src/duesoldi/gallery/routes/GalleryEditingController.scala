@@ -10,18 +10,16 @@ import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.gallery.model.{Artwork, Series}
 import duesoldi.gallery.pages.ArtworkEditingPageModel
 import duesoldi.gallery.storage._
-import duesoldi.gallery.{ArtworkFromYaml, ArtworkToYaml, ArtworksFromYaml, ArtworksToYaml, ManySeriesFromYaml, SeriesFromYaml}
+import duesoldi.gallery._
 import duesoldi.images.ImageResize
 import duesoldi.rendering.Render
 import hammerspace.markdown
 import ratatoskr.ResponseBuilding._
-import sommelier.handling.Context
 import sommelier.handling.Unpacking._
 import sommelier.routing.Routing._
 import sommelier.routing.SyncResult.Accepted
 import sommelier.routing.{Controller, Result}
 
-import java.nio.file.Paths
 import scala.concurrent.ExecutionContext
 
 
@@ -109,7 +107,7 @@ extends Controller
         case (Some(_), _, _) =>
           Accepted(selectedSeriesID)
 
-        case (None, Some(id), Some(title)) =>
+        case (None, Some(id), Some(title)) if id.nonEmpty && title.nonEmpty =>
           for {
             putSeries <- provided[PutSeries]
             _         <- putSeries(Series(id, title)).rejectWith { _ => 500 }
@@ -122,7 +120,7 @@ extends Controller
       }}
 
       artwork = Artwork(
-        id,
+        id = id,
         title = title,
         imageURL = imageURL,
         materials = materials,
