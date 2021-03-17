@@ -3,34 +3,64 @@ package duesoldi.gallery
 import duesoldi.Thumbnails.GetThumbnailURL
 import duesoldi.blog.pages.{GetEntryTwitterMetadata, PageModel}
 import duesoldi.gallery.ArtworkPageModel.SeriesModel
+import duesoldi.gallery.GalleryHomePageModel.SeriesModel.ArtworkModel
 import duesoldi.gallery.model.{Artwork, Series}
 import duesoldi.gallery.pages.BuildArtworkPageModel
 import hammerspace.markdown.MarkdownToHtml
 
 package object pages {
   type BuildArtworkPageModel = (Artwork, Option[Series]) => ArtworkPageModel
-  type BuildGalleryHomePageModel = (Seq[Artwork]) => GalleryHomePageModel
+  type BuildGalleryHomePageModel = (Seq[Artwork], Seq[Series]) => GalleryHomePageModel
 }
 
 case class GalleryHomePageModel(
-  artworks: Seq[GalleryHomePageModel.ArtworkModel]
+  series: Seq[GalleryHomePageModel.SeriesModel]
 ) extends PageModel
 
 object GalleryHomePageModel {
   def build(
     imageBaseURL: String,
     getThumbnailURL: GetThumbnailURL
-  )(works: Seq[Artwork]): GalleryHomePageModel = {
+  )(works: Seq[Artwork], allSeries: Seq[Series]): GalleryHomePageModel = {
+    // FIXME there's some repetition in here and it feels kind of clumsy...
+    val groupedWorks = works.groupBy(_.seriesId)
+
     GalleryHomePageModel(
-      artworks = works.map( work => ArtworkModel(
-        title = work.title,
-        url = s"/gallery/${work.id}",
-        thumbnailURL = imageBaseURL + getThumbnailURL(work.imageURL)
-      ))
+      series = groupedWorks.map {
+        case (Some(seriesID), works) if allSeries.exists(_.id == seriesID) =>
+          val series = allSeries.find(_.id == seriesID).get
+          SeriesModel(
+            id = seriesID,
+            title = series.title,
+            artworks = works.map( work => ArtworkModel(
+              title = work.title,
+              url = s"/gallery/${work.id}",
+              thumbnailURL = imageBaseURL + getThumbnailURL(work.imageURL)
+            ))
+          )
+        case (None, works) =>
+          SeriesModel(
+            id = "misc",
+            title = "Miscellaneous works",
+            artworks = works.map( work => ArtworkModel(
+              title = work.title,
+              url = s"/gallery/${work.id}",
+              thumbnailURL = imageBaseURL + getThumbnailURL(work.imageURL)
+            ))
+          )
+      } toSeq
     )
   }
 
-  case class ArtworkModel(title: String, url: String, thumbnailURL: String)
+  case class SeriesModel(
+    id: String,
+    title: String,
+    artworks: Seq[SeriesModel.ArtworkModel]
+  )
+
+  object SeriesModel {
+    case class ArtworkModel(title: String, url: String, thumbnailURL: String)
+  }
 }
 
 case class ArtworkPageModel(

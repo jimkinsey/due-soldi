@@ -89,8 +89,40 @@ extends TestSuite
         }
       }
     }
+    "groups the artworks by series, placing any not in a series into a misc section" - {
+      withSetup(
+        database,
+        runningApp,
+        series(
+          series withId "series-one" withTitle "Series One",
+          series withId "series-two" withTitle "Series Two"
+        ),
+        artworks(
+          artwork withId "one" withTitle "One" belongingToSeries "series-one",
+          artwork withId "two" withTitle "Two" belongingToSeries "series-one",
+          artwork withId "three" withTitle "Three" belongingToSeries "series-two",
+          artwork withId "four" withTitle "Four"
+        )
+      ) { implicit env =>
+        for {
+          res <- get("/gallery")
+          page = new GalleryHomePage(res.body.asString)
+          seriesOne = page.seriesNamed("Series One")
+          seriesTwo = page.seriesNamed("Series Two")
+          misc = page.seriesNamed("Miscellaneous works")
 
-    // TODO images should be grouped by series
+          seriesOneTitles = seriesOne.map(_.works.map(_.title))
+
+          _ = println(seriesOneTitles)
+        } yield {
+          assert(
+            seriesOneTitles contains Seq("One", "Two"),
+            seriesTwo exists (_.works.map(_.title) == Seq("Three")),
+            misc exists (_.works.map(_.title) == Seq("Four"))
+          )
+        }
+      }
+    }
 
 
 //    "has a copyright notice" - {

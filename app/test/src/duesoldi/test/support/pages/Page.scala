@@ -1,6 +1,6 @@
 package duesoldi.test.support.pages
 
-import org.jsoup.nodes.Document
+import org.jsoup.nodes.{Document, Element}
 
 import scala.collection.JavaConverters._
 
@@ -22,4 +22,9 @@ object Page
 {
   def metaContent(name: String, dom: Document): Option[String] = Option(dom.select(s"""meta[name="$name"]""").first()).map(_.attr("content"))
   def metaProperty(name: String, dom: Document): Option[String] = Option(dom.select(s"""meta[property="$name"]""").first()).map(_.attr("content"))
+}
+
+trait Fragment {
+  def elem: Element
+  final override def toString: String = elem.toString
 }

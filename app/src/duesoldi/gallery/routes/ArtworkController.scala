@@ -6,7 +6,7 @@ import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.gallery.model.Series
 import duesoldi.gallery.pages.{BuildArtworkPageModel, BuildGalleryHomePageModel}
-import duesoldi.gallery.storage.{GetAllArtworks, GetArtwork, GetSeries}
+import duesoldi.gallery.storage.{GetAllArtworks, GetAllSeries, GetArtwork, GetSeries}
 import duesoldi.rendering.Render
 import ratatoskr.ResponseBuilding._
 import sommelier.handling.Unpacking._
@@ -25,13 +25,16 @@ extends Controller
   GET("/gallery") ->- { implicit context =>
     for {
       getAllArtworks <- provided[GetAllArtworks]
+      getAllSeries   <- provided[GetAllSeries]
       pageModel      <- provided[BuildGalleryHomePageModel]
       rendered       <- provided[Render]
 
       works <- getAllArtworks() rejectWith { _ => 500 }
       _     <- passIf(works.nonEmpty) { 404 }
 
-      model = pageModel(works)
+      series <- getAllSeries() rejectWith { _ => 500 }
+
+      model = pageModel(works, series)
       html <- rendered("gallery-home", model) rejectWith { f => println(f); 500 }
     } yield {
       200 (html) ContentType "text/html; charset=UTF-8"

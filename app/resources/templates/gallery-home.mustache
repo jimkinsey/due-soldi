@@ -8,12 +8,16 @@
       <header>
         <h1>Gallery</h1>
       </header>
-      <ul>
-        {{#artworks}}<li>
-          <a id="artwork-link" href="{{url}}">{{title}}</a><br/>
-          <a href="{{url}}"><img id="thumbnail" src="{{thumbnailURL}}"></a>
+      {{#series}}
+      <article id="{{id}}" class="series">
+        <header>{{title}}</header>
+        <ul>{{#artworks}}<li class="work">
+           <a class="artwork-link" href="{{url}}">{{title}}</a><br/>
+           <a href="{{url}}"><img id="thumbnail" src="{{thumbnailURL}}"></a>
         </li>{{/artworks}}
-      </ul>
+        </ul>
+      </article>
+      {{/series}}
     </main>
     <footer>
       <small id="copyright">&copy; 2013-2021 Jim Kinsey</small>
