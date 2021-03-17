@@ -1,10 +1,11 @@
 package duesoldi.gallery
 
+import duesoldi.Thumbnails.GetThumbnailURL
 import duesoldi.blog.storage.{BlogStore, PutBlogEntries}
 import duesoldi.dependencies.DueSoldiDependencies.parseMarkdown
 import duesoldi.dependencies.Injection.{Inject, inject}
 import duesoldi.dependencies.{AssetStorageDependencies, JDBCDependencies, MarkdownParsingDependencies, RenderingDependencies, SessionCookieDependencies}
-import duesoldi.gallery
+import duesoldi.{Thumbnails, gallery}
 import duesoldi.gallery.model.{Artwork, Series}
 import duesoldi.gallery.pages.{BuildArtworkPageModel, BuildGalleryHomePageModel}
 import duesoldi.gallery.serialisation.{ArtworkYaml, SeriesYaml}
@@ -34,6 +35,7 @@ with SessionCookieDependencies {
 
   implicit lazy val resizeImage: Inject[ImageResize] = _ => ScalrImageResizing.imageResize()
 
+  implicit lazy val getThumbnailURL: Inject[GetThumbnailURL] = _ => Thumbnails.getURL()
 
   implicit val getArtwork: Inject[GetArtwork] = { config =>
     GalleryStore.getOne(jdbcPerformQuery[Artwork](GalleryStore.toArtwork(parseMarkdown(config)))(config))
@@ -69,6 +71,8 @@ with SessionCookieDependencies {
 
   implicit val artworkPageModel: Inject[BuildArtworkPageModel] = config => ArtworkPageModel.build(config.imageBaseUrl) _
 
-  implicit val galleryHomePageModel: Inject[BuildGalleryHomePageModel] = _ => GalleryHomePageModel.build() _
+  implicit val galleryHomePageModel: Inject[BuildGalleryHomePageModel] = {
+     config => GalleryHomePageModel.build(config.imageBaseUrl, getThumbnailURL(config))
+  }
 
 }

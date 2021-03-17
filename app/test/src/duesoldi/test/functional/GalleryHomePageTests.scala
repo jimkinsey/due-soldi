@@ -68,87 +68,31 @@ extends TestSuite
         }
       }
     }
-//    "includes the title, timeframe and materials" - {
-//      withSetup(
-//        database,
-//        runningApp,
-//        artworks(
-//          artwork.withId("untitled-masterpiece")
-//            .withTitle("Untitled Masterpiece")
-//            .withTimeframe("early 2021")
-//            .withMaterials("gouache on paper")
-//        )
-//      ) { implicit env =>
-//        for {
-//          res <- get("/gallery/untitled-masterpiece")
-//          page = new ArtworkPage(res.body.asString)
-//        } yield {
-//          assert(page.title == "Untitled Masterpiece")
-//          assert(page.h1.text() == "Untitled Masterpiece")
-//          assert(page.timeframe contains "early 2021")
-//          assert(page.materials contains "gouache on paper")
-//        }
-//      }
-//    }
-//    "includes the description rendered as HTML" - {
-//      withSetup(
-//        database,
-//        runningApp,
-//        artworks(
-//          artwork.withId("untitled-masterpiece")
-//            .withDescription("""It is _pure_ genius""")
-//        )
-//      ) { implicit env =>
-//        for {
-//          res <- get("/gallery/untitled-masterpiece")
-//          page = new ArtworkPage(res.body.asString)
-//        } yield {
-//          assert(page.description contains """<p>It is <i>pure</i> genius</p>""")
-//        }
-//      }
-//    }
-//    "includes the URL to the artwork image" - {
-//      withSetup(
-//        database,
-//        configOverride("IMAGE_BASE_URL" -> "https://images"),
-//        runningApp,
-//        artworks(
-//          artwork.withId("untitled-masterpiece")
-//            .withImageURL("/path/to/image.png")
-//        )
-//      ) { implicit env =>
-//        for {
-//          res <- get("/gallery/untitled-masterpiece")
-//          page = new ArtworkPage(res.body.asString)
-//        } yield {
-//          assert(page.artworkImageURL == "https://images/path/to/image.png")
-//        }
-//      }
-//    }
-//    "includes navigation back to the series page, when the artwork is part of a series" - {
-//      withSetup(
-//        database,
-//        configOverride("IMAGE_BASE_URL" -> "https://images"),
-//        runningApp,
-//        series(
-//          series.withId("late-works")
-//            .withTitle("Late works")
-//        ),
-//        artworks(
-//          artwork.withId("untitled-masterpiece")
-//            .withImageURL("/path/to/image.png")
-//            .belongingToSeries("late-works")
-//        )
-//      ) { implicit env =>
-//        for {
-//          res <- get("/gallery/untitled-masterpiece")
-//          page = new ArtworkPage(res.body.asString)
-//        } yield {
-//          assert(page.seriesURL contains "/gallery/series/late-works")
-//          assert(page.seriesTitle contains "Late works")
-//        }
-//      }
-//    }
+    "includes a thumbnail for every artwork" - {
+      withSetup(
+        database,
+        configOverride("IMAGE_BASE_URL" -> "https://images"),
+        runningApp,
+        artworks(
+          artwork.withId("one").withImageURL("/image/one-main.jpg"),
+          artwork.withId("two").withImageURL("/image/two-main.jpg")
+        )
+      ) { implicit env =>
+        for {
+          res <- get("/gallery")
+          page = new GalleryHomePage(res.body.asString)
+        } yield {
+          assert(
+            page.artworkThumbnailURLs contains "https://images/image/one-main-w200.jpg",
+            page.artworkThumbnailURLs contains "https://images/image/one-main-w200.jpg"
+          )
+        }
+      }
+    }
+
+    // TODO images should be grouped by series
+
+
 //    "has a copyright notice" - {
 //      withSetup(
 //        database,

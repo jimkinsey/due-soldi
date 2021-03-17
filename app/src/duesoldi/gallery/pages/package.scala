@@ -1,5 +1,6 @@
 package duesoldi.gallery
 
+import duesoldi.Thumbnails.GetThumbnailURL
 import duesoldi.blog.pages.{GetEntryTwitterMetadata, PageModel}
 import duesoldi.gallery.ArtworkPageModel.SeriesModel
 import duesoldi.gallery.model.{Artwork, Series}
@@ -16,16 +17,20 @@ case class GalleryHomePageModel(
 ) extends PageModel
 
 object GalleryHomePageModel {
-  def build()(works: Seq[Artwork]): GalleryHomePageModel = {
+  def build(
+    imageBaseURL: String,
+    getThumbnailURL: GetThumbnailURL
+  )(works: Seq[Artwork]): GalleryHomePageModel = {
     GalleryHomePageModel(
       artworks = works.map( work => ArtworkModel(
         title = work.title,
-        url = s"/gallery/${work.id}"
+        url = s"/gallery/${work.id}",
+        thumbnailURL = imageBaseURL + getThumbnailURL(work.imageURL)
       ))
     )
   }
 
-  case class ArtworkModel(title: String, url: String)
+  case class ArtworkModel(title: String, url: String, thumbnailURL: String)
 }
 
 case class ArtworkPageModel(

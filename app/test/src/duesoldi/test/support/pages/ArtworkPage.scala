@@ -29,4 +29,5 @@ with PageFooter
   lazy val title: String = dom.title()
   lazy val h1: Element = dom.select("header h1").first()
   lazy val artworkLinks: Seq[String] = dom.select("a#artwork-link").asScala.map(_.attr("href"))
+  lazy val artworkThumbnailURLs: Seq[String] = dom.select("img#thumbnail").asScala.map(_.attr("src"))
 }

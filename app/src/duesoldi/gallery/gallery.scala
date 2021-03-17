@@ -12,3 +12,13 @@ package object gallery {
   type ManySeriesFromYaml = String => Either[SeriesYaml.ParseFailure, Seq[Series]]
   type SeriesFromYaml = String => Either[SeriesYaml.ParseFailure, Series]
 }
+
+object Thumbnails {
+
+  type GetThumbnailURL = (String) => (String)
+
+  def getURL(): GetThumbnailURL = { imageURL =>
+    imageURL.take(imageURL.lastIndexOf('.')) + "-w200.jpg" // FIXME extension
+  }
+
+}

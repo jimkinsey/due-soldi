@@ -1,5 +1,6 @@
 package duesoldi.gallery.routes
 
+import duesoldi.Thumbnails.GetThumbnailURL
 import duesoldi.app.AdminAuth.basicAdminAuth
 import duesoldi.app.RequestDependencies._
 import duesoldi.app.sessions.Sessions.{GetSessionCookie, validSession}
@@ -136,7 +137,8 @@ extends Controller
           _          <- storeAsset(imageURL, f.data) rejectWith { _ => 500 }
           resize     <- provided[ImageResize]
           thumbnail  <- resize(f.data, 200) rejectWith { _ => 500 }
-          thumbURL   =  imageURL.take(imageURL.lastIndexOf('.')) + "-w200.jpg" // FIXME file extension
+          getThumbnailURL <- provided[GetThumbnailURL]
+          thumbURL   =  getThumbnailURL(artwork.imageURL)
           _          <- storeAsset(thumbURL, thumbnail) rejectWith { _ => 500}
         } yield {}
       } ({})
