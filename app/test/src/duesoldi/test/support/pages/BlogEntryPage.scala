@@ -34,6 +34,10 @@ object TwitterMetadata
 
 case class TwitterMetadata(card: String)
 
+trait OpenGraphMetaData { self: Page =>
+  lazy val ogMetadata = OgMetadata(dom)
+}
+
 object OgMetadata
 {
   def apply(dom: Document): Option[OgMetadata] = {

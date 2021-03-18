@@ -22,6 +22,7 @@ with PageFooter
 class GalleryHomePage(html: String)
 extends Page
 with PageFooter
+with OpenGraphMetaData
 {
   lazy val dom                 : Document    = Jsoup.parse(html)
   lazy val title               : String      = dom.title()
