@@ -5,8 +5,8 @@ import duesoldi.blog.validation.ValidateIdentifier
 import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.gallery.model.Series
-import duesoldi.gallery.pages.{BuildArtworkPageModel, BuildGalleryHomePageModel}
-import duesoldi.gallery.storage.{GetAllArtworks, GetAllSeries, GetArtwork, GetSeries}
+import duesoldi.gallery.pages.{BuildArtworkPageModel, BuildGalleryHomePageModel, BuildSeriesPageModel}
+import duesoldi.gallery.storage.{GetAllArtworks, GetAllSeries, GetArtwork, GetArtworksInSeries, GetSeries}
 import duesoldi.rendering.Render
 import ratatoskr.ResponseBuilding._
 import sommelier.handling.Unpacking._
@@ -15,6 +15,30 @@ import sommelier.routing.Routing._
 import sommelier.routing.SyncResult.{Accepted, Rejected}
 
 import scala.concurrent.ExecutionContext
+
+class SeriesPageController(implicit executionContext: ExecutionContext, appConfig: Config)
+extends Controller
+{
+
+  GET("/gallery/series/:id") ->- { implicit context =>
+    for {
+      getSeries <- provided[GetSeries]
+      seriesID  <- pathParam[String]("id")
+      series    <- getSeries(seriesID) rejectWith { 404 }
+
+      getArtworks <- provided[GetArtworksInSeries]
+      artworks    <- getArtworks(seriesID) rejectWith { _ => 500 }
+
+      render    <- provided[Render]
+      pageModel <- provided[BuildSeriesPageModel]
+      model     =  pageModel(series, artworks)
+      html      <- render("series", model) rejectWith { f => println(f); 500}
+    } yield {
+      200(html) ContentType "text/html; charset=UTF-8"
+    }
+  }
+
+}
 
 class GalleryHomeController(implicit executionContext: ExecutionContext, appConfig: Config)
 extends Controller

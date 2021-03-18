@@ -17,6 +17,31 @@ with PageFooter
   lazy val artworkImageURL: String         = dom.select("#main-image img").first().attr("src")
   lazy val seriesURL      : Option[String] = Option(dom.select("a#series-link").attr("href"))
   lazy val seriesTitle    : Option[String] = Option(dom.select("a#series-link").text())
+  lazy val galleryHomeURL : String         = dom.select("a#gallery-home-link").attr("href")
+}
+
+class SeriesPage(html: String)
+extends Page
+with PageFooter
+with OpenGraphMetaData
+{
+  lazy val dom   : Document = Jsoup.parse(html)
+  lazy val title : String   = dom.title()
+  lazy val h1    : Element  = dom.select("header h1").first()
+
+  lazy val works : Seq[SeriesPage.Work] = dom.select(".work").asScala.map(e => new SeriesPage.Work(e))
+
+  def workTitled(title: String): SeriesPage.Work = {
+    works.find(_.title == title).get
+  }
+}
+
+object SeriesPage {
+  class Work(val elem: Element) extends Fragment {
+    lazy val title: String = elem.select("a.artwork-link").text().trim
+    lazy val link: String = elem.select("a").attr("href")
+    lazy val thumbnailURL: String = elem.select("img").attr("src")
+  }
 }
 
 class GalleryHomePage(html: String)

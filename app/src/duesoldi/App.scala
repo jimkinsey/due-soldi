@@ -11,7 +11,7 @@ import duesoldi.debug.routes.DebugController
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.dependencies.Injection.injected
 import duesoldi.furniture.routes.FurnitureController
-import duesoldi.gallery.routes.{ArtworkController, GalleryEditingController, GalleryHomeController}
+import duesoldi.gallery.routes.{ArtworkController, GalleryEditingController, GalleryHomeController, SeriesPageController}
 import duesoldi.logging.{EventLogging, Logger}
 import duesoldi.metrics.rendering.AccessCsv
 import duesoldi.metrics.routes.MetricsController
@@ -72,6 +72,7 @@ object App
           new BlogIndexController(),
           new BlogEditingController(),
           new GalleryHomeController(),
+          new SeriesPageController(),
           new ArtworkController(),
           new GalleryEditingController(),
           new FurnitureController(),

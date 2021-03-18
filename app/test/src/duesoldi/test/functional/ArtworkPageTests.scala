@@ -1,15 +1,12 @@
 package duesoldi.test.functional
 
-import duesoldi.Env
 import duesoldi.test.support.app.ServerRequests._
 import duesoldi.test.support.app.TestApp.runningApp
-import duesoldi.test.support.pages.{ArtworkPage, OgMetadata}
+import duesoldi.test.support.pages.ArtworkPage
 import duesoldi.test.support.setup.ConfigOverride.configOverride
-import duesoldi.test.support.setup.GalleryStorage._
 import duesoldi.test.support.setup.Database._
+import duesoldi.test.support.setup.GalleryStorage._
 import duesoldi.test.support.setup.Setup.withSetup
-import duesoldi.test.support.setup.SyncSetup
-import hammerspace.testing.CustomMatchers._
 import hammerspace.testing.StreamHelpers._
 import utest._
 
@@ -153,6 +150,22 @@ extends TestSuite
           } yield {
             assert(page.seriesURL contains "/gallery/series/late-works")
             assert(page.seriesTitle contains "Late works")
+          }
+        }
+      }
+      "includes navigation back to the gallery home page" - {
+        withSetup(
+          database,
+          runningApp,
+          artworks(
+            artwork.withId("untitled-masterpiece")
+          )
+        ) { implicit env =>
+          for {
+            res <- get("/gallery/untitled-masterpiece")
+            page = new ArtworkPage(res.body.asString)
+          } yield {
+            assert(page.galleryHomeURL == "/gallery")
           }
         }
       }

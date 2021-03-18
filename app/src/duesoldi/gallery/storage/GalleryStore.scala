@@ -80,6 +80,10 @@ object GalleryStore
     performQuery("SELECT id, title, last_modified, description, image_url, timeframe, materials, series_id FROM artwork", Seq.empty)
   }
 
+  def getArtworksInSeries(performQuery: PerformQuery[Artwork]): (String) => Future[List[Artwork]] = (seriesID) => Future.fromTry {
+    performQuery("SELECT id, title, last_modified, description, image_url, timeframe, materials, series_id FROM artwork WHERE series_id = ?", Seq(seriesID))
+  }
+
   def put(performUpdate: PerformUpdate)(work: Artwork): Future[Either[PutResult.Failure.type,PutResult.Created.type]] = Future.successful {
     performUpdate("INSERT INTO artwork ( id, title, last_modified, description, image_url, timeframe, materials, series_id ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )",
       Seq(

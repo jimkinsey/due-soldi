@@ -11,7 +11,18 @@ import hammerspace.markdown.MarkdownToHtml
 package object pages {
   type BuildArtworkPageModel = (Artwork, Option[Series]) => ArtworkPageModel
   type BuildGalleryHomePageModel = (Seq[Artwork], Seq[Series]) => GalleryHomePageModel
+  type BuildSeriesPageModel = (Series, Seq[Artwork]) => GalleryHomePageModel.SeriesModel
 }
+
+//case class SeriesPageModel(
+//  title: String
+//) extends PageModel
+//
+//object SeriesPageModel {
+//  def build()(series: Series): SeriesPageModel = {
+//    SeriesPageModel(series.title)
+//  }
+//}
 
 case class GalleryHomePageModel(
   series: Seq[GalleryHomePageModel.SeriesModel]
@@ -29,15 +40,7 @@ object GalleryHomePageModel {
       series = groupedWorks.map {
         case (Some(seriesID), works) if allSeries.exists(_.id == seriesID) =>
           val series = allSeries.find(_.id == seriesID).get
-          SeriesModel(
-            id = seriesID,
-            title = series.title,
-            artworks = works.map( work => ArtworkModel(
-              title = work.title,
-              url = s"/gallery/${work.id}",
-              thumbnailURL = imageBaseURL + getThumbnailURL(work.imageURL)
-            ))
-          )
+          SeriesModel.build(imageBaseURL, getThumbnailURL)(series, works)
         case (None, works) =>
           SeriesModel(
             id = "misc",
@@ -56,10 +59,25 @@ object GalleryHomePageModel {
     id: String,
     title: String,
     artworks: Seq[SeriesModel.ArtworkModel]
-  )
+  ) extends PageModel
 
   object SeriesModel {
     case class ArtworkModel(title: String, url: String, thumbnailURL: String)
+
+    def build(
+      imageBaseURL: String,
+      getThumbnailURL: GetThumbnailURL
+    )(series: Series, artworks: Seq[Artwork]): SeriesModel = {
+      SeriesModel(
+        id = series.id,
+        title = series.title,
+        artworks = artworks.map( work => ArtworkModel(
+          title = work.title,
+          url = s"/gallery/${work.id}",
+          thumbnailURL = imageBaseURL + getThumbnailURL(work.imageURL)
+        ))
+      )
+    }
   }
 }
 

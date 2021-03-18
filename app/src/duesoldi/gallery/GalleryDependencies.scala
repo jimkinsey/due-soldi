@@ -5,9 +5,10 @@ import duesoldi.blog.storage.{BlogStore, PutBlogEntries}
 import duesoldi.dependencies.DueSoldiDependencies.parseMarkdown
 import duesoldi.dependencies.Injection.{Inject, inject}
 import duesoldi.dependencies.{AssetStorageDependencies, JDBCDependencies, MarkdownParsingDependencies, RenderingDependencies, SessionCookieDependencies}
+import duesoldi.gallery.ArtworkPageModel.SeriesModel
 import duesoldi.{Thumbnails, gallery}
 import duesoldi.gallery.model.{Artwork, Series}
-import duesoldi.gallery.pages.{BuildArtworkPageModel, BuildGalleryHomePageModel}
+import duesoldi.gallery.pages.{BuildArtworkPageModel, BuildGalleryHomePageModel, BuildSeriesPageModel}
 import duesoldi.gallery.serialisation.{ArtworkYaml, SeriesYaml}
 import duesoldi.gallery.storage._
 import duesoldi.images.{ImageResize, ScalrImageResizing}
@@ -49,6 +50,10 @@ with SessionCookieDependencies {
     GalleryStore.getAll(jdbcPerformQuery[Artwork](GalleryStore.toArtwork(parseMarkdown(config)))(config))
   }
 
+  implicit val getArtworksInSeries: Inject[GetArtworksInSeries] = { config =>
+    GalleryStore.getArtworksInSeries(jdbcPerformQuery[Artwork](GalleryStore.toArtwork(parseMarkdown(config)))(config))
+  }
+
   implicit val getAllSeries: Inject[GetAllSeries] = { config =>
     GalleryStore.getAllSeries(jdbcPerformQuery[Series](GalleryStore.toSeries(parseMarkdown(config)))(config))
   }
@@ -69,7 +74,9 @@ with SessionCookieDependencies {
 
   implicit def createOrUpdateArtwork(implicit executionContext: ExecutionContext): Inject[CreateOrUpdateArtwork] = inject(GalleryStore.createOrUpdate _)
 
-  implicit val artworkPageModel: Inject[BuildArtworkPageModel] = config => ArtworkPageModel.build(config.imageBaseUrl) _
+  implicit val artworkPageModel: Inject[BuildArtworkPageModel] = config => ArtworkPageModel.build(config.imageBaseUrl)
+
+  implicit val seriesPageModel: Inject[BuildSeriesPageModel] = config => GalleryHomePageModel.SeriesModel.build(config.imageBaseUrl, Thumbnails.getURL())
 
   implicit val galleryHomePageModel: Inject[BuildGalleryHomePageModel] = {
      config => GalleryHomePageModel.build(config.imageBaseUrl, getThumbnailURL(config))

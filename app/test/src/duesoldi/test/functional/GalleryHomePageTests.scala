@@ -117,8 +117,6 @@ extends TestSuite
             misc = page.seriesNamed("Miscellaneous works")
 
             seriesOneTitles = seriesOne.map(_.works.map(_.title))
-
-            _ = println(seriesOneTitles)
           } yield {
             assert(
               seriesOneTitles contains Seq("One", "Two"),
