@@ -55,15 +55,18 @@ object GalleryStorage
 
   case class SeriesBuilder(
     id: String = "id",
-    title: String = "title"
+    title: String = "title",
+    description: Option[String] = None
   ) {
     def withId(id: String): SeriesBuilder = copy(id = id)
     def withTitle(title: String): SeriesBuilder = copy(title = title)
+    def withDescription(description: String): SeriesBuilder = copy(description = Some(description))
 
     lazy val toYaml: String = {
       s"""id: $id
          |title: $title
-         """.stripMargin
+         |description: |
+         |${description.getOrElse("").indented}""".stripMargin
     }
   }
 

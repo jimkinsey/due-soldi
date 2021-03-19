@@ -1,15 +1,16 @@
 <html lang="en">
   <head>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-<!--    <meta property="og:title" content="Jim Kinsey's Online Gallery"/>-->
+    <meta property="og:title" content="{{title}}"/>
     <title>{{title}}</title>
-<!--    <link href="{{#furniture}}gallery.css{{/furniture}}" rel="stylesheet"/>-->
+    <link href="{{#furniture}}gallery.css{{/furniture}}" rel="stylesheet"/>
   </head>
   <body>
     <main id="content">
       <header>
         <h1>{{title}}</h1>
       </header>
+        {{#description}}<div id="series-description">{{{_}}}</div>{{/description}}
       <ul>{{#artworks}}<li class="work">
         <a class="artwork-link" href="{{url}}">{{title}}</a><br/>
         <a href="{{url}}"><img id="thumbnail" src="{{thumbnailURL}}"></a>

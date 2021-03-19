@@ -28,6 +28,7 @@ with OpenGraphMetaData
   lazy val dom   : Document = Jsoup.parse(html)
   lazy val title : String   = dom.title()
   lazy val h1    : Element  = dom.select("header h1").first()
+  lazy val descriptionHTML : String = dom.select("#series-description").first().html()
 
   lazy val works : Seq[SeriesPage.Work] = dom.select(".work").asScala.map(e => new SeriesPage.Work(e))
 

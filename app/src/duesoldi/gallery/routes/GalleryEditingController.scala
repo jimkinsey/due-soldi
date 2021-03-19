@@ -103,6 +103,7 @@ extends Controller
       selectedSeriesID <- form[String]("series").optional.firstValue
       newSeriesID      <- form[String]("new-series-id").optional.firstValue
       newSeriesTitle   <- form[String]("new-series-title").optional.firstValue
+      newSeriesDescription   <- form[String]("new-series-description").optional.firstValue
 
       seriesID <- {(selectedSeriesID, newSeriesID, newSeriesTitle) match {
         case (Some(_), _, _) =>
@@ -111,7 +112,8 @@ extends Controller
         case (None, Some(id), Some(title)) if id.nonEmpty && title.nonEmpty =>
           for {
             putSeries <- provided[PutSeries]
-            _         <- putSeries(Series(id, title)).rejectWith { _ => 500 }
+            description = newSeriesDescription.map(parseMarkdown)
+            _         <- putSeries(Series(id, title, description)).rejectWith { _ => 500 }
           } yield {
             newSeriesID
           }

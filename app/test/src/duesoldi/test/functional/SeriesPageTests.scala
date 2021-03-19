@@ -10,7 +10,7 @@ import hammerspace.testing.StreamHelpers.ByteStreamHelper
 import utest._
 
 object SeriesPageTests
-  extends TestSuite {
+extends TestSuite {
   implicit val executionContext = utest.framework.ExecutionContext.RunNow
   val tests = this {
     "a series page" - {
@@ -46,11 +46,15 @@ object SeriesPageTests
         }
       }
 
-      "includes the series title" - {
+      "includes the series title and description" - {
         withSetup(
           database,
           runningApp,
-          series(series.withId("series-id").withTitle("Series Title"))
+          series(
+            series.withId("series-id")
+              .withTitle("Series Title")
+              .withDescription("A _lovely_ series of **wonderful** works")
+          )
         ) { implicit env =>
           for {
             res <- get("/gallery/series/series-id")
@@ -58,7 +62,8 @@ object SeriesPageTests
           } yield {
             assert(
               page.title == "Series Title",
-              page.h1.text() == "Series Title"
+              page.h1.text() == "Series Title",
+              page.descriptionHTML == "<p>A <i>lovely</i> series of <b>wonderful</b> works</p>"
             )
           }
         }
@@ -83,6 +88,57 @@ object SeriesPageTests
               page.workTitled("One").thumbnailURL == "/images/one-w200.jpg",
               page.workTitled("Two").link == "/gallery/two",
               page.workTitled("Two").thumbnailURL == "/images/two-w200.jpg",
+            )
+          }
+        }
+      }
+
+      "has a copyright notice" - {
+        withSetup(
+          database,
+          runningApp,
+          series(series.withId("a-series")),
+          artworks(artwork)
+        ) { implicit env =>
+          for {
+            response <- get("/gallery/series/a-series")
+            footer = new SeriesPage(response.body.asString).footer
+          } yield {
+            assert(footer.copyrightNotice.exists(_ matches """© \d\d\d\d-\d\d\d\d Jim Kinsey"""))
+          }
+        }
+      }
+
+      "has a linked CSS file to provide styling" - {
+        withSetup(
+          database,
+          runningApp,
+          series(series.withId("a-series")),
+          artworks(artwork)
+        ) { implicit env =>
+          for {
+            response <- get("/gallery/series/a-series")
+            page = new SeriesPage(response.body.asString)
+            cssResponse <- get(page.cssUrl)
+          } yield {
+            assert(cssResponse.status == 200)
+          }
+        }
+      }
+
+      "has some Open Graph metadata" - {
+        withSetup(
+          database,
+          runningApp,
+          series(series.withId("a-series").withTitle("A series")),
+          artworks(artwork)
+        ) { implicit env =>
+          for {
+            response <- get("/gallery/series/a-series")
+            page = new SeriesPage(response.body.asString)
+          } yield {
+            assert(
+              page.ogMetadata.get.title == "A series"
             )
           }
         }

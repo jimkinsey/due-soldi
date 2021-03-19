@@ -45,6 +45,7 @@ object GalleryHomePageModel {
           SeriesModel(
             id = "misc",
             title = "Miscellaneous works",
+            description = None,
             artworks = works.map( work => ArtworkModel(
               title = work.title,
               url = s"/gallery/${work.id}",
@@ -58,6 +59,7 @@ object GalleryHomePageModel {
   case class SeriesModel(
     id: String,
     title: String,
+    description: Option[String],
     artworks: Seq[SeriesModel.ArtworkModel]
   ) extends PageModel
 
@@ -71,6 +73,7 @@ object GalleryHomePageModel {
       SeriesModel(
         id = series.id,
         title = series.title,
+        description = series.description.map(md => MarkdownToHtml.html(md.nodes)).orElse(Some("")),
         artworks = artworks.map( work => ArtworkModel(
           title = work.title,
           url = s"/gallery/${work.id}",

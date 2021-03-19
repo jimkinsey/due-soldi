@@ -3,6 +3,7 @@ package duesoldi.gallery.serialisation
 import duesoldi.gallery.model.Series
 import duesoldi.gallery.serialisation.SeriesMap.SeriesMap
 import duesoldi.gallery.serialisation.SeriesYaml.ParseFailure.{Invalid, Malformed}
+import hammerspace.markdown.MarkdownDocument
 import hammerspace.yaml.Yaml
 
 object SeriesYaml {
@@ -27,12 +28,12 @@ object SeriesYaml {
       works
     }
 
-  def format(work: Series): String =
-    s"""id: ${work.id}
-       |title: ${work.title}
+  def format(series: Series): String =
+    s"""id: ${series.id}
+       |title: ${series.title}
+       |description: |
+       |${indentBlock(series.description.getOrElse(MarkdownDocument.empty).raw)}
        """.stripMargin
-//       |description: |
-//       |${indentBlock(work.description.getOrElse(MarkdownDocument.empty).raw)}""".stripMargin
 
   def formatAll(works: Seq[Series]): String = works
     .map(format)

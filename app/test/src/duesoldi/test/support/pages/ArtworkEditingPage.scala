@@ -105,6 +105,11 @@ class ArtworkEditingForm(element: Element)
     this
   }
 
+  def newSeriesDescription(description: String): ArtworkEditingForm = {
+    required(element, "textarea[name='new-series-description']").`val`(description)
+    this
+  }
+
   override def toString: String = element.html()
 }
 

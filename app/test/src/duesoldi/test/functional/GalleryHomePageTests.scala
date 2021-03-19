@@ -160,39 +160,39 @@ extends TestSuite
   //      }
 
       "has a linked CSS file to provide styling" - {
-          withSetup(
-            database,
-            runningApp,
-            artworks(artwork)
-          ) { implicit env =>
-            for {
-              response <- get("/gallery")
-              page = new GalleryHomePage(response.body.asString)
-              cssResponse <- get(page.cssUrl)
-            } yield {
-              assert(cssResponse.status == 200)
-            }
+        withSetup(
+          database,
+          runningApp,
+          artworks(artwork)
+        ) { implicit env =>
+          for {
+            response <- get("/gallery")
+            page = new GalleryHomePage(response.body.asString)
+            cssResponse <- get(page.cssUrl)
+          } yield {
+            assert(cssResponse.status == 200)
           }
         }
+      }
 
       "has some Open Graph metadata" - {
-          withSetup(
-            database,
-            runningApp,
-            artworks(
-              artwork
+        withSetup(
+          database,
+          runningApp,
+          artworks(
+            artwork
+          )
+        ) { implicit env =>
+          for {
+            response <- get("/gallery")
+            page = new GalleryHomePage(response.body.asString)
+          } yield {
+            assert(
+              page.ogMetadata.get.title == "Jim Kinsey's Online Gallery"
             )
-          ) { implicit env =>
-            for {
-              response <- get("/gallery")
-              page = new GalleryHomePage(response.body.asString)
-            } yield {
-              assert(
-                page.ogMetadata.get.title == "Jim Kinsey's Online Gallery"
-              )
-            }
           }
         }
+      }
     }
   }
 }

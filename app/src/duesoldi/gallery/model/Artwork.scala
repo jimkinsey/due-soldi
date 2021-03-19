@@ -17,5 +17,6 @@ case class Artwork(
 
 case class Series(
   id: String,
-  title: String
+  title: String,
+  description: Option[MarkdownDocument] = None
 )

@@ -1,6 +1,7 @@
 package duesoldi.gallery.serialisation
 
 import duesoldi.gallery.model.Series
+import hammerspace.markdown.MarkdownParser
 
 object SeriesMap {
 
@@ -21,9 +22,9 @@ object SeriesMap {
     for {
       id <- map.field[String]("id") toRight { Failure.MissingId }
       title <- map.field[String]("title") toRight { Failure.MissingTitle }
-      //      TODO description = map.field[String]("description").map(MarkdownParser.parseMarkdown)
+      description = map.field[String]("description").map(MarkdownParser.parseMarkdown)
     } yield {
-      Series(id, title)
+      Series(id, title, description)
     }
 
   def manySeries(maps: Seq[SeriesMap]): Either[Failure, Seq[Series]] = {

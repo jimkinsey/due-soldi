@@ -55,8 +55,8 @@ object GalleryStore
   def toSeries(parseMarkdown: markdown.Parse): (ResultSet => Series) = { row =>
     Series(
       id = row.getString("id"),
-      title = row.getString("title")
-      // TODO description
+      title = row.getString("title"),
+      description = Option(parseMarkdown(row.getString("description")))
     )
   }
 
@@ -108,7 +108,7 @@ object GalleryStore
       Seq(
         series.id,
         series.title,
-        null // TODO
+        series.description.map(_.raw).orNull
       )
     ) match {
       case Success(_) => Right(PutResult.Created)

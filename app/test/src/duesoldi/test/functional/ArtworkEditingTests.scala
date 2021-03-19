@@ -144,7 +144,7 @@ object ArtworkEditingTests
         }
       }
     }
-    "making a GET request to the blog collection" - {
+    "making a GET request to the artwork collection" - {
       "returns an empty response when there are no artworks" - {
         withSetup(
           database,
@@ -481,6 +481,7 @@ object ArtworkEditingTests
               .imageURL("/path/to/image.png")
               .newSeriesID("new-series")
               .newSeriesTitle("New series")
+              .newSeriesDescription("A _new_ series!!!")
               .values
             submission <- send(POST(form.action).formValues(formValues).cookie(editingPage.cookie("adminSessionId").get))
             newWork <- get("/gallery/new-artwork")
