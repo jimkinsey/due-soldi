@@ -121,3 +121,62 @@ object ArtworkEditingForm {
   }
 
 }
+
+class SeriesEditingPage(html: String)
+extends Page {
+  override def dom: Document = Jsoup.parse(html)
+  lazy val seriesSelectForm = new SeriesSelectForm(required(dom, "form#series-select"))
+  lazy val form = new SeriesEditingForm(required(dom,"form.series"))
+}
+
+class SeriesSelectForm(element: Element) {
+  def method: String = element.attr("method")
+
+  def action: String = element.attr("action")
+
+  def entries: Seq[String] = element.select("select[name='series'] option").asScala.map(_.`val`)
+
+  def entry(id: String) = {
+    required(element, s"select[name='series'] option[value='$id']").attr("selected", "true")
+    this
+  }
+
+  def values: Map[String, Seq[String]] = {
+    element.select("input, textarea, select").asScala.map {
+      case formEntry if formEntry.tagName() == "select" =>
+        formEntry.attr("name") -> Option(formEntry.select("option[selected]").first()).map(_.`val`).map(s => Seq(s)).getOrElse(Seq.empty)
+      case input =>
+        input.attr("name") -> Seq(input.`val`())
+    } toMap
+  }
+
+  override def toString: String = element.html()
+}
+
+class SeriesEditingForm(element: Element) {
+  def action: String = element.attr("action")
+
+  def id(id: String): SeriesEditingForm = {
+    required(element, "input[name='id']").`val`(id)
+    this
+  }
+
+  def title(date: String): SeriesEditingForm = {
+    required(element, "input[name='title']").`val`(date)
+    this
+  }
+
+  def description(description: String): SeriesEditingForm = {
+    required(element, "textarea[name='description']").`val`(description)
+    this
+  }
+
+  def values: Map[String, Seq[String]] = {
+    element.select("input, textarea, select").asScala.map {
+      case formEntry if formEntry.tagName() == "select" =>
+        formEntry.attr("name") -> Option(formEntry.select("option[selected]").first()).map(_.`val`).map(s => Seq(s)).getOrElse(Seq.empty)
+      case input =>
+        input.attr("name") -> Seq(input.`val`())
+    } toMap
+  }
+}

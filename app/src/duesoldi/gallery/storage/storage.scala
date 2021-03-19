@@ -19,4 +19,6 @@ package object storage
   type GetAllSeries = () => Future[List[Series]]
   type PutSeries = (Series) => Future[Either[GalleryStore.PutResult.Failure.type, GalleryStore.PutResult.Created.type]]
   type PutManySeries = (Seq[Series]) => Future[Either[GalleryStore.PutResult.Failure.type, GalleryStore.PutResult.Created.type]]
+  type DeleteSeries = (Series) => Future[Either[GalleryStore.DeleteResult.Failure.type, GalleryStore.DeleteResult.Deleted.type]]
+  type CreateOrUpdateSeries = (Series) => Future[Either[GalleryStore.CreateOrUpdateResult.Failure.type, GalleryStore.CreateOrUpdateResult.Success]]
 }

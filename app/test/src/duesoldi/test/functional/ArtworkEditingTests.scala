@@ -4,7 +4,7 @@ import duesoldi.test.support.app.ServerRequests._
 import duesoldi.test.support.app.TestApp
 import duesoldi.test.support.app.TestApp.runningApp
 import duesoldi.test.support.httpclient.BasicAuthorization
-import duesoldi.test.support.pages.{ArtworkEditingPage, ArtworkPage}
+import duesoldi.test.support.pages.{ArtworkEditingPage, ArtworkPage, SeriesEditingPage, SeriesPage}
 import duesoldi.test.support.setup.Database._
 import duesoldi.test.support.setup.GalleryStorage._
 import duesoldi.test.support.setup.Setup.withSetup
@@ -14,6 +14,122 @@ import ratatoskr.RequestBuilding._
 import ratatoskr.ResponseAccess._
 import ratatoskr.{Cookie, Method}
 import utest._
+
+object SeriesEditingTests
+extends TestSuite
+{
+  implicit val executionContext = utest.framework.ExecutionContext.RunNow
+  val tests = this {
+
+    "the series editing page" - {
+
+      "allows a new series to be created" - {
+        withSetup(
+          database,
+          runningApp,
+          series()
+        ) { implicit env =>
+          for {
+            editingPage <- get("/admin/series/edit", headers = TestApp.adminAuth)
+            _ = assert(editingPage.status == 200)
+
+            form = new SeriesEditingPage(editingPage.body.asString).form
+            formValues = form
+              .id("new-series")
+              .title("New Series")
+              .description("A _new_ series")
+              .values
+            submission <- send(POST(form.action).formValues(formValues).cookie(editingPage.cookie("adminSessionId").get))
+            _ = assert(submission.status == 201)
+
+            newSeries <- get("/gallery/series/new-series")
+            _ = assert(newSeries.status == 200)
+
+            seriesPage = new SeriesPage(newSeries.body.asString)
+          } yield {
+            assert(
+              seriesPage.title == "New Series",
+              seriesPage.descriptionHTML == "<p>A <i>new</i> series</p>"
+            )
+          }
+        }
+      }
+
+      "allows an existing series to be edited" - {
+        withSetup(
+          database,
+          runningApp,
+          series(
+            series.withId("old-series")
+              .withTitle("Old Series")
+              .withDescription("It's an old series, alright!")
+          )
+        ) { implicit env =>
+          for {
+            editingPage <- get("/admin/series/edit", headers = TestApp.adminAuth)
+            _ = assert(editingPage.status == 200)
+
+            selectForm = new SeriesEditingPage(editingPage.body.asString).seriesSelectForm
+            selectFormValues = selectForm.entry("old-series").values
+            selectEntry <- send(
+              Method(selectForm.method)(selectForm.action)
+                .query(selectFormValues)
+                .cookie(editingPage.cookie("adminSessionId").get)
+            )
+            _ = assert(selectEntry.status == 200)
+
+            form = new SeriesEditingPage(editingPage.body.asString).form
+            formValues = form
+              .id("old-series")
+              .title("Old Series - updated")
+              .description("It's been updated!")
+              .values
+            submission <- send(POST(form.action).formValues(formValues).cookie(editingPage.cookie("adminSessionId").get))
+            _ = assert(submission.status == 201)
+
+            updatedSeries <- get("/gallery/series/old-series")
+            _ = assert(updatedSeries.status == 200)
+
+            seriesPage = new SeriesPage(updatedSeries.body.asString)
+          } yield {
+            assert(
+              seriesPage.title == "Old Series - updated",
+              seriesPage.descriptionHTML == "<p>It's been updated!</p>"
+            )
+          }
+        }
+
+        "requires authorization by basic auth or cookie" - {
+          withSetup(
+            database,
+            runningApp,
+            series()
+          ) { implicit env =>
+            for {
+              noCredentialsOrCookie <- get("/admin/series/edit")
+              badCredentials <- get("/admin/series/edit", headers = BasicAuthorization("not-admin", "password"))
+              goodCredentials <- get("/admin/series/edit", headers = TestApp.adminAuth)
+              goodCookie <- get("/admin/series/edit", headers = goodCredentials.cookie("adminSessionId").get.toRequestHeader)
+              badCookie <- get("/admin/series/edit", headers = Cookie("adminSessionId", "").toRequestHeader)
+            } yield {
+              assert(
+                noCredentialsOrCookie.status == 401,
+                badCredentials.status == 403,
+                goodCredentials.status == 200,
+                goodCookie.status == 200,
+                badCookie.status == 401
+              )
+            }
+          }
+        }
+
+
+      }
+
+    }
+
+  }
+}
 
 object ArtworkEditingTests
   extends TestSuite 

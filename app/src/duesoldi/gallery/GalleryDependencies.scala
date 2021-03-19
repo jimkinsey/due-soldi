@@ -74,6 +74,10 @@ with SessionCookieDependencies {
 
   implicit def createOrUpdateArtwork(implicit executionContext: ExecutionContext): Inject[CreateOrUpdateArtwork] = inject(GalleryStore.createOrUpdate _)
 
+  implicit val deleteSeries: Inject[DeleteSeries] = inject(GalleryStore.deleteSeries _)
+
+  implicit def createOrUpdateSeries(implicit executionContext: ExecutionContext): Inject[CreateOrUpdateSeries] = inject(GalleryStore.createOrUpdateSeries _)
+
   implicit val artworkPageModel: Inject[BuildArtworkPageModel] = config => ArtworkPageModel.build(config.imageBaseUrl)
 
   implicit val seriesPageModel: Inject[BuildSeriesPageModel] = config => GalleryHomePageModel.SeriesModel.build(config.imageBaseUrl, Thumbnails.getURL())

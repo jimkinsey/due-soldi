@@ -9,7 +9,7 @@ import duesoldi.blog.validation.ValidateIdentifier
 import duesoldi.config.Config
 import duesoldi.dependencies.DueSoldiDependencies._
 import duesoldi.gallery.model.{Artwork, Series}
-import duesoldi.gallery.pages.ArtworkEditingPageModel
+import duesoldi.gallery.pages.{ArtworkEditingPageModel, SeriesEditingPageModel}
 import duesoldi.gallery.storage._
 import duesoldi.gallery._
 import duesoldi.images.ImageResize
@@ -49,9 +49,6 @@ extends Controller
       } else {
         Result(emptyArtwork)
       }
-
-      // TODO allow inline create / edit of series
-      // TODO series pages ,gallery page, redirect from /gallery/series|artwork to /gallery, change artwork URL
 
       getArtworks <- provided[GetAllArtworks]
       artworks <- getArtworks() rejectWith { _ => 500 }
@@ -173,6 +170,98 @@ extends Controller
 
       render <- provided[Render]
       html   <- render("artwork-editing", model) rejectWith { failure => 500 }
+    } yield {
+      201(html) cookie sessionCookie ContentType "text/html; charset=UTF-8"
+    }
+  }
+
+  GET("/admin/series/edit").Authorization(basicAdminAuth or validSession) ->- { implicit context =>
+    for {
+      getSessionCookie <- provided[GetSessionCookie]
+      sessionCookie <- getSessionCookie(context.request) rejectWith 500
+
+      getSeries <- provided[GetSeries]
+      selectedSeriesId <- query[String]("series").optional.firstValue
+
+      emptySeries = Series(
+        id = "",
+        title = "",
+        description = None
+      )
+
+      series <- whenAvailable(selectedSeriesId)(id => getSeries(id) defaultTo emptySeries)(emptySeries)
+
+      getAllSeries <- provided[GetAllSeries]
+      allSeries <- getAllSeries() rejectWith { _ => 500 }
+
+      model = SeriesEditingPageModel(
+        allSeries = allSeries.map(series =>
+          SeriesEditingPageModel.Series(
+            series.id,
+            series.title,
+            series.description.fold("")(_.raw)
+          )
+        ),
+        series = SeriesEditingPageModel.Series(
+          id = series.id,
+          title = series.title,
+          description = series.description.fold("")(_.raw)
+        )
+      )
+
+      render <- provided[Render]
+      html <- render("series-editing", model) rejectWith { failure => 500(s"Failed to render $failure") }
+    } yield {
+      200(html) cookie sessionCookie ContentType "text/html; charset=UTF-8"
+    }
+  }
+
+  POST("/admin/series/edit").Authorization(basicAdminAuth or validSession) ->- { implicit context =>
+    for {
+      getSessionCookie <- provided[GetSessionCookie]
+      sessionCookie    <- getSessionCookie(context.request) rejectWith 400("Missing session cookie")
+
+      parseMarkdown    <- provided[markdown.Parse]
+      id               <- form[String]("id").firstValue.required { 400("Required ID field missing") }
+      title            <- form[String]("title").firstValue.required { 400("Required title field missing") }
+      description      <- form[String]("description").optional.firstValue
+
+      descriptionMD = description.map(parseMarkdown)
+
+      store <- provided[CreateOrUpdateSeries]
+      _     <- store(Series(id, title, descriptionMD)) rejectWith { e => 500(s"Failed to store series - $e") }
+
+      getSeries <- provided[GetSeries]
+      selectedSeriesId <- query[String]("series").optional.firstValue
+
+      emptySeries = Series(
+        id = "",
+        title = "",
+        description = None
+      )
+
+      series <- whenAvailable(selectedSeriesId)(id => getSeries(id) defaultTo emptySeries)(emptySeries)
+
+      getAllSeries <- provided[GetAllSeries]
+      allSeries <- getAllSeries() rejectWith { _ => 500 }
+
+      model = SeriesEditingPageModel(
+        allSeries = allSeries.map(series =>
+          SeriesEditingPageModel.Series(
+            series.id,
+            series.title,
+            series.description.fold("")(_.raw)
+          )
+        ),
+        series = SeriesEditingPageModel.Series(
+          id = series.id,
+          title = series.title,
+          description = series.description.fold("")(_.raw)
+        )
+      )
+
+      render <- provided[Render]
+      html   <- render("series-editing", model) rejectWith { failure => 500 }
     } yield {
       201(html) cookie sessionCookie ContentType "text/html; charset=UTF-8"
     }

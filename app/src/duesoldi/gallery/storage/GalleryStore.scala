@@ -130,6 +130,10 @@ object GalleryStore
     performUpdate("DELETE FROM artwork WHERE id = ?", Seq(id)) map (_ => { Right(Deleted) }) recover { case _ => Left(DeleteResult.Failure) }
   }
 
+  def deleteSeries(performUpdate: PerformUpdate)(series: Series): Future[Either[DeleteResult.Failure.type, DeleteResult.Deleted.type]] = Future.fromTry {
+    performUpdate("DELETE FROM series WHERE id = ?", Seq(series.id)) map (_ => { Right(Deleted) }) recover { case _ => Left(DeleteResult.Failure) }
+  }
+
   def deleteAll(performUpdate: PerformUpdate) = () => Future.fromTry {
     performUpdate("DELETE FROM artwork", Seq.empty) map (_ => {
       Right(Deleted)
@@ -149,6 +153,20 @@ object GalleryStore
         }
       case None =>
         put(entry) map { _ => Right(CreateOrUpdateResult.Success.Created) }
+    }
+  }
+
+  def createOrUpdateSeries(get: GetSeries, delete: DeleteSeries, put: PutSeries)(implicit executionContext: ExecutionContext): CreateOrUpdateSeries = series => {
+    get(series.id) flatMap {
+      case Some(_) =>
+        for {
+          _ <- delete(series).map(_.left.map(_ => CreateOrUpdateResult.Failure))
+          _ <- put(series).map(_.left.map(_ => CreateOrUpdateResult.Failure))
+        } yield {
+          Right(CreateOrUpdateResult.Success.Updated)
+        }
+      case None =>
+        put(series) map { _ => Right(CreateOrUpdateResult.Success.Created) }
     }
   }
 }
