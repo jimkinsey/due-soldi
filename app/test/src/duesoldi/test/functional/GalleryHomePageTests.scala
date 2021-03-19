@@ -64,9 +64,9 @@ extends TestSuite
             page = new GalleryHomePage(res.body.asString)
           } yield {
             assert(
-              page.artworkLinks contains "/gallery/one",
-              page.artworkLinks contains "/gallery/two",
-              page.artworkLinks contains "/gallery/three",
+              page.artworkLinks contains "/gallery/artwork/one",
+              page.artworkLinks contains "/gallery/artwork/two",
+              page.artworkLinks contains "/gallery/artwork/three",
             )
           }
         }
@@ -136,7 +136,7 @@ extends TestSuite
           )
         ) { implicit env =>
           for {
-            response <- get("/gallery/untitled-masterpiece")
+            response <- get("/gallery")
             footer = new GalleryHomePage(response.body.asString).footer
           } yield {
             assert(footer.copyrightNotice.exists(_ matches """© \d\d\d\d-\d\d\d\d Jim Kinsey"""))

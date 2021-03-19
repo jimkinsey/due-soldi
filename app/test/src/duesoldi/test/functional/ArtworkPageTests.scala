@@ -23,7 +23,7 @@ extends TestSuite
           artworks()
         ) { implicit env =>
           for {
-            res <- get("/gallery/untitled-masterpiece")
+            res <- get("/gallery/artwork/untitled-masterpiece")
           } yield {
             assert(res.status == 404)
           }
@@ -38,7 +38,7 @@ extends TestSuite
           artworks()
         ) { implicit env =>
           for {
-            res <- get("""/gallery/NOT+A+VALID+ID""")
+            res <- get("""/gallery/artwork/NOT+A+VALID+ID""")
           } yield {
             assert(res.status == 400)
           }
@@ -53,7 +53,7 @@ extends TestSuite
           artworks("untitled-masterpiece" -> "Untitled Masterpiece")
         ) { implicit env =>
           for {
-            res <- get("/gallery/untitled-masterpiece")
+            res <- get("/gallery/artwork/untitled-masterpiece")
           } yield {
             assert(res.status == 200)
           }
@@ -66,7 +66,7 @@ extends TestSuite
           artworks("untitled-masterpiece" -> "Untitled Masterpiece")
         ) { implicit env =>
           for {
-            res <- get("/gallery/untitled-masterpiece")
+            res <- get("/gallery/artwork/untitled-masterpiece")
           } yield {
             assert(res.headers("Content-type") contains "text/html; charset=UTF-8")
           }
@@ -84,7 +84,7 @@ extends TestSuite
           )
         ) { implicit env =>
           for {
-            res <- get("/gallery/untitled-masterpiece")
+            res <- get("/gallery/artwork/untitled-masterpiece")
             page = new ArtworkPage(res.body.asString)
           } yield {
             assert(page.title == "Untitled Masterpiece")
@@ -104,7 +104,7 @@ extends TestSuite
           )
         ) { implicit env =>
           for {
-            res <- get("/gallery/untitled-masterpiece")
+            res <- get("/gallery/artwork/untitled-masterpiece")
             page = new ArtworkPage(res.body.asString)
           } yield {
             assert(page.description contains """<p>It is <i>pure</i> genius</p>""")
@@ -122,7 +122,7 @@ extends TestSuite
           )
         ) { implicit env =>
           for {
-            res <- get("/gallery/untitled-masterpiece")
+            res <- get("/gallery/artwork/untitled-masterpiece")
             page = new ArtworkPage(res.body.asString)
           } yield {
             assert(page.artworkImageURL == "https://images/path/to/image.png")
@@ -145,7 +145,7 @@ extends TestSuite
           )
         ) { implicit env =>
           for {
-            res <- get("/gallery/untitled-masterpiece")
+            res <- get("/gallery/artwork/untitled-masterpiece")
             page = new ArtworkPage(res.body.asString)
           } yield {
             assert(page.seriesURL contains "/gallery/series/late-works")
@@ -162,7 +162,7 @@ extends TestSuite
           )
         ) { implicit env =>
           for {
-            res <- get("/gallery/untitled-masterpiece")
+            res <- get("/gallery/artwork/untitled-masterpiece")
             page = new ArtworkPage(res.body.asString)
           } yield {
             assert(page.galleryHomeURL == "/gallery")
@@ -178,7 +178,7 @@ extends TestSuite
           )
         ) { implicit env =>
           for {
-            response <- get("/gallery/untitled-masterpiece")
+            response <- get("/gallery/artwork/untitled-masterpiece")
             footer = new ArtworkPage(response.body.asString).footer
           } yield {
             assert(footer.copyrightNotice.exists(_ matches """© \d\d\d\d-\d\d\d\d Jim Kinsey"""))

@@ -14,16 +14,6 @@ package object pages {
   type BuildSeriesPageModel = (Series, Seq[Artwork]) => GalleryHomePageModel.SeriesModel
 }
 
-//case class SeriesPageModel(
-//  title: String
-//) extends PageModel
-//
-//object SeriesPageModel {
-//  def build()(series: Series): SeriesPageModel = {
-//    SeriesPageModel(series.title)
-//  }
-//}
-
 case class GalleryHomePageModel(
   series: Seq[GalleryHomePageModel.SeriesModel]
 ) extends PageModel
@@ -48,7 +38,7 @@ object GalleryHomePageModel {
             description = None,
             artworks = works.map( work => ArtworkModel(
               title = work.title,
-              url = s"/gallery/${work.id}",
+              url = s"/gallery/artwork/${work.id}",
               thumbnailURL = imageBaseURL + getThumbnailURL(work.imageURL)
             ))
           )
@@ -76,7 +66,7 @@ object GalleryHomePageModel {
         description = series.description.map(md => MarkdownToHtml.html(md.nodes)).orElse(Some("")),
         artworks = artworks.map( work => ArtworkModel(
           title = work.title,
-          url = s"/gallery/${work.id}",
+          url = s"/gallery/artwork/${work.id}",
           thumbnailURL = imageBaseURL + getThumbnailURL(work.imageURL)
         ))
       )

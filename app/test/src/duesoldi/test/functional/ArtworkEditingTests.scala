@@ -152,7 +152,7 @@ object ArtworkEditingTests
                    |    Description!
                    |""".stripMargin,
               headers = TestApp.adminAuth, "Content-Type" -> "text/x-yaml; charset=utf-8")
-            entryResponse <- get("/gallery/new-work")
+            entryResponse <- get("/gallery/artwork/new-work")
             page = new ArtworkPage(entryResponse.body.asString)
           } yield {
             assert(
@@ -227,7 +227,7 @@ object ArtworkEditingTests
         ) { implicit env =>
           for {
             deleteResponse <- delete("/admin/artwork/existing", headers = TestApp.adminAuth)
-            artworkResponse <- get("/gallery/existing")
+            artworkResponse <- get("/gallery/artwork/existing")
           } yield {
             assert(deleteResponse.status == 204)
             assert(artworkResponse.status == 404)
@@ -469,7 +469,7 @@ object ArtworkEditingTests
               .description("A _new_ artwork")
               .values
             submission <- send(POST(form.action).formValues(formValues).cookie(editingPage.cookie("adminSessionId").get))
-            newWork <- get("/gallery/new-artwork")
+            newWork <- get("/gallery/artwork/new-artwork")
             artworkPage = new ArtworkPage(newWork.body.asString)
           } yield {
             assert(
@@ -534,7 +534,7 @@ object ArtworkEditingTests
             _ = assert(updateEntry.status == 201)
 
             updatedArtwork <- send(
-              GET("/gallery/one"))
+              GET("/gallery/artwork/one"))
             updatedArtworkPage = new ArtworkPage(updatedArtwork.body.asString)
           } yield {
             assert(
@@ -564,7 +564,7 @@ object ArtworkEditingTests
               .seriesID(form.availableSeries.find(_.title == "Doodles").map(_.id).getOrElse(""))
               .values
             submission <- send(POST(form.action).formValues(formValues).cookie(editingPage.cookie("adminSessionId").get))
-            newWork <- get("/gallery/new-artwork")
+            newWork <- get("/gallery/artwork/new-artwork")
             artworkPage = new ArtworkPage(newWork.body.asString)
           } yield {
             assert(
@@ -600,7 +600,7 @@ object ArtworkEditingTests
               .newSeriesDescription("A _new_ series!!!")
               .values
             submission <- send(POST(form.action).formValues(formValues).cookie(editingPage.cookie("adminSessionId").get))
-            newWork <- get("/gallery/new-artwork")
+            newWork <- get("/gallery/artwork/new-artwork")
             artworkPage = new ArtworkPage(newWork.body.asString)
           } yield {
             assert(

@@ -70,7 +70,7 @@ class ArtworkController(implicit executionContext: ExecutionContext, appConfig: 
 extends Controller
 {
 
-  GET("/gallery/:id") ->- { implicit context =>
+  GET("/gallery/artwork/:id") ->- { implicit context =>
     for {
       validationFailure <- provided[ValidateIdentifier]
       getArtwork <- provided[GetArtwork]

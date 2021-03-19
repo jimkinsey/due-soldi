@@ -84,9 +84,9 @@ extends TestSuite {
             page = new SeriesPage(res.body.asString)
           } yield {
             assert(
-              page.workTitled("One").link == "/gallery/one",
+              page.workTitled("One").link == "/gallery/artwork/one",
               page.workTitled("One").thumbnailURL == "/images/one-w200.jpg",
-              page.workTitled("Two").link == "/gallery/two",
+              page.workTitled("Two").link == "/gallery/artwork/two",
               page.workTitled("Two").thumbnailURL == "/images/two-w200.jpg",
             )
           }
