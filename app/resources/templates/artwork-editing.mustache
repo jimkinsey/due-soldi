@@ -24,9 +24,8 @@
         <p>
           <label>Series</label>
           <select name="series">
-            <option disabled value> -- no series -- </option>
-              <!-- FIXME needs testing !!!! -->
-            {{#allSeries}}<option value="{{id}}"{{#selected}} selected{{/selected}}>{{title}}</option>{{/allSeries}}
+            <option disabled selected value> -- select a series -- </option>
+            {{#allSeries}}<option value="{{id}}">{{title}}</option>{{/allSeries}}
           </select>
         </p>
         <p>
