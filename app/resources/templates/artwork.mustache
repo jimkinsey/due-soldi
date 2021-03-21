@@ -2,7 +2,6 @@
   <head>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>{{title}}</title>
-    <link href="{{#furniture}}gallery.css{{/furniture}}" rel="stylesheet"/>
   </head>
   <body>
     <nav>
@@ -12,15 +11,13 @@
       </ol>
     </nav>
     <main id="content">
-      <div class="placard">
-        <header>
-          <h1>{{title}}</h1>
-          <p id="timeframe">{{#timeframe}}{{_}}{{/timeframe}}</p>
-          <p id="materials">{{#materials}}{{_}}{{/materials}}</p>
-        </header>
-        <div id="description">{{#description}}{{{_}}}{{/description}}</div>
-      </div>
-      <div id="main-image"><img src="{{imageURL}}"/></div>
+      <header>
+        <h1>{{title}}</h1>
+        <p id="timeframe">{{#timeframe}}{{_}}{{/timeframe}}</p>
+        <p id="materials">{{#materials}}{{_}}{{/materials}}</p>
+      </header>
+      <div id="description">{{#description}}{{{_}}}{{/description}}</div>
+        <div id="main-image"><img src="{{imageURL}}"/></div>
     </main>
     <footer>
       <small id="copyright">&copy; 2013-2021 Jim Kinsey</small>
