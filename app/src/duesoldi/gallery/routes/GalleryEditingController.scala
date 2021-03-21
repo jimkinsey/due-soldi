@@ -74,7 +74,7 @@ extends Controller
           materials = artwork.materials.getOrElse(""),
           imageURL = artwork.imageURL,
           description = artwork.description.map(_.raw).getOrElse(""),
-          allSeries = allSeries.map { s => ArtworkEditingPageModel.Series(s.id, s.title) }
+          allSeries = allSeries.map { s => ArtworkEditingPageModel.Series(s.id, s.title, s.id == artwork.seriesId) }
         )
       )
 

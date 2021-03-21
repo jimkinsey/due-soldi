@@ -34,6 +34,7 @@ object ArtworkEditingPageModel
 
   case class Series(
     id: String,
-    title: String
+    title: String,
+    selected: Boolean
   )
 }
