@@ -13,6 +13,9 @@ extends Controller
     request.path match {
       case "/learn-japanese" => rejectRequest(301 Location "/learn-japanese/")
       case "/blog" => rejectRequest(301 Location "/blog/")
+      case "/gallery" => rejectRequest(301 Location "/gallery/")
+      case "/series" => rejectRequest(301 Location "/gallery/")
+      case "/series/" => rejectRequest(301 Location "/gallery/")
       case _ => request
     }
   }

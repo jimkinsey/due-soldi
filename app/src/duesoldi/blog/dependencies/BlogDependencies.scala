@@ -8,7 +8,7 @@ import duesoldi.blog.storage._
 import duesoldi.blog.validation.{ValidBlogContent, ValidIdentifier}
 import duesoldi.dependencies.Features.forFeature
 import duesoldi.dependencies.Injection.{Inject, inject}
-import duesoldi.dependencies.{JDBCDependencies, MarkdownParsingDependencies, RenderingDependencies, SessionCookieDependencies}
+import duesoldi.dependencies.{FurnitureDependencies, JDBCDependencies, MarkdownParsingDependencies, RenderingDependencies, SessionCookieDependencies}
 
 import scala.concurrent.ExecutionContext
 

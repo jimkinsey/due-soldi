@@ -1,5 +1,5 @@
 body {
-  font-family: sans-serif;
+  font-family: 'DM Sans', sans-serif;
 }
 
 nav {
@@ -25,14 +25,19 @@ nav li:after {
   margin: 0;
 }
 
-nav li a {
+a {
   color: grey;
   text-decoration: none;
   border-bottom: dotted 1px grey;
 }
 
+a.thumbnail-link {
+  border: none;
+}
+
 div.placard {
   max-width:  20%;
+  width: 20%;
   padding: 1em;
   display: inline-block;
   vertical-align: top;
@@ -59,24 +64,25 @@ li.work .artwork-link {
 }
 
 .series {
-  border-bottom: 1px dotted grey;
-  margin-bottom: 1em;
-  border-top: 1px dotted grey;
-  margin-top: 1em;
+  margin-bottom: 0;
+  margin-top: 0;
   padding-top: 0;
 }
 
 .series header {
-  display: inline-block;
-  max-width: 20%;
-  vertical-align: top;
-  padding: 0 1em 0 1em;
+  padding: 0 0 0 0;
   margin: 0;
 }
 
 .series header h2 {
-  margin-top: 1.5em;
   padding-top: 0;
+  font-size: 1em;
+}
+
+.series header h2 a {
+  text-decoration: none;
+  color: inherit;
+  border: none;
 }
 
 .series ul {
@@ -106,4 +112,20 @@ li.work .artwork-link {
 #copyright {
   padding: 1em;
   font-size: 0.8em;
+}
+
+#gallery-home #all-series {
+    display: inline-block;
+    max-width: 80%;
+    padding: 1em;
+    margin: 0;
+    vertical-align: top;
+}
+
+footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    padding: 1em;
+    padding-left: 1em;
 }

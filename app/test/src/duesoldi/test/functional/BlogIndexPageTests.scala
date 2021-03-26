@@ -23,7 +23,7 @@ object BlogIndexPageTests
           blogEntries("id" -> "# Content!")
         ) { implicit env =>
           for {
-            response <- get("/blog")
+            response <- getNoFollow("/blog")
           } yield {
             assert(
               response.status == 301,

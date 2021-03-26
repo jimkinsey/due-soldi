@@ -46,7 +46,7 @@ extends Controller
 
   def passIf(cond: => Boolean)(ifFalse: => Rejection): Result[Unit] = if (cond) Accepted({}) else Rejected(ifFalse)
 
-  GET("/gallery") ->- { implicit context =>
+  GET("/gallery/") ->- { implicit context =>
     for {
       getAllArtworks <- provided[GetAllArtworks]
       getAllSeries   <- provided[GetAllSeries]

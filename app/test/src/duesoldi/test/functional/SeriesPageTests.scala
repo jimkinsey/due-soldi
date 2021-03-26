@@ -1,6 +1,6 @@
 package duesoldi.test.functional
 
-import duesoldi.test.support.app.ServerRequests.get
+import duesoldi.test.support.app.ServerRequests.{get, getNoFollow}
 import duesoldi.test.support.app.TestApp.runningApp
 import duesoldi.test.support.pages.SeriesPage
 import duesoldi.test.support.setup.Database.database
@@ -13,6 +13,26 @@ object SeriesPageTests
 extends TestSuite {
   implicit val executionContext = utest.framework.ExecutionContext.RunNow
   val tests = this {
+    "the /series/ path" - {
+
+      "redirects to the gallery home page" - {
+        withSetup(
+          database,
+          runningApp
+        ) { implicit env =>
+          for {
+            res <- getNoFollow("/series/")
+          } yield {
+            assert(
+              res.status == 301,
+              res.headers("Location").head == "/gallery/"
+            )
+          }
+        }
+      }
+
+    }
+
     "a series page" - {
 
       "responds with a 404 for a non-existent series" - {

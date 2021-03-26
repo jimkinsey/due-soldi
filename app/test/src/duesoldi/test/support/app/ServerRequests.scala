@@ -18,8 +18,23 @@ object ServerRequests
     }
   }
 
-  def get(path: String, headers: (String, String)*)(implicit ec: ExecutionContext, env: Env): Future[Response] = {
+  def getNoFollow(path: String, headers: (String, String)*)(implicit ec: ExecutionContext, env: Env): Future[Response] = {
     HttpClient.get(path, env, withOverrides(headers))
+  }
+
+  def get(path: String, headers: (String, String)*)(implicit ec: ExecutionContext, env: Env): Future[Response] = {
+    def get(path: String, remainingRedirects: Int): Future[Response] = {
+      if (remainingRedirects == 0) {
+        Future.failed(new RuntimeException("Too many redirects"))
+      } else {
+        HttpClient.get(path, env, withOverrides(headers)) flatMap {
+          case res if res.status >= 300 && res.status <= 399 =>
+            get(res.headers("Location").head, remainingRedirects - 1)
+          case res => Future(res)
+        }
+      }
+    }
+    get(path, remainingRedirects = 10)
   }
 
   def put(path: String, body: String, headers: (String, String)*)(implicit executionContext: ExecutionContext, env: Env): Future[Response] = {

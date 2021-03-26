@@ -3,23 +3,35 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta property="og:title" content="Jim Kinsey's Online Gallery"/>
     <title>Gallery</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
     <link href="{{#furniture}}gallery.css{{/furniture}}" rel="stylesheet"/>
   </head>
   <body>
-    <main id="content">
-      <header>
-        <h1>Gallery</h1>
-      </header>
-      {{#series}}
-      <article id="{{id}}" class="series">
-        <header><h2>{{title}}</h2></header>
-        <ul>{{#artworks}}<li class="work">
-           <a class="artwork-link" href="{{url}}">{{title}}</a><br/>
-           <a href="{{url}}"><img id="thumbnail" src="{{thumbnailURL}}"></a>
-        </li>{{/artworks}}
-        </ul>
-      </article>
-      {{/series}}
+    <nav>
+      <ol></ol>
+    </nav>
+    <main id="gallery-home">
+      <div class="placard">
+        <header>
+          <h1>Gallery</h1>
+        </header>
+        <div class="blurb">
+          <p>For commissions, interest in buying original art or prints, or any other queries, please email <a href="mailto:kinjacono@yahoo.co.uk">kinjacono@yahoo.co.uk</a>.</p>
+        </div>
+      </div>
+      <div id="all-series">
+        {{#series}}
+        <article id="{{id}}" class="series">
+          <header><h2><a href="/gallery/series/{{id}}">{{title}}</a></h2></header>
+          <ul>{{#artworks}}<li class="work">
+             <a class="artwork-link" href="{{url}}">{{title}}</a><br/>
+             <a class="thumbnail-link" href="{{url}}"><img id="thumbnail" src="{{thumbnailURL}}"></a>
+          </li>{{/artworks}}
+          </ul>
+        </article>
+        {{/series}}
+      </div>
     </main>
     <footer>
       <small id="copyright">&copy; 2013-2021 Jim Kinsey</small>

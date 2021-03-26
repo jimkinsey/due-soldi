@@ -11,7 +11,13 @@ import scala.concurrent.ExecutionContext
 trait RenderingDependencies
   extends LoggingDependencies {
 
-  implicit lazy val furniturePathAndContent: Inject[CurrentPathAndContent] = _ => FurnitureFiles.currentPathAndContent
+  implicit lazy val furniturePathAndContent: Inject[CurrentPathAndContent] = config => {
+    if (config.loadFurnitureFromLocalProject) {
+      FurnitureFiles.fromProject
+    } else {
+      FurnitureFiles.fromResources
+    }
+  }
 
   implicit lazy val getTemplate: Inject[GetTemplate] = config => {
     config.templatePath match {

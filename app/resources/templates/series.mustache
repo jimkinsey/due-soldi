@@ -3,6 +3,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta property="og:title" content="{{title}}"/>
     <title>{{title}}</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
     <link href="{{#furniture}}gallery.css{{/furniture}}" rel="stylesheet"/>
   </head>
   <body>
@@ -11,16 +13,17 @@
         <li><a id="gallery-home-link" href="/gallery">Gallery</a></li>
       </ol>
     </nav>
-    <main id="content">
-      <header>
-        <h1>{{title}}</h1>
-      </header>
-      {{#description}}<div id="series-description">{{{_}}}</div>{{/description}}
+    <main id="{{id}}" class="series">
+      <div class="placard">
+        <header>
+          <h1>{{title}}</h1>
+        </header>
+        {{#description}}<div id="series-description">{{{_}}}</div>{{/description}}
+      </div>
       <ul>{{#artworks}}<li class="work">
         <a class="artwork-link" href="{{url}}">{{title}}</a><br/>
-        <a href="{{url}}"><img id="thumbnail" src="{{thumbnailURL}}"></a>
-      </li>{{/artworks}}
-      </ul>
+        <a class="thumbnail-link" href="{{url}}"><img id="thumbnail" src="{{thumbnailURL}}"></a>
+      </li>{{/artworks}}</ul>
     </main>
     <footer>
       <small id="copyright">&copy; 2013-2021 Jim Kinsey</small>

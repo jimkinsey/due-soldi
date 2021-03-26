@@ -17,9 +17,10 @@ case class Config(
   assetBucket: String,
   features: Map[String, Boolean],
   accessRecordArchiveThreshold: Option[Int] = None,
-  templatePath: Option[String] = None
+  templatePath: Option[String] = None,
+  furnitureCacheDurationHours: Option[Int] = None,
+  loadFurnitureFromLocalProject: Boolean = false
 )
-
 object Config
 {
   def parse(str: String): Map[String, String] = {
