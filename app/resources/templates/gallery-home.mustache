@@ -21,16 +21,14 @@
         </div>
       </div>
       <div id="all-series">
-        {{#series}}
-        <article id="{{id}}" class="series">
+        {{#series}}<article id="{{id}}" class="series">
           <header><h2><a href="/gallery/series/{{id}}">{{title}}</a></h2></header>
           <ul>{{#artworks}}<li class="work">
              <a class="artwork-link" href="{{url}}">{{title}}</a><br/>
              <a class="thumbnail-link" href="{{url}}"><img id="thumbnail" src="{{thumbnailURL}}"></a>
           </li>{{/artworks}}
           </ul>
-        </article>
-        {{/series}}
+        </article>{{/series}}
       </div>
     </main>
     <footer>

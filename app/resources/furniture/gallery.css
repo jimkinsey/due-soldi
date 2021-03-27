@@ -1,5 +1,7 @@
 body {
   font-family: 'DM Sans', sans-serif;
+  padding: 0;
+  margin: 0;
 }
 
 nav {
@@ -87,8 +89,9 @@ li.work .artwork-link {
 
 .series ul {
   display: inline-block;
+  max-width: 75%;
   margin: 0;
-  padding: 0;
+  padding: 1em;
 }
 
 #main-image {
@@ -109,23 +112,32 @@ li.work .artwork-link {
   font-size: 0.8em;
 }
 
+main {
+  margin: 0;
+  padding: 0;
+}
+
 #copyright {
   padding: 1em;
   font-size: 0.8em;
 }
 
 #gallery-home #all-series {
-    display: inline-block;
-    max-width: 80%;
-    padding: 1em;
-    margin: 0;
-    vertical-align: top;
+  display: inline-block;
+  max-width: 75%;
+  padding: 1em;
+}
+
+#gallery-home .placard {
+  height: 100%;
 }
 
 footer {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    padding: 1em;
-    padding-left: 1em;
+  display: block;
+  width: 20%;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  padding: 1em;
+  padding-left: 1em;
 }
