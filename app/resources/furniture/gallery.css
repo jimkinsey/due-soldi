@@ -105,6 +105,10 @@ li.work .artwork-link {
   margin: 0em;
 }
 
+#main-image img {
+  max-width: 100%;
+}
+
 @media only screen and (min-width: 768px) {
 
     nav {
@@ -175,10 +179,6 @@ li.work .artwork-link {
     #main-image {
       max-width: 60%;
       display: inline-block;
-    }
-
-    #main-image img {
-      max-width: 100%;
     }
 
     #materials {
